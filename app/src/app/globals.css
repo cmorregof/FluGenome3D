@@ -4,6 +4,19 @@
 
 :root {
   color-scheme: dark;
+  --bg: #080807;
+  --panel: rgba(18, 17, 14, 0.82);
+  --panel-soft: rgba(24, 23, 19, 0.72);
+  --border: rgba(135, 169, 155, 0.16);
+  --border-strong: rgba(135, 169, 155, 0.36);
+  --text: #e8e1d2;
+  --muted: #a8a092;
+  --accent: #87a99b;
+  --accent-soft: #27473f;
+  --teal: #87a99b;
+  --sage: #9aab91;
+  --rust: #b9785f;
+  --danger-soft: #8a4d45;
 }
 
 * {
@@ -11,16 +24,17 @@
 }
 
 html {
-  background: #080806;
+  background: var(--bg);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 0%, rgba(215, 168, 74, 0.10), transparent 28rem),
-    linear-gradient(135deg, #080806 0%, #11100d 54%, #0b0c0a 100%);
-  color: #eee4cf;
+    radial-gradient(circle at 18% 0%, rgba(135, 169, 155, 0.08), transparent 26rem),
+    radial-gradient(circle at 88% 10%, rgba(185, 120, 95, 0.055), transparent 24rem),
+    linear-gradient(135deg, var(--bg) 0%, #10100d 54%, #090a08 100%);
+  color: var(--text);
 }
 
 button,
@@ -30,8 +44,8 @@ select {
 
 .lab-grid {
   background-image:
-    linear-gradient(rgba(238, 228, 207, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(238, 228, 207, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(232, 225, 210, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232, 225, 210, 0.045) 1px, transparent 1px);
   background-size: 34px 34px;
 }
 
@@ -39,4 +53,57 @@ select {
 .plot-shell .plot-container,
 .plot-shell .svg-container {
   border-radius: 8px;
+}
+
+.virion-shell {
+  transform-style: preserve-3d;
+  animation: virion-spin 18s linear infinite;
+}
+
+.virion-orbit {
+  animation: virion-orbit 9s ease-in-out infinite alternate;
+}
+
+.virion-pulse {
+  animation: virion-pulse 4s ease-in-out infinite;
+}
+
+@keyframes virion-spin {
+  from {
+    transform: rotateX(58deg) rotateZ(0deg);
+  }
+  to {
+    transform: rotateX(58deg) rotateZ(360deg);
+  }
+}
+
+@keyframes virion-orbit {
+  from {
+    transform: rotate(0deg) scale(0.96);
+    opacity: 0.38;
+  }
+  to {
+    transform: rotate(24deg) scale(1.04);
+    opacity: 0.78;
+  }
+}
+
+@keyframes virion-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.molecular-viewer canvas {
+  display: block !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  max-width: 100% !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
 }

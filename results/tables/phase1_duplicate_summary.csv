@@ -1,0 +1,13 @@
+panel,n_pairs,n_unique_pair_hashes,n_duplicate_pair_records
+all_valid,111756,82306,29450
+all_valid:H1N1,46125,36753,9372
+all_valid:H3N2,65631,45553,20078
+smoke_panel,400,400,0
+smoke_panel:H1N1,200,200,0
+smoke_panel:H3N2,200,200,0
+mvp_panel,10000,10000,0
+mvp_panel:H1N1,5000,5000,0
+mvp_panel:H3N2,5000,5000,0
+full_panel,82306,82306,0
+full_panel:H1N1,36753,36753,0
+full_panel:H3N2,45553,45553,0

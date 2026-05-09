@@ -1,0 +1,42 @@
+{
+  "schema_version": "safe-bundle-v1",
+  "viewer_policy": "structures are loaded from public RCSB PDB IDs; sequence-to-structure mapping is marked pending until validated",
+  "structures": [
+    {
+      "pdb_id": "3LZG",
+      "label": "HA H1N1 reference structure",
+      "protein": "HA",
+      "subtype_context": "H1N1",
+      "rcsb_url": "https://www.rcsb.org/structure/3LZG",
+      "pdb_download_url": "https://files.rcsb.org/download/3LZG.pdb",
+      "mapping_status": "pending"
+    },
+    {
+      "pdb_id": "3VUN",
+      "label": "HA H3N2 reference structure",
+      "protein": "HA",
+      "subtype_context": "H3N2",
+      "rcsb_url": "https://www.rcsb.org/structure/3VUN",
+      "pdb_download_url": "https://files.rcsb.org/download/3VUN.pdb",
+      "mapping_status": "pending"
+    },
+    {
+      "pdb_id": "3NSS",
+      "label": "NA N1 reference structure",
+      "protein": "NA",
+      "subtype_context": "H1N1",
+      "rcsb_url": "https://www.rcsb.org/structure/3NSS",
+      "pdb_download_url": "https://files.rcsb.org/download/3NSS.pdb",
+      "mapping_status": "pending"
+    },
+    {
+      "pdb_id": "6BR6",
+      "label": "NA N2 reference structure",
+      "protein": "NA",
+      "subtype_context": "H3N2",
+      "rcsb_url": "https://www.rcsb.org/structure/6BR6",
+      "pdb_download_url": "https://files.rcsb.org/download/6BR6.pdb",
+      "mapping_status": "pending"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+# Copy this file to config/local_paths.yml and edit locally.
+# config/local_paths.yml is gitignored because it can contain restricted local paths.
+project_root: "."
+
+# Parent/local data roots. Use placeholders here; do not put personal machine paths
+# in this example file.
+parent_repo_root: "/path/to/antigenlm-thesis"
+local_data_roots:
+  - "/path/to/restricted/gisaid/or/processed/data"
+
+# Explicit metadata inputs used by Phase 1. These are local-only if derived from
+# GISAID or other restricted sources.
+metadata_paths:
+  rich_metadata: "/path/to/metadata/file.csv"
+  dedup_metadata: "/path/to/dedup/metadata/file.csv"
+
+# Explicit paired HA/NA JSON datasets from the local AntigenLM replication.
+paired_dataset_paths:
+  - "/path/to/paired/ha_na/file_H1N1.json"
+  - "/path/to/paired/ha_na/file_H3N2.json"
+
+# Public demo mode: optional tiny FASTA/metadata files that are redistributable.
+public_demo:
+  fasta: "data/raw/demo_ha_na_sequences.fasta"
+  metadata: "data/raw/demo_ha_na_metadata.tsv"
+
+# Optional DOI or acknowledgement text for local dataset governance.
+dataset_doi_file: "data_manifest/dataset_doi.txt"

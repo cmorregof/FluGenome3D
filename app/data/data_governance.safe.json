@@ -1,0 +1,38 @@
+{
+  "schema_version": "safe-bundle-v1",
+  "safe_exports": [
+    "dataset_overview.safe.json",
+    "representation_maps.safe.json",
+    "metric_summaries.safe.json",
+    "tokenization_summaries.safe.json",
+    "stability_summaries.safe.json",
+    "structure_catalog.safe.json",
+    "claims_and_limits.safe.json",
+    "data_governance.safe.json"
+  ],
+  "published_data_classes": [
+    "aggregate tables",
+    "derived reduced coordinates with hashed IDs and minimal metadata",
+    "short tokens of length <= 6",
+    "public PDB identifiers",
+    "captions, limitations and governance manifests"
+  ],
+  "excluded_data_classes": [
+    "raw FASTA",
+    "raw HA/NA sequences",
+    "restricted Parquet panels",
+    "per-sample sequence metrics with sensitive identifiers",
+    "accession and isolate names",
+    "sequence hashes from source panels",
+    "tokens longer than 6 nt"
+  ],
+  "local_full_mode": {
+    "path": "app/data-local/",
+    "gitignored": true,
+    "description": "Optional local-only artifacts may be placed here for private development. They are not required for Vercel and must not be committed."
+  },
+  "validation": {
+    "long_sequence_regex": "[ACGTN]{80,}",
+    "max_public_token_length": 6
+  }
+}

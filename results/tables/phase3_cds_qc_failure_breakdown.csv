@@ -1,0 +1,5 @@
+subtype,protein,n_sequences,n_naive_qc_pass,n_any_qc_fail,n_frame_fail,n_internal_stop_fail,n_ambiguous_fail,n_translation_fail,mean_length_nt,median_length_nt,mean_internal_stop_count
+H1N1,HA,5000,2354,2646,1154,2645,0,0,1726.4388,1724.0,16.1648
+H1N1,NA,5000,2394,2606,1783,2499,0,0,1423.269,1418.0,14.3674
+H3N2,HA,5000,1922,3078,1540,3064,0,0,1721.3848,1721.0,19.1378
+H3N2,NA,5000,2053,2947,1847,2936,0,0,1428.8576,1431.0,14.0322

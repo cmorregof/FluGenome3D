@@ -1,0 +1,545 @@
+{
+  "schema_version": "safe-bundle-v1",
+  "generated_utc": "2026-05-09T22:44:17.048585+00:00",
+  "data_mode": "vercel_safe",
+  "source": "real derived artifacts from FluGenome3D phases 0-6",
+  "not_included": [
+    "raw sequences",
+    "FASTA",
+    "restricted Parquet panels",
+    "accessions",
+    "isolate names",
+    "long tokens"
+  ],
+  "dataset_summary": [
+    {
+      "stage": "all_valid_paired",
+      "n_pairs": 111756,
+      "n_ha_sequences": 111756,
+      "n_na_sequences": 111756,
+      "n_sequence_records": 223512,
+      "n_unique_pair_hashes": 82306,
+      "n_duplicate_pair_records": 29450,
+      "n_h1n1": 46125,
+      "n_h3n2": 65631,
+      "n_rich_metadata": 81943,
+      "n_human_host": 81943,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "stage": "exact_pair_deduplicated",
+      "n_pairs": 82306,
+      "n_ha_sequences": 82306,
+      "n_na_sequences": 82306,
+      "n_sequence_records": 164612,
+      "n_unique_pair_hashes": 82306,
+      "n_duplicate_pair_records": 0,
+      "n_h1n1": 36753,
+      "n_h3n2": 45553,
+      "n_rich_metadata": 81943,
+      "n_human_host": 81943,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "stage": "metadata_rich_subset",
+      "n_pairs": 81943,
+      "n_ha_sequences": 81943,
+      "n_na_sequences": 81943,
+      "n_sequence_records": 163886,
+      "n_unique_pair_hashes": 81943,
+      "n_duplicate_pair_records": 0,
+      "n_h1n1": 36723,
+      "n_h3n2": 45220,
+      "n_rich_metadata": 81943,
+      "n_human_host": 81943,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "stage": "human_metadata_subset",
+      "n_pairs": 81943,
+      "n_ha_sequences": 81943,
+      "n_na_sequences": 81943,
+      "n_sequence_records": 163886,
+      "n_unique_pair_hashes": 81943,
+      "n_duplicate_pair_records": 0,
+      "n_h1n1": 36723,
+      "n_h3n2": 45220,
+      "n_rich_metadata": 81943,
+      "n_human_host": 81943,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "stage": "smoke_panel",
+      "n_pairs": 400,
+      "n_ha_sequences": 400,
+      "n_na_sequences": 400,
+      "n_sequence_records": 800,
+      "n_unique_pair_hashes": 400,
+      "n_duplicate_pair_records": 0,
+      "n_h1n1": 200,
+      "n_h3n2": 200,
+      "n_rich_metadata": 400,
+      "n_human_host": 400,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "stage": "mvp_panel",
+      "n_pairs": 10000,
+      "n_ha_sequences": 10000,
+      "n_na_sequences": 10000,
+      "n_sequence_records": 20000,
+      "n_unique_pair_hashes": 10000,
+      "n_duplicate_pair_records": 0,
+      "n_h1n1": 5000,
+      "n_h3n2": 5000,
+      "n_rich_metadata": 10000,
+      "n_human_host": 10000,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "stage": "full_panel",
+      "n_pairs": 82306,
+      "n_ha_sequences": 82306,
+      "n_na_sequences": 82306,
+      "n_sequence_records": 164612,
+      "n_unique_pair_hashes": 82306,
+      "n_duplicate_pair_records": 0,
+      "n_h1n1": 36753,
+      "n_h3n2": 45553,
+      "n_rich_metadata": 81943,
+      "n_human_host": 81943,
+      "year_min": 2000,
+      "year_max": 2022
+    }
+  ],
+  "panel_summary": [
+    {
+      "panel": "smoke_panel",
+      "subtype": "H1N1",
+      "n_pairs": 200,
+      "n_sequence_records": 400,
+      "n_unique_pair_hashes": 200,
+      "n_duplicate_pair_records": 0,
+      "n_rich_metadata": 200,
+      "n_human_host": 200,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "panel": "smoke_panel",
+      "subtype": "H3N2",
+      "n_pairs": 200,
+      "n_sequence_records": 400,
+      "n_unique_pair_hashes": 200,
+      "n_duplicate_pair_records": 0,
+      "n_rich_metadata": 200,
+      "n_human_host": 200,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "panel": "mvp_panel",
+      "subtype": "H1N1",
+      "n_pairs": 5000,
+      "n_sequence_records": 10000,
+      "n_unique_pair_hashes": 5000,
+      "n_duplicate_pair_records": 0,
+      "n_rich_metadata": 5000,
+      "n_human_host": 5000,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "panel": "mvp_panel",
+      "subtype": "H3N2",
+      "n_pairs": 5000,
+      "n_sequence_records": 10000,
+      "n_unique_pair_hashes": 5000,
+      "n_duplicate_pair_records": 0,
+      "n_rich_metadata": 5000,
+      "n_human_host": 5000,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "panel": "full_panel",
+      "subtype": "H1N1",
+      "n_pairs": 36753,
+      "n_sequence_records": 73506,
+      "n_unique_pair_hashes": 36753,
+      "n_duplicate_pair_records": 0,
+      "n_rich_metadata": 36723,
+      "n_human_host": 36723,
+      "year_min": 2000,
+      "year_max": 2022
+    },
+    {
+      "panel": "full_panel",
+      "subtype": "H3N2",
+      "n_pairs": 45553,
+      "n_sequence_records": 91106,
+      "n_unique_pair_hashes": 45553,
+      "n_duplicate_pair_records": 0,
+      "n_rich_metadata": 45220,
+      "n_human_host": 45220,
+      "year_min": 2000,
+      "year_max": 2022
+    }
+  ],
+  "temporal_counts": [
+    {
+      "year_bin": "2009-2014",
+      "subtype": "H1N1",
+      "n_pairs": 1614
+    },
+    {
+      "year_bin": "2009-2014",
+      "subtype": "H3N2",
+      "n_pairs": 1350
+    },
+    {
+      "year_bin": "2015-2019",
+      "subtype": "H1N1",
+      "n_pairs": 1757
+    },
+    {
+      "year_bin": "2015-2019",
+      "subtype": "H3N2",
+      "n_pairs": 1287
+    },
+    {
+      "year_bin": "2020+",
+      "subtype": "H1N1",
+      "n_pairs": 780
+    },
+    {
+      "year_bin": "2020+",
+      "subtype": "H3N2",
+      "n_pairs": 689
+    },
+    {
+      "year_bin": "pre-2009",
+      "subtype": "H1N1",
+      "n_pairs": 849
+    },
+    {
+      "year_bin": "pre-2009",
+      "subtype": "H3N2",
+      "n_pairs": 1674
+    }
+  ],
+  "duplicate_summary": [
+    {
+      "panel": "all_valid",
+      "n_pairs": 111756,
+      "n_unique_pair_hashes": 82306,
+      "n_duplicate_pair_records": 29450
+    },
+    {
+      "panel": "all_valid:H1N1",
+      "n_pairs": 46125,
+      "n_unique_pair_hashes": 36753,
+      "n_duplicate_pair_records": 9372
+    },
+    {
+      "panel": "all_valid:H3N2",
+      "n_pairs": 65631,
+      "n_unique_pair_hashes": 45553,
+      "n_duplicate_pair_records": 20078
+    },
+    {
+      "panel": "smoke_panel",
+      "n_pairs": 400,
+      "n_unique_pair_hashes": 400,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "smoke_panel:H1N1",
+      "n_pairs": 200,
+      "n_unique_pair_hashes": 200,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "smoke_panel:H3N2",
+      "n_pairs": 200,
+      "n_unique_pair_hashes": 200,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "mvp_panel",
+      "n_pairs": 10000,
+      "n_unique_pair_hashes": 10000,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "mvp_panel:H1N1",
+      "n_pairs": 5000,
+      "n_unique_pair_hashes": 5000,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "mvp_panel:H3N2",
+      "n_pairs": 5000,
+      "n_unique_pair_hashes": 5000,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "full_panel",
+      "n_pairs": 82306,
+      "n_unique_pair_hashes": 82306,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "full_panel:H1N1",
+      "n_pairs": 36753,
+      "n_unique_pair_hashes": 36753,
+      "n_duplicate_pair_records": 0
+    },
+    {
+      "panel": "full_panel:H3N2",
+      "n_pairs": 45553,
+      "n_unique_pair_hashes": 45553,
+      "n_duplicate_pair_records": 0
+    }
+  ],
+  "naive_translation_qc": [
+    {
+      "panel": "mvp",
+      "subtype": "H1N1",
+      "protein": "HA",
+      "n_sequences": 5000,
+      "n_frame_fail": 1154,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 2645,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 2354,
+      "reliable_fraction": 0.4708,
+      "mean_internal_stop_count": 16.1648
+    },
+    {
+      "panel": "mvp",
+      "subtype": "H1N1",
+      "protein": "NA",
+      "n_sequences": 5000,
+      "n_frame_fail": 1783,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 2499,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 2394,
+      "reliable_fraction": 0.4788,
+      "mean_internal_stop_count": 14.3674
+    },
+    {
+      "panel": "mvp",
+      "subtype": "H3N2",
+      "protein": "HA",
+      "n_sequences": 5000,
+      "n_frame_fail": 1540,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 3064,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 1922,
+      "reliable_fraction": 0.3844,
+      "mean_internal_stop_count": 19.1378
+    },
+    {
+      "panel": "mvp",
+      "subtype": "H3N2",
+      "protein": "NA",
+      "n_sequences": 5000,
+      "n_frame_fail": 1847,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 2936,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 2053,
+      "reliable_fraction": 0.4106,
+      "mean_internal_stop_count": 14.0322
+    },
+    {
+      "panel": "smoke",
+      "subtype": "H1N1",
+      "protein": "HA",
+      "n_sequences": 200,
+      "n_frame_fail": 75,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 126,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 74,
+      "reliable_fraction": 0.37,
+      "mean_internal_stop_count": 17.565
+    },
+    {
+      "panel": "smoke",
+      "subtype": "H1N1",
+      "protein": "NA",
+      "n_sequences": 200,
+      "n_frame_fail": 80,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 112,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 80,
+      "reliable_fraction": 0.4,
+      "mean_internal_stop_count": 14.425
+    },
+    {
+      "panel": "smoke",
+      "subtype": "H3N2",
+      "protein": "HA",
+      "n_sequences": 200,
+      "n_frame_fail": 71,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 113,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 86,
+      "reliable_fraction": 0.43,
+      "mean_internal_stop_count": 19.195
+    },
+    {
+      "panel": "smoke",
+      "subtype": "H3N2",
+      "protein": "NA",
+      "n_sequences": 200,
+      "n_frame_fail": 67,
+      "n_ambiguous_fail": 0,
+      "n_internal_stop_fail": 116,
+      "n_translation_fail": 0,
+      "n_codon_reliable": 84,
+      "reliable_fraction": 0.42,
+      "mean_internal_stop_count": 12.81
+    }
+  ],
+  "cds_refined_qc": [
+    {
+      "subtype": "H1N1",
+      "protein": "HA",
+      "n_refined_sequences": 2348,
+      "n_codon_reliable_after_refinement": 2348,
+      "reliable_fraction_after_refinement": 1,
+      "n_frame_fail_after_refinement": 0,
+      "n_internal_stop_fail_after_refinement": 0,
+      "n_translation_fail_after_refinement": 0,
+      "n_strict_pass": 2345,
+      "n_rescued": 3,
+      "n_unrescued": 2652
+    },
+    {
+      "subtype": "H1N1",
+      "protein": "NA",
+      "n_refined_sequences": 2577,
+      "n_codon_reliable_after_refinement": 2577,
+      "reliable_fraction_after_refinement": 1,
+      "n_frame_fail_after_refinement": 0,
+      "n_internal_stop_fail_after_refinement": 0,
+      "n_translation_fail_after_refinement": 0,
+      "n_strict_pass": 2391,
+      "n_rescued": 186,
+      "n_unrescued": 2423
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "HA",
+      "n_refined_sequences": 1988,
+      "n_codon_reliable_after_refinement": 1988,
+      "reliable_fraction_after_refinement": 1,
+      "n_frame_fail_after_refinement": 0,
+      "n_internal_stop_fail_after_refinement": 0,
+      "n_translation_fail_after_refinement": 0,
+      "n_strict_pass": 1914,
+      "n_rescued": 74,
+      "n_unrescued": 3012
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "NA",
+      "n_refined_sequences": 2061,
+      "n_codon_reliable_after_refinement": 2061,
+      "reliable_fraction_after_refinement": 1,
+      "n_frame_fail_after_refinement": 0,
+      "n_internal_stop_fail_after_refinement": 0,
+      "n_translation_fail_after_refinement": 0,
+      "n_strict_pass": 2025,
+      "n_rescued": 36,
+      "n_unrescued": 2939
+    }
+  ],
+  "rescue_status": [
+    {
+      "subtype": "H1N1",
+      "protein": "HA",
+      "status": "rescued",
+      "n_sequences": 3
+    },
+    {
+      "subtype": "H1N1",
+      "protein": "HA",
+      "status": "strict_pass",
+      "n_sequences": 2345
+    },
+    {
+      "subtype": "H1N1",
+      "protein": "HA",
+      "status": "unrescued",
+      "n_sequences": 2652
+    },
+    {
+      "subtype": "H1N1",
+      "protein": "NA",
+      "status": "rescued",
+      "n_sequences": 186
+    },
+    {
+      "subtype": "H1N1",
+      "protein": "NA",
+      "status": "strict_pass",
+      "n_sequences": 2391
+    },
+    {
+      "subtype": "H1N1",
+      "protein": "NA",
+      "status": "unrescued",
+      "n_sequences": 2423
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "HA",
+      "status": "rescued",
+      "n_sequences": 74
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "HA",
+      "status": "strict_pass",
+      "n_sequences": 1914
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "HA",
+      "status": "unrescued",
+      "n_sequences": 3012
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "NA",
+      "status": "rescued",
+      "n_sequences": 36
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "NA",
+      "status": "strict_pass",
+      "n_sequences": 2025
+    },
+    {
+      "subtype": "H3N2",
+      "protein": "NA",
+      "status": "unrescued",
+      "n_sequences": 2939
+    }
+  ]
+}

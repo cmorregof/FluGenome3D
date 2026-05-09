@@ -1,0 +1,9 @@
+panel,subtype,protein,n_sequences,n_frame_fail,n_ambiguous_fail,n_internal_stop_fail,n_translation_fail,n_codon_reliable,reliable_fraction,mean_internal_stop_count
+mvp,H1N1,HA,5000,1154,0,2645,0,2354,0.4708,16.1648
+mvp,H1N1,NA,5000,1783,0,2499,0,2394,0.4788,14.3674
+mvp,H3N2,HA,5000,1540,0,3064,0,1922,0.3844,19.1378
+mvp,H3N2,NA,5000,1847,0,2936,0,2053,0.4106,14.0322
+smoke,H1N1,HA,200,75,0,126,0,74,0.37,17.565
+smoke,H1N1,NA,200,80,0,112,0,80,0.4,14.425
+smoke,H3N2,HA,200,71,0,113,0,86,0.43,19.195
+smoke,H3N2,NA,200,67,0,116,0,84,0.42,12.81

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "flugenome3d"
+version = "0.1.0"
+description = "Reproducible sequence-context and structure-aware explorer for Influenza A HA/NA."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Carlos Manuel Orrego Franco"}]
+dependencies = [
+  "numpy",
+  "pandas",
+  "pyarrow",
+  "biopython",
+  "scikit-learn",
+  "matplotlib",
+  "pyyaml",
+  "tqdm",
+  "tokenizers",
+  "py3Dmol",
+  "plotly"
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+grover = ["transformers", "torch"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

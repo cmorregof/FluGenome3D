@@ -1,0 +1,43 @@
+virus_name_contains: "Influenza A"
+segments: ["HA", "NA", "hemagglutinin", "neuraminidase"]
+subtypes: ["H1N1", "H3N2"]
+hosts: ["Human", "human", "Homo sapiens"]
+random_seed: 42
+
+sequence_qc:
+  length_nt:
+    HA:
+      min: 1650
+      max: 1800
+    NA:
+      min: 1200
+      max: 1600
+  max_ambiguous_fraction: 0.01
+  allowed_alphabet: "ACGTN"
+
+deduplication:
+  method: "exact_ha_na_pair"
+  keep: "first_after_metadata_sort"
+
+panels:
+  smoke_pairs: 400
+  mvp_pairs: 10000
+  full_panel: "deduplicated_exact_ha_na_pairs"
+  prefer_rich_metadata: true
+  require_human_host_for_mvp: true
+  stratify_by: ["subtype", "year"]
+
+cds_refinement:
+  remove_gaps: true
+  max_trim_left: 2
+  max_trim_right: 2
+  max_ambiguous_fraction: 0.01
+  max_internal_stops: 0
+  max_ambiguous_amino_acids: 0
+  expected_aa_length:
+    HA:
+      min: 540
+      max: 600
+    NA:
+      min: 400
+      max: 540

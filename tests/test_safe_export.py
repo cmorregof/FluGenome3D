@@ -1,0 +1,48 @@
+from __future__ import annotations
+
+import json
+import re
+from pathlib import Path
+
+
+PROJECT = Path(__file__).resolve().parents[1]
+APP_DATA = PROJECT / "app" / "data"
+
+
+def test_safe_export_files_exist() -> None:
+    expected = [
+        "dataset_overview.safe.json",
+        "representation_maps.safe.json",
+        "metric_summaries.safe.json",
+        "tokenization_summaries.safe.json",
+        "stability_summaries.safe.json",
+        "structure_catalog.safe.json",
+        "claims_and_limits.safe.json",
+        "data_governance.safe.json",
+    ]
+    assert [name for name in expected if not (APP_DATA / name).exists()] == []
+
+
+def test_safe_exports_have_no_long_sequences() -> None:
+    pattern = re.compile(r"[ACGTN]{80,}")
+    leaks = []
+    for path in APP_DATA.glob("*.safe.json"):
+        if pattern.search(path.read_text(encoding="utf-8", errors="replace")):
+            leaks.append(path.name)
+    assert leaks == []
+
+
+def test_safe_token_exports_are_short() -> None:
+    payload = json.loads((APP_DATA / "tokenization_summaries.safe.json").read_text())
+    tokens = [row["token"] for row in payload["top_tokens_by_group"] if "token" in row]
+    assert tokens
+    assert max(len(str(token)) for token in tokens) <= 6
+
+
+def test_representation_points_use_safe_ids() -> None:
+    payload = json.loads((APP_DATA / "representation_maps.safe.json").read_text())
+    first = payload["representations"][0]["points"][0]
+    assert str(first["id"]).startswith("pt_")
+    assert "fg3d_" not in json.dumps(first)
+    forbidden = {"sequence", "sequence_sha256", "accession", "isolate", "strain_name"}
+    assert forbidden.isdisjoint(first.keys())

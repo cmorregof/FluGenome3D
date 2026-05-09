@@ -1,0 +1,5 @@
+subtype,protein,n_refined_sequences,n_codon_reliable_after_refinement,reliable_fraction_after_refinement,n_frame_fail_after_refinement,n_internal_stop_fail_after_refinement,n_translation_fail_after_refinement,n_strict_pass,n_rescued,n_unrescued
+H1N1,HA,2348,2348,1.0,0,0,0,2345,3,2652
+H1N1,NA,2577,2577,1.0,0,0,0,2391,186,2423
+H3N2,HA,1988,1988,1.0,0,0,0,1914,74,3012
+H3N2,NA,2061,2061,1.0,0,0,0,2025,36,2939

@@ -1,0 +1,9 @@
+.next/
+node_modules/
+out/
+*.tsbuildinfo
+*.local.json
+*.restricted.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

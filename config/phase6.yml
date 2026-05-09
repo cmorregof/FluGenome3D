@@ -1,0 +1,23 @@
+random_seed: 42
+n_bootstraps: 100
+max_per_group_per_bootstrap: 1000
+aggregate_bootstrap_max_tokens_per_group: 200000
+top_n_tokens: 20
+min_top_token_count: 100
+min_top_token_frequency: 0.00001
+
+tokenizers:
+  raw:
+    - raw_overlap_k3
+    - raw_overlap_k6
+    - raw_nonoverlap_k6
+  cds:
+    - cds_codon
+    - cds_frame_k6
+    - cds_nonoverlap_k3_offset0
+    - cds_nonoverlap_k3_offset1
+    - cds_nonoverlap_k3_offset2
+
+temporal:
+  strategy: fixed
+  min_per_group_per_window: 50

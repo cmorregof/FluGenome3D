@@ -1,0 +1,37 @@
+# Raw and derived biological data: do not commit GISAID/raw sequence data
+/data/raw/*
+/data/interim/*
+/data/processed/*
+!/data/raw/.gitkeep
+!/data/interim/.gitkeep
+!/data/processed/.gitkeep
+
+# Local private path configuration
+/config/local_paths.yml
+
+# Large/local outputs
+/results/structures/*.cif
+/results/structures/*.pdb
+/results/structures/*.bcif
+/results/**/*.parquet
+
+# Local-only app data and frontend build artifacts
+/app/data-local/
+/app/**/*.local.json
+/app/**/*.restricted.json
+/app/.next/
+/app/node_modules/
+/app/out/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.venv/
+.env
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/

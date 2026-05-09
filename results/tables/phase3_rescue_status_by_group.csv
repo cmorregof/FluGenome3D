@@ -1,0 +1,13 @@
+subtype,protein,status,n_sequences
+H1N1,HA,rescued,3
+H1N1,HA,strict_pass,2345
+H1N1,HA,unrescued,2652
+H1N1,NA,rescued,186
+H1N1,NA,strict_pass,2391
+H1N1,NA,unrescued,2423
+H3N2,HA,rescued,74
+H3N2,HA,strict_pass,1914
+H3N2,HA,unrescued,3012
+H3N2,NA,rescued,36
+H3N2,NA,strict_pass,2025
+H3N2,NA,unrescued,2939

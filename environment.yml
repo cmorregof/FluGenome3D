@@ -1,0 +1,22 @@
+name: flugenome3d
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - pyarrow
+  - scipy
+  - scikit-learn
+  - biopython
+  - matplotlib
+  - seaborn
+  - pyyaml
+  - tqdm
+  - pytest
+  - pip:
+      - tokenizers
+      - py3Dmol
+      - plotly

@@ -18,6 +18,10 @@ APP_DATA = PROJECT / "app" / "data"
 SAFE_SALT = "flugenome3d-vercel-safe-v1"
 LONG_SEQUENCE_RE = re.compile(r"[ACGTN]{80,}")
 GROUP_ORDER = ["HA-H1N1", "NA-H1N1", "HA-H3N2", "NA-H3N2"]
+ATLAS_PANELS = {
+    "mvp_panel": "Balanced MVP",
+    "full_panel": "Full deduplicated",
+}
 
 
 def read_csv(path: str) -> pd.DataFrame:
@@ -87,6 +91,84 @@ def records(df: pd.DataFrame, max_rows: int | None = None) -> list[dict[str, Any
     return out
 
 
+def build_geographic_atlas() -> dict[str, Any]:
+    panel_frames: list[pd.DataFrame] = []
+    for panel_id, panel_label in ATLAS_PANELS.items():
+        df = read_parquet(f"data/processed/panels/{panel_id}.parquet")
+        if df.empty:
+            continue
+        required = ["country", "region", "subtype", "year"]
+        missing = [column for column in required if column not in df.columns]
+        if missing:
+            continue
+        use = df[required].copy()
+        use["panel"] = panel_id
+        use["panel_label"] = panel_label
+        use["country"] = use["country"].fillna("").astype(str).str.strip()
+        use["region"] = use["region"].fillna("unknown").astype(str).str.strip()
+        missing_country = {"", "nan", "none", "unknown"}
+        use = use[~use["country"].str.lower().isin(missing_country)]
+        panel_frames.append(use)
+
+    if not panel_frames:
+        return {
+            "policy": "aggregate country/region counts only; no accessions, isolate names, sequence strings, or sample-level rows",
+            "panels": [],
+            "country_subtype_counts": [],
+            "country_totals": [],
+            "region_summary": [],
+            "year_bin_country_counts": [],
+        }
+
+    atlas = pd.concat(panel_frames, ignore_index=True)
+    atlas["year_bin"] = atlas["year"].map(year_bin)
+
+    country_region = (
+        atlas.groupby(["panel", "panel_label", "country", "region"], dropna=False)
+        .size()
+        .reset_index(name="n")
+        .sort_values(["panel", "country", "n"], ascending=[True, True, False])
+        .drop_duplicates(["panel", "panel_label", "country"])
+        [["panel", "panel_label", "country", "region"]]
+    )
+
+    country_subtype = (
+        atlas.groupby(["panel", "panel_label", "country", "subtype"], dropna=False)
+        .size()
+        .reset_index(name="n_pairs")
+        .merge(country_region, on=["panel", "panel_label", "country"], how="left")
+        .sort_values(["panel", "country", "subtype"])
+    )
+    country_totals = (
+        atlas.groupby(["panel", "panel_label", "country"], dropna=False)
+        .agg(n_pairs=("subtype", "size"), year_min=("year", "min"), year_max=("year", "max"), n_subtypes=("subtype", "nunique"))
+        .reset_index()
+        .merge(country_region, on=["panel", "panel_label", "country"], how="left")
+        .sort_values(["panel", "n_pairs"], ascending=[True, False])
+    )
+    region_summary = (
+        atlas.groupby(["panel", "panel_label", "region", "subtype"], dropna=False)
+        .size()
+        .reset_index(name="n_pairs")
+        .sort_values(["panel", "region", "subtype"])
+    )
+    year_country = (
+        atlas.groupby(["panel", "panel_label", "year_bin", "country", "subtype"], dropna=False)
+        .size()
+        .reset_index(name="n_pairs")
+        .sort_values(["panel", "year_bin", "country", "subtype"])
+    )
+
+    return {
+        "policy": "aggregate country/region counts only; no accessions, isolate names, sequence strings, exact collection locations, or sample-level rows",
+        "panels": [{"panel": panel, "label": label} for panel, label in ATLAS_PANELS.items()],
+        "country_subtype_counts": records(country_subtype),
+        "country_totals": records(country_totals),
+        "region_summary": records(region_summary),
+        "year_bin_country_counts": records(year_country),
+    }
+
+
 def stratified_points(df: pd.DataFrame, max_points: int, seed: int = 42) -> pd.DataFrame:
     if len(df) <= max_points:
         return df.copy()
@@ -140,6 +222,7 @@ def build_dataset_overview() -> dict[str, Any]:
         "naive_translation_qc": records(translation),
         "cds_refined_qc": records(refined),
         "rescue_status": records(rescue),
+        "geographic_atlas": build_geographic_atlas(),
     }
 
 
@@ -329,6 +412,7 @@ def build_data_governance() -> dict[str, Any]:
         ],
         "published_data_classes": [
             "aggregate tables",
+            "aggregate country/region counts",
             "derived reduced coordinates with hashed IDs and minimal metadata",
             "short tokens of length <= 6",
             "public PDB identifiers",

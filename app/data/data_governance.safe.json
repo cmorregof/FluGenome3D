@@ -12,6 +12,7 @@
   ],
   "published_data_classes": [
     "aggregate tables",
+    "aggregate country/region counts",
     "derived reduced coordinates with hashed IDs and minimal metadata",
     "short tokens of length <= 6",
     "public PDB identifiers",

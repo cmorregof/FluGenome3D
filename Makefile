@@ -3,7 +3,7 @@ CONFIG ?= config/local_paths.yml
 FILTERS ?= config/filters.yml
 PDBS ?= config/pdbs.yml
 
-.PHONY: setup inventory build phase1 phase2-smoke phase2-mvp phase3 phase4-build phase4-figures phase4 phase5 phase6 app-export app-install app-dev app-build metrics tokenization structure test clean
+.PHONY: setup inventory build phase1 phase2-smoke phase2-mvp phase3 phase4-build phase4-figures phase4 phase5 phase6 phase7 phase8 phase9 phase7-9 app-export app-install app-dev app-build metrics tokenization structure test clean
 
 setup:
 	pip install -e .
@@ -39,6 +39,17 @@ phase5:
 
 phase6:
 	PYTHONPATH=src $(PYTHON) scripts/12_run_phase6_tokenization_stability.py
+
+phase7:
+	PYTHONPATH=src $(PYTHON) scripts/13_build_phase7_antigenlm_bridge.py
+
+phase8:
+	PYTHONPATH=src $(PYTHON) scripts/14_build_phase8_latent_atlas.py
+
+phase9:
+	PYTHONPATH=src $(PYTHON) scripts/15_build_phase9_structure_mapping.py
+
+phase7-9: phase7 phase8 phase9 app-export
 
 app-export:
 	$(PYTHON) data_export/export_vercel_safe_bundle.py

@@ -1,0 +1,2 @@
+n_records,embedding_dim,subtype_counts,year_min,year_max,checkpoint_sha256,max_seq_length,embedding_batch_size,source
+111756,384,"{np.str_('H1N1'): 46125, np.str_('H3N2'): 65631}",2000,2022,6b942a0e2d6af0528a7307ff5754438ad55fdb97390297e9c0f11ffc9803dbff,4000,4,parent AntigenLM embedding cache; sequences are not exported

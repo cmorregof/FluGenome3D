@@ -1,7 +1,7 @@
 {
   "schema_version": "safe-bundle-v1",
-  "generated_utc": "2026-05-10T13:21:48.875676+00:00",
-  "data_mode": "vercel_safe",
+  "generated_utc": "2026-05-10T21:45:07.976960+00:00",
+  "data_mode": "deployable_derived",
   "source": "real derived artifacts from FluGenome3D phases 0-6",
   "not_included": [
     "raw sequences",

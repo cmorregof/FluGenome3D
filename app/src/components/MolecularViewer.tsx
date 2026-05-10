@@ -20,13 +20,13 @@ type ColorMode = "default" | "chain" | "pending";
 const colorModeLabels: Record<ColorMode, string> = {
   default: "rainbow",
   chain: "chain",
-  pending: "no mapping"
+  pending: "QC only"
 };
 
 const colorModeDescriptions: Record<ColorMode, string> = {
   default: "Rainbow colors are viewer colors along the public structure. They are not sequence metrics.",
   chain: "Chain colors separate molecular chains in the public PDB entry.",
-  pending: "Uniform teal marks that no FluGenome3D metric has been mapped onto residues yet."
+  pending: "Uniform teal marks that alignment QC exists but FluGenome3D metrics are not painted onto residues yet."
 };
 
 function controlClass(active: boolean) {
@@ -224,7 +224,7 @@ export default function MolecularViewer({ structure }: { structure: StructureRec
             <p className="mt-1">{colorModeDescriptions.chain}</p>
           </div>
           <div>
-            <span className="font-mono uppercase tracking-[0.18em] text-ivory">No mapping</span>
+            <span className="font-mono uppercase tracking-[0.18em] text-ivory">QC only</span>
             <p className="mt-1">{colorModeDescriptions.pending}</p>
           </div>
         </div>

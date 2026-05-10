@@ -1,0 +1,2 @@
+projection,n_source_points,n_exported_points,pca_explained_variance
+pca_3d,111756,24000,0.689278;0.212791;0.051748

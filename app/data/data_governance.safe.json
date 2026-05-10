@@ -6,7 +6,9 @@
     "metric_summaries.safe.json",
     "tokenization_summaries.safe.json",
     "stability_summaries.safe.json",
+    "antigenlm_latent_atlas.safe.json",
     "structure_catalog.safe.json",
+    "structure_mapping.safe.json",
     "claims_and_limits.safe.json",
     "data_governance.safe.json"
   ],
@@ -14,6 +16,8 @@
     "aggregate tables",
     "aggregate country/region counts",
     "derived reduced coordinates with hashed IDs and minimal metadata",
+    "learned AntigenLM reduced coordinates with hash-based IDs",
+    "public PDB alignment-QC summaries",
     "short tokens of length <= 6",
     "public PDB identifiers",
     "captions, limitations and governance manifests"
@@ -25,6 +29,7 @@
     "per-sample sequence metrics with sensitive identifiers",
     "accession and isolate names",
     "sequence hashes from source panels",
+    "checkpoint weights",
     "tokens longer than 6 nt"
   ],
   "local_full_mode": {

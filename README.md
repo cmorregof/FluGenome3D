@@ -2,12 +2,14 @@
 
 **FluGenome3D is a deployable visual lab for real derived Influenza A HA/NA research artifacts.**
 
-It grew out of my AntigenLM/AntigenSDE thesis work as a satellite project: the Python pipeline audits sequence context, codon/CDS behavior, simple representations and deterministic tokenization; the web app turns derived artifacts into a shareable interface with aggregate views and hash-based identifiers.
+It grew out of my AntigenLM/AntigenSDE thesis work as a satellite project: the Python pipeline audits sequence context, codon/CDS behavior, deterministic tokenization, learned AntigenLM geometry and public structure alignment QC; the web app turns derived artifacts into a shareable interface with aggregate views and hash-based identifiers.
 
 ## What It Is
 
 - A reproducible audit of Influenza A HA/NA sequence-context metrics.
 - A deterministic tokenization and representation explorer.
+- A learned AntigenLM latent-geometry atlas connected to the parent thesis repository.
+- A structure-aware alignment-QC layer for public HA/NA PDB entries.
 - A Vercel-ready visual interface built from real derived outputs.
 - A governance-first app that separates restricted local analysis from a cryptographic derived-data layer.
 
@@ -34,6 +36,7 @@ make phase3
 make phase4
 make phase5
 make phase6
+make phase7-9
 ```
 
 To let the app prefer local-only JSON files during development:
@@ -81,14 +84,15 @@ npm run build
 
 ## Web App Views
 
-The app has seven views:
+The app has eight views:
 
 - **Home / Overview**: cinematic entry point for the visual lab.
 - **Project Guide**: plain-language overview of project intent, formulas, data layers and current models.
 - **Dataset Atlas**: panel counts, subtype/protein balance, temporal distribution, CDS reliability and deduplication summaries.
+- **AntigenLM Latent Atlas**: learned HA+NA embedding geometry from the parent thesis repo, shown as hash-based PCA coordinates with aggregate geometry diagnostics.
 - **Representation Projector**: TensorFlow Projector-style scatter maps from real reduced-coordinate artifacts with safe hashed IDs.
 - **Sequence/Token Inspector**: aggregate GC/CpG/UpA metrics, token entropy, effective vocabulary and stability summaries.
-- **3D Molecular Viewer**: public RCSB structures `3LZG`, `3VUN`, `3NSS`, `6BR6` using 3Dmol.js. Metric-to-structure mapping is marked pending until validated.
+- **3D Molecular Viewer**: public RCSB structures `3LZG`, `3VUN`, `3NSS`, `6BR6` using 3Dmol.js, with alignment QC and aggregate residue-signal summaries.
 - **Bridge View**: integrated group-level view connecting sequence context, representation maps and structure catalog entries.
 
 The visual language is a dark minimal research lab style inspired by The Velveteen Project and TensorFlow Projector, without copying assets or layouts.
@@ -103,7 +107,9 @@ app/data/representation_maps.safe.json
 app/data/metric_summaries.safe.json
 app/data/tokenization_summaries.safe.json
 app/data/stability_summaries.safe.json
+app/data/antigenlm_latent_atlas.safe.json
 app/data/structure_catalog.safe.json
+app/data/structure_mapping.safe.json
 app/data/claims_and_limits.safe.json
 app/data/data_governance.safe.json
 ```
@@ -142,8 +148,9 @@ Allowed:
 
 - This app provides descriptive exploration of real derived FluGenome3D artifacts.
 - Deterministic tokenization metrics are compared under bootstrap and temporal summaries.
+- AntigenLM latent coordinates are shown as a descriptive learned-representation layer.
 - CDS-dependent views are restricted to refined CDS subsets.
-- Public PDB structures are shown for structure-aware context.
+- Public PDB structures are shown with alignment QC and aggregate residue-signal context.
 
 Prohibited:
 

@@ -5,14 +5,15 @@
   "allowed_claims": [
     "This app explores descriptive sequence-context and tokenization summaries from real derived FluGenome3D artifacts.",
     "Representation coordinates are reduced-coordinate artifacts with hashed IDs and minimal metadata.",
+    "AntigenLM latent coordinates are shown as a learned representation audit layer.",
     "CDS-dependent summaries are restricted to the refined CDS panel.",
-    "Structure views load public PDB structures and currently mark metric-to-structure mapping as pending unless explicitly validated."
+    "Structure views load public PDB structures and report alignment QC before any residue-level metric coloring."
   ],
   "prohibited_claims": [
     "The app predicts antigenic drift.",
     "The app identifies escape mutations or vaccine candidates.",
     "The app explains viral fitness, pathogenicity or transmissibility.",
     "Stable tokens are biological markers without further validation.",
-    "GROVER or BPE behavior is validated by these deterministic baselines."
+    "GROVER or BPE behavior is validated by these deterministic or AntigenLM-derived baselines."
   ]
 }

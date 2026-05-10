@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Activity,
   Atom,
   BookOpen,
   Database,
@@ -58,6 +59,7 @@ const views = [
   { id: "home", label: "Home / Overview", icon: Home },
   { id: "guide", label: "Project Guide", icon: BookOpen },
   { id: "atlas", label: "Dataset Atlas", icon: Database },
+  { id: "latent", label: "AntigenLM Latent Atlas", icon: Activity },
   { id: "projector", label: "Representation Projector", icon: SplitSquareVertical },
   { id: "inspector", label: "Sequence/Token Inspector", icon: Dna },
   { id: "structure", label: "3D Molecular Viewer", icon: Atom },
@@ -209,6 +211,30 @@ function buildProjectorTraces(points: Record<string, any>[], colorBy: string, us
         size: use3d ? 3.2 : 5,
         opacity: 0.72,
         line: { color: "rgba(237,247,244,0.16)", width: use3d ? 0 : 0.5 }
+      },
+      hovertemplate: "%{text}<br>PC1=%{x:.3f}<br>PC2=%{y:.3f}" + (use3d ? "<br>PC3=%{z:.3f}" : "") + "<extra></extra>"
+    };
+  });
+}
+
+function buildLatentTraces(points: Record<string, any>[], colorBy: string, use3d: boolean) {
+  const values = uniqueValues(points.map((point) => String(point[colorBy] ?? "unknown")));
+  return values.map((value, index) => {
+    const subset = points.filter((point) => String(point[colorBy] ?? "unknown") === value);
+    return {
+      type: use3d ? "scatter3d" : "scattergl",
+      mode: "markers",
+      name: value,
+      x: subset.map((point) => point.x),
+      y: subset.map((point) => point.y),
+      ...(use3d ? { z: subset.map((point) => point.z) } : {}),
+      text: subset.map((point) => `${point.subtype} · ${point.year_bin}`),
+      customdata: subset,
+      marker: {
+        color: subtypePalette[value] ?? palette[index % palette.length],
+        size: use3d ? 2.6 : 4,
+        opacity: 0.58,
+        line: { color: "rgba(237,247,244,0.10)", width: use3d ? 0 : 0.3 }
       },
       hovertemplate: "%{text}<br>PC1=%{x:.3f}<br>PC2=%{y:.3f}" + (use3d ? "<br>PC3=%{z:.3f}" : "") + "<extra></extra>"
     };
@@ -391,6 +417,7 @@ export default function FluGenomeLab() {
             {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} /> : null}
             {active === "guide" ? <ProjectGuide bundle={bundle} setActive={setActive} /> : null}
             {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} /> : null}
+            {active === "latent" ? <LatentAtlas bundle={bundle} /> : null}
             {active === "projector" ? <RepresentationProjector bundle={bundle} /> : null}
             {active === "inspector" ? <SequenceTokenInspector bundle={bundle} /> : null}
             {active === "structure" ? <StructureView bundle={bundle} /> : null}
@@ -405,8 +432,8 @@ export default function FluGenomeLab() {
 function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: string; setActive: (view: ViewId) => void }) {
   const features = [
     ["Sequence context", "GC, CpG/UpA, dinucleotide and k-mer summaries from derived HA/NA analyses."],
-    ["Tokenization audit", "Deterministic token baselines with entropy, vocabulary and bootstrap stability."],
-    ["Molecular structure", "Public RCSB structures connected to the sequence story, with mapping status shown honestly."]
+    ["Learned representation", "AntigenLM latent geometry from the thesis repo, shown through hash-based reduced coordinates."],
+    ["Molecular structure", "Public RCSB structures connected to alignment QC and aggregate residue signals."]
   ];
 
   return (
@@ -442,6 +469,12 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
               className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
             >
               Read project guide
+            </button>
+            <button
+              onClick={() => setActive("latent")}
+              className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
+            >
+              Open latent atlas
             </button>
             <button
               onClick={() => setActive("structure")}
@@ -482,6 +515,7 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
   ];
   const models = [
     ["Dataset Atlas", "Country-level aggregate coverage, panel sizes and CDS reliability."],
+    ["AntigenLM Latent Atlas", "Learned HA+NA embedding geometry from the parent thesis repository, exported as hash-based reduced coordinates."],
     ["PCA projector", `${formatNumber(reps.length, 0)} reduced-coordinate maps built from k-mer, codon and RSCU features.`],
     ["Token audit", `${formatNumber(tokenizers.length, 0)} deterministic tokenizers: codons, overlapping k-mers, non-overlapping k-mers and frame-aware k-mers.`],
     ["Bootstrap stability", "Stratified resampling checks whether token patterns are stable under repeated sampling."],
@@ -714,6 +748,163 @@ function DatasetAtlas({ bundle, mode }: { bundle: SafeBundle; mode: string }) {
           <p className="mt-3 text-xs leading-6 text-muted">
             Map locations are country-level aggregates from safe derived metadata. They are descriptive coverage summaries, not sample-level locations.
           </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LatentAtlas({ bundle }: { bundle: SafeBundle }) {
+  const atlas = bundle.antigenlm ?? {};
+  const projection = atlas.projection ?? {};
+  const points = useMemo(() => decodeRepresentationPoints(projection), [projection]);
+  const [colorBy, setColorBy] = useState("subtype");
+  const [projectionMode, setProjectionMode] = useState<"3d" | "2d">("3d");
+  const [selected, setSelected] = useState<Record<string, any> | null>(null);
+  const use3d = projectionMode === "3d";
+  const traces = useMemo(() => buildLatentTraces(points, colorBy, use3d), [points, colorBy, use3d]);
+  const cache = atlas.cache_summary ?? {};
+  const spearman = (atlas.spearman_summary ?? []) as Record<string, any>[];
+  const hammingHaNa = spearman.filter((row) => row.metric === "hamming_ha_na");
+  const temporal = spearman.filter((row) => row.metric === "temporal");
+  const clade = (atlas.clade_enrichment_summary ?? []) as Record<string, any>[];
+  const pca = (atlas.pca_summary ?? []) as Record<string, any>[];
+  const comparison = (atlas.representation_family_comparison ?? []) as Record<string, any>[];
+  const explained = (projection.pca_explained_variance ?? []) as Array<number | null>;
+  const globalPca = pca.find((row) => row.group === "global");
+  const meanHamming = hammingHaNa.reduce((sum, row) => sum + Number(row.rho_mean ?? 0), 0) / Math.max(hammingHaNa.length, 1);
+  const meanTemporal = temporal.reduce((sum, row) => sum + Number(row.rho_mean ?? 0), 0) / Math.max(temporal.length, 1);
+
+  useEffect(() => setSelected(null), [colorBy, projectionMode]);
+
+  return (
+    <div>
+      <SectionTitle kicker="ANTIGENLM LATENT ATLAS" title="Learned HA/NA representation layer">
+        AntigenLM embeddings from the parent thesis repo, exported as hash-based PCA coordinates.
+      </SectionTitle>
+
+      <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Card label="Latent records" value={formatNumber(cache.n_records ?? 0, 0)} detail={`${formatNumber(cache.embedding_dim ?? 0, 0)}-dimensional AntigenLM embeddings`} />
+        <Card label="Exported points" value={formatNumber(projection.n_exported_points ?? 0, 0)} detail="Hash IDs and coarse metadata only" />
+        <Card label="HA+NA molecular rho" value={formatNumber(meanHamming, 3)} detail="Mean Spearman vs Hamming proxy" />
+        <Card label="Global PCA n95" value={formatNumber(globalPca?.n95 ?? "NA", 0)} detail="Components for 95% variance in parent audit" />
+      </div>
+
+      <div className="mb-4 grid gap-3 xl:grid-cols-[1fr_1fr_1fr]">
+        <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Color by</span>
+          <select value={colorBy} onChange={(event) => setColorBy(event.target.value)} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
+            {["subtype", "year_bin", "source", "representation"].map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Projection</span>
+          <select value={projectionMode} onChange={(event) => setProjectionMode(event.target.value as "3d" | "2d")} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
+            <option value="3d">3D PCA</option>
+            <option value="2d">2D PCA</option>
+          </select>
+        </label>
+        <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">Reading this layer</span>
+          <p className="mt-2">The learned space is compared with molecular proxies and temporal locality. It is not a prediction or sequence-generation panel.</p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
+          <Plot
+            data={traces}
+            layout={
+              use3d
+                ? {
+                    ...plotLayout,
+                    title: projection.label ?? "AntigenLM latent PCA",
+                    height: 620,
+                    margin: { l: 8, r: 8, t: 42, b: 8 },
+                    scene: {
+                      xaxis: { title: "PC1", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
+                      yaxis: { title: "PC2", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
+                      zaxis: { title: "PC3", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
+                      camera: { eye: { x: 1.55, y: 1.35, z: 0.95 } }
+                    }
+                  }
+                : {
+                    ...plotLayout,
+                    title: projection.label ?? "AntigenLM latent PCA",
+                    height: 620,
+                    xaxis: { ...plotLayout.xaxis, title: "PC1", tickformat: ".2f", nticks: 7, tickangle: 0 },
+                    yaxis: { ...plotLayout.yaxis, title: "PC2", tickformat: ".2f", nticks: 7 },
+                  }
+            }
+            config={{ responsive: true, displaylogo: false, scrollZoom: false }}
+            useResizeHandler
+            style={{ width: "100%", height: "620px" }}
+            onClick={(event: any) => setSelected(event.points?.[0]?.customdata ?? null)}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-line bg-panel/80 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">LATENT POINT</div>
+            {selected ? (
+              <div className="mt-4 space-y-3 text-sm text-muted">
+                {["id", "subtype", "year_bin", "representation", "source"].map((field) => (
+                  <div key={field} className="flex justify-between gap-3 border-b border-line pb-2">
+                    <span className="font-mono uppercase tracking-[0.14em]">{field}</span>
+                    <span className="text-right text-ivory">{String(selected[field])}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 text-sm leading-6 text-muted">Select a point to inspect its hash ID and coarse metadata. No source identifiers are exposed.</p>
+            )}
+          </div>
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">PCA variance</div>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {["PC1", "PC2", "PC3"].map((axis, index) => (
+                <div key={axis} className="rounded-md border border-line bg-bg/35 p-2 text-center">
+                  <div className="font-mono text-[10px] text-muted">{axis}</div>
+                  <div className="text-sm font-semibold text-ivory">{explained[index] == null ? "NA" : `${formatNumber(Number(explained[index]) * 100, 1)}%`}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">Interpretation</div>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              The parent audit found stronger latent correlation with HA+NA Hamming distance than with global time distance. In plain terms: this learned space is organized more by molecular similarity than by a simple calendar line.
+            </p>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              Mean HA+NA rho: <span className="text-ivory">{formatNumber(meanHamming, 3)}</span>. Mean temporal rho:{" "}
+              <span className="text-ivory">{formatNumber(meanTemporal, 3)}</span>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <div>
+          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">MOLECULAR GEOMETRY</div>
+          <MiniTable rows={spearman.map((row) => ({ metric: row.metric, subtype: row.subtype, rho_mean: row.rho_mean, valid_pairs: row.valid_pairs_mean }))} columns={["metric", "subtype", "rho_mean", "valid_pairs"]} limit={8} />
+        </div>
+        <div>
+          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">CLADE / BASELINE CHECKS</div>
+          <MiniTable rows={clade.map((row) => ({ subtype: row.subtype, label: row.label, k: row.k, precision: row.mean_precision, enrichment: row.enrichment_vs_random }))} columns={["subtype", "label", "k", "precision", "enrichment"]} limit={8} />
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-line bg-panel/75 p-4">
+        <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">REPRESENTATION LADDER</div>
+        <p className="mt-2 text-sm leading-6 text-muted">
+          FluGenome3D now shows a ladder from interpretable baselines to a learned biological representation: raw k-mers, codon/RSCU vectors, deterministic tokenizers, and AntigenLM embeddings.
+        </p>
+        <div className="mt-3">
+          <MiniTable rows={comparison} columns={["family", "representation", "n_sequences", "n_features", "app_role"]} limit={8} />
         </div>
       </div>
     </div>
@@ -1023,13 +1214,19 @@ function SequenceTokenInspector({ bundle }: { bundle: SafeBundle }) {
 
 function StructureView({ bundle }: { bundle: SafeBundle }) {
   const structures = bundle.structures.structures as Record<string, any>[];
+  const mapping = bundle.structureMapping ?? {};
+  const mappingQc = (mapping.mapping_qc ?? []) as Record<string, any>[];
+  const signalCatalog = (mapping.signal_catalog ?? []) as Record<string, any>[];
   const [pdbId, setPdbId] = useState(structures[0]?.pdb_id ?? "");
   const structure = structures.find((item) => item.pdb_id === pdbId) ?? structures[0];
+  const qcRows = mappingQc.filter((row) => row.pdb_id === pdbId);
+  const bestQc = qcRows.reduce((best, row) => (Number(row.mapped_residues ?? 0) > Number(best?.mapped_residues ?? -1) ? row : best), qcRows[0]);
+  const catalogRow = signalCatalog.find((row) => row.protein === structure?.protein && row.subtype === structure?.subtype_context);
 
   return (
     <div>
-      <SectionTitle kicker="STRUCTURE VIEW" title="Public structures, not residue maps yet">
-        The 3D coordinates are public. FluGenome3D metrics are not painted onto residues yet.
+      <SectionTitle kicker="STRUCTURE VIEW" title="Public structures with alignment QC">
+        Public RCSB structures plus a derived residue-signal bridge. Metric coloring still waits for chain-number validation.
       </SectionTitle>
       <div className="mb-4 grid gap-3 xl:grid-cols-[0.8fr_1.1fr_1.1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
@@ -1055,11 +1252,18 @@ function StructureView({ bundle }: { bundle: SafeBundle }) {
           </p>
         </div>
         <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">WHY MAPPING IS PENDING</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">MAPPING STATUS</span>
           <p className="mt-2">
-            To color residues by FluGenome3D metrics, we still need a validated alignment from local HA/NA records to PDB residues, including numbering, chain choice, missing residues and mature-protein boundaries.
+            Alignment QC is now available: local refined CDS positions were aligned to public PDB polymer sequences. Residue coloring remains pending until chain IDs, residue numbering and missing residues are validated.
           </p>
         </div>
+      </div>
+
+      <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Card label="Best mapped residues" value={formatNumber(bestQc?.mapped_residues ?? 0, 0)} detail={bestQc?.pdb_entity ? `${bestQc.pdb_entity} · ${bestQc.chains}` : "Public polymer sequence"} />
+        <Card label="PDB coverage" value={bestQc?.coverage_pdb == null ? "NA" : `${formatNumber(Number(bestQc.coverage_pdb) * 100, 1)}%`} detail="Sequence alignment coverage, not final atom coloring" />
+        <Card label="Mean CpG codon signal" value={formatNumber(catalogRow?.mean_cpg_codon_fraction ?? "NA", 3)} detail="Aggregate over refined CDS residues" />
+        <Card label="Mean UpA codon signal" value={formatNumber(catalogRow?.mean_upa_codon_fraction ?? "NA", 3)} detail="DNA TA proxy for RNA UpA" />
       </div>
 
       <div className="mb-4 grid gap-3 xl:grid-cols-4">
@@ -1078,6 +1282,17 @@ function StructureView({ bundle }: { bundle: SafeBundle }) {
       </div>
 
       {structure ? <MolecularViewer structure={structure as any} /> : null}
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ALIGNMENT QC FOR SELECTED STRUCTURE</div>
+          <MiniTable rows={qcRows} columns={["pdb_entity", "chains", "pdb_sequence_length", "mapped_residues", "identity", "coverage_pdb", "local_start", "local_end"]} limit={6} />
+        </div>
+        <div>
+          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">RESIDUE SIGNAL CATALOG</div>
+          <MiniTable rows={signalCatalog} columns={["group", "n_local_positions", "n_mapped_positions", "mean_gc_fraction_codon", "mean_aa_entropy"]} limit={6} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1093,6 +1308,7 @@ function BridgeView({ bundle }: { bundle: SafeBundle }) {
   const structure = structures.find((item) => item.protein === protein && item.subtype_context === subtype) ?? structures[0];
   const metricRows = (bundle.metrics.gc_cpg_upa_summary as Record<string, any>[]).filter((row) => `${row.protein}-${row.subtype}` === group);
   const stabilityRows = (bundle.stability.tokenizer_robustness_ranking as Record<string, any>[]).slice(0, 4);
+  const latentCache = bundle.antigenlm?.cache_summary ?? {};
 
   return (
     <div>
@@ -1149,11 +1365,17 @@ function BridgeView({ bundle }: { bundle: SafeBundle }) {
           <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ASSOCIATED STRUCTURE</div>
           <div className="mt-3 text-xl font-semibold text-ivory">{structure?.pdb_id}</div>
           <p className="mt-2 text-sm leading-6 text-muted">
-            {structure?.label}. Mapping status is {structure?.mapping_status}; this bridge does not claim residue-level correspondence.
+            {structure?.label}. Mapping status is {structure?.mapping_status}; this bridge shows alignment QC but does not claim residue-level functional interpretation.
           </p>
           <div className="mt-5 rounded-lg border border-line bg-ink p-4 text-xs leading-6 text-muted">
             <ShieldCheck className="mb-3 text-brass" size={18} />
             Data are real derived research artifacts. Raw sequences, FASTA, accessions, isolate names and restricted Parquet panels are not redistributed.
+          </div>
+          <div className="mt-4 rounded-lg border border-line bg-ink p-4 text-xs leading-6 text-muted">
+            <span className="font-mono uppercase tracking-[0.18em] text-teal">AntigenLM layer</span>
+            <p className="mt-2">
+              Parent latent cache represented {formatNumber(latentCache.n_records ?? 0, 0)} HA+NA records. The learned layer is used as descriptive geometry, not prediction.
+            </p>
           </div>
         </div>
       </div>

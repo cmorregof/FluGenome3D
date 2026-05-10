@@ -16,7 +16,9 @@ def test_safe_export_files_exist() -> None:
         "metric_summaries.safe.json",
         "tokenization_summaries.safe.json",
         "stability_summaries.safe.json",
+        "antigenlm_latent_atlas.safe.json",
         "structure_catalog.safe.json",
+        "structure_mapping.safe.json",
         "claims_and_limits.safe.json",
         "data_governance.safe.json",
     ]
@@ -50,4 +52,14 @@ def test_representation_points_use_safe_ids() -> None:
     assert str(first["id"]).startswith("pt_")
     assert "fg3d_" not in json.dumps(first)
     forbidden = {"sequence", "sequence_sha256", "accession", "isolate", "strain_name"}
+    assert forbidden.isdisjoint(first.keys())
+
+
+def test_antigenlm_points_use_safe_ids() -> None:
+    payload = json.loads((APP_DATA / "antigenlm_latent_atlas.safe.json").read_text())
+    projection = payload["projection"]
+    first = dict(zip(projection["point_schema"], projection["points"][0], strict=True))
+    assert str(first["id"]).startswith("lm_")
+    assert "EPI_ISL" not in json.dumps(first)
+    forbidden = {"sequence", "sequence_sha256", "accession", "isolate", "strain_name", "epi_isl"}
     assert forbidden.isdisjoint(first.keys())

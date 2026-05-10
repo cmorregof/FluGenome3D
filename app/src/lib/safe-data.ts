@@ -4,7 +4,9 @@ export const SAFE_DATA_FILES = [
   "metric_summaries.safe.json",
   "tokenization_summaries.safe.json",
   "stability_summaries.safe.json",
+  "antigenlm_latent_atlas.safe.json",
   "structure_catalog.safe.json",
+  "structure_mapping.safe.json",
   "claims_and_limits.safe.json",
   "data_governance.safe.json"
 ] as const;
@@ -15,7 +17,9 @@ export type SafeBundle = {
   metrics: Record<string, any>;
   tokenization: Record<string, any>;
   stability: Record<string, any>;
+  antigenlm: Record<string, any>;
   structures: Record<string, any>;
+  structureMapping: Record<string, any>;
   claims: Record<string, any>;
   governance: Record<string, any>;
 };
@@ -26,7 +30,9 @@ const bundleKeys: Array<keyof SafeBundle> = [
   "metrics",
   "tokenization",
   "stability",
+  "antigenlm",
   "structures",
+  "structureMapping",
   "claims",
   "governance"
 ];
@@ -42,7 +48,7 @@ export async function loadSafeBundle(): Promise<{ bundle: SafeBundle; mode: stri
   }
 
   const payloads = await Promise.all(responses.map((response) => response.json()));
-  const mode = responses[0].headers.get("x-flugenome3d-data-mode") ?? "vercel-safe";
+  const mode = responses[0].headers.get("x-flugenome3d-data-mode") ?? "derived-data";
   const bundle = Object.fromEntries(bundleKeys.map((key, index) => [key, payloads[index]])) as SafeBundle;
   return { bundle, mode };
 }

@@ -1,0 +1,9 @@
+family,representation,n_sequences,n_features,pca_2pc_variance,protein_subtype_silhouette,molecular_proxy,app_role,global_pca_n95,global_participation_ratio
+deterministic_baseline,kmer3_freq,20000,64,0.6750106811523438,0.8342072563188496,not_computed_here,baseline comparison,,
+deterministic_baseline,kmer4_freq,20000,256,0.5827852636575699,0.8219655935456675,not_computed_here,baseline comparison,,
+deterministic_baseline,kmer5_freq,20000,1024,0.5343146920204163,0.7388535435339182,not_computed_here,baseline comparison,,
+deterministic_baseline,kmer3_tfidf,20000,64,0.6745526492595673,0.8317900525093036,not_computed_here,baseline comparison,,
+deterministic_baseline,kmer4_tfidf,20000,256,0.5899432450532913,0.7851643202087798,not_computed_here,baseline comparison,,
+deterministic_baseline,codon_freq,8974,64,0.6825591027736664,0.7848540089786886,not_computed_here,baseline comparison,,
+deterministic_baseline,rscu,8974,61,0.7063157707452774,0.8181137504266337,not_computed_here,baseline comparison,,
+learned_latent,AntigenLM HA+NA embeddings,111756,384,,,HA+NA Hamming rho mean 0.761,learned biological representation layer,,1.910691053477228

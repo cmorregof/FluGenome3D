@@ -8,7 +8,9 @@ const SAFE_FILES = new Set([
   "metric_summaries.safe.json",
   "tokenization_summaries.safe.json",
   "stability_summaries.safe.json",
+  "antigenlm_latent_atlas.safe.json",
   "structure_catalog.safe.json",
+  "structure_mapping.safe.json",
   "claims_and_limits.safe.json",
   "data_governance.safe.json"
 ]);
@@ -42,7 +44,7 @@ export async function GET(_request: Request, context: { params: Promise<{ file: 
 
   try {
     return NextResponse.json(await readJsonFile(safePath), {
-      headers: { "x-flugenome3d-data-mode": "vercel-safe" }
+      headers: { "x-flugenome3d-data-mode": "derived-data" }
     });
   } catch {
     return NextResponse.json({ error: "Safe data file is missing. Run data_export/export_vercel_safe_bundle.py." }, { status: 500 });

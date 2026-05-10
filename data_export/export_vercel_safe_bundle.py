@@ -17,7 +17,7 @@ from scipy.sparse.linalg import svds
 
 PROJECT = Path(__file__).resolve().parents[1]
 APP_DATA = PROJECT / "app" / "data"
-SAFE_SALT = "flugenome3d-vercel-safe-v1"
+SAFE_SALT = "flugenome3d-derived-data-v1"
 LONG_SEQUENCE_RE = re.compile(r"[ACGTN]{80,}")
 GROUP_ORDER = ["HA-H1N1", "NA-H1N1", "HA-H3N2", "NA-H3N2"]
 ATLAS_PANELS = {
@@ -38,6 +38,13 @@ def read_parquet(path: str) -> pd.DataFrame:
     if not full.exists():
         return pd.DataFrame()
     return pd.read_parquet(full)
+
+
+def read_json(path: str) -> dict[str, Any]:
+    full = PROJECT / path
+    if not full.exists():
+        return {}
+    return json.loads(full.read_text(encoding="utf-8"))
 
 
 def safe_id(value: str) -> str:
@@ -244,7 +251,7 @@ def build_dataset_overview() -> dict[str, Any]:
     return {
         "schema_version": "safe-bundle-v1",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "data_mode": "vercel_safe",
+        "data_mode": "deployable_derived",
         "source": "real derived artifacts from FluGenome3D phases 0-6",
         "not_included": ["raw sequences", "FASTA", "restricted Parquet panels", "accessions", "isolate names", "long tokens"],
         "dataset_summary": records(dataset),
@@ -415,6 +422,85 @@ def build_stability_summaries() -> dict[str, Any]:
     }
 
 
+def build_antigenlm_latent_atlas() -> dict[str, Any]:
+    local = read_json("data/processed/antigenlm/antigenlm_latent_atlas.local.json")
+    spearman = read_csv("results/tables/phase7_antigenlm_spearman_summary.csv")
+    pca = read_csv("results/tables/phase7_antigenlm_pca_summary.csv")
+    twonn = read_csv("results/tables/phase7_antigenlm_twonn_summary.csv")
+    temporal = read_csv("results/tables/phase7_antigenlm_temporal_locality_summary.csv")
+    clade = read_csv("results/tables/phase7_antigenlm_clade_enrichment_summary.csv")
+    random_baseline = read_csv("results/tables/phase7_random_embedding_baseline_summary.csv")
+    comparison = read_csv("results/tables/phase8_representation_family_comparison.csv")
+
+    return {
+        "schema_version": "safe-bundle-v1",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "coordinate_policy": "real AntigenLM PCA coordinates exported with hash-based IDs and minimal metadata; no sequences, accessions, isolate names, sequence hashes, or checkpoint weights",
+        "model_card": {
+            "name": "AntigenLM-derived HA+NA embedding cache",
+            "role": "learned influenza representation layer from the parent thesis repository",
+            "display_claim": "descriptive latent geometry audit only",
+            "not_included": ["raw sequences", "source identifiers", "isolate names", "checkpoint weights", "sequence hashes"],
+        },
+        "projection": {
+            "id": "antigenlm_full_pca",
+            "label": "AntigenLM HA+NA latent PCA",
+            "description": "Learned representation coordinates derived from the parent AntigenLM embedding cache.",
+            "point_schema": local.get("point_schema", ["id", "x", "y", "z", "subtype", "year_bin", "representation", "source"]),
+            "pca_explained_variance": local.get("pca_explained_variance", []),
+            "n_source_points": local.get("n_source_points", 0),
+            "n_exported_points": local.get("n_exported_points", 0),
+            "sampling": local.get("sampling", {}),
+            "points": local.get("points", []),
+        },
+        "cache_summary": local.get("cache", {}),
+        "spearman_summary": records(spearman),
+        "pca_summary": records(pca),
+        "twonn_summary": records(twonn, max_rows=80),
+        "temporal_locality_summary": records(temporal, max_rows=80),
+        "clade_enrichment_summary": records(clade),
+        "random_embedding_baseline": records(random_baseline),
+        "representation_family_comparison": records(comparison),
+    }
+
+
+def build_structure_mapping_export() -> dict[str, Any]:
+    qc = read_csv("results/tables/phase9_structure_mapping_qc.csv")
+    catalog = read_csv("results/tables/phase9_structure_signal_catalog.csv")
+    mapping = read_parquet("data/processed/structure_mapping/phase9_structure_mapping_table.parquet")
+    if not mapping.empty:
+        keep = [
+            "pdb_id",
+            "protein",
+            "subtype",
+            "group",
+            "pdb_entity",
+            "chains",
+            "local_residue_index",
+            "pdb_sequence_index",
+            "gc_fraction_codon",
+            "cpg_codon_fraction",
+            "upa_codon_fraction",
+            "aa_entropy",
+            "dominant_aa_fraction",
+        ]
+        mapping = mapping[[column for column in keep if column in mapping.columns]].copy()
+        mapping = mapping.groupby("pdb_id", group_keys=False).head(900)
+    return {
+        "schema_version": "safe-bundle-v1",
+        "mapping_policy": "alignment QC and aggregate residue signal tracks only; no sequences, no FASTA, no accessions, no isolate names",
+        "mapping_status": "alignment_qc_available_residue_coloring_pending_chain_number_validation",
+        "mapping_qc": records(qc),
+        "signal_catalog": records(catalog),
+        "mapped_tracks": records(mapping),
+        "limitations": [
+            "PDB polymer sequence indices are not final residue-number selections for 3D coloring.",
+            "HA entries may contain separate HA1 and HA2 polymer entities.",
+            "Metric-to-residue coloring requires chain/residue-number validation before public display.",
+        ],
+    }
+
+
 def build_structure_catalog() -> dict[str, Any]:
     structures = [
         {
@@ -424,7 +510,7 @@ def build_structure_catalog() -> dict[str, Any]:
             "subtype_context": "H1N1",
             "rcsb_url": "https://www.rcsb.org/structure/3LZG",
             "pdb_download_url": "https://files.rcsb.org/download/3LZG.pdb",
-            "mapping_status": "pending",
+            "mapping_status": "alignment_qc_available",
         },
         {
             "pdb_id": "3VUN",
@@ -433,7 +519,7 @@ def build_structure_catalog() -> dict[str, Any]:
             "subtype_context": "H3N2",
             "rcsb_url": "https://www.rcsb.org/structure/3VUN",
             "pdb_download_url": "https://files.rcsb.org/download/3VUN.pdb",
-            "mapping_status": "pending",
+            "mapping_status": "alignment_qc_available",
         },
         {
             "pdb_id": "3NSS",
@@ -442,7 +528,7 @@ def build_structure_catalog() -> dict[str, Any]:
             "subtype_context": "H1N1",
             "rcsb_url": "https://www.rcsb.org/structure/3NSS",
             "pdb_download_url": "https://files.rcsb.org/download/3NSS.pdb",
-            "mapping_status": "pending",
+            "mapping_status": "alignment_qc_available",
         },
         {
             "pdb_id": "6BR6",
@@ -451,12 +537,12 @@ def build_structure_catalog() -> dict[str, Any]:
             "subtype_context": "H3N2",
             "rcsb_url": "https://www.rcsb.org/structure/6BR6",
             "pdb_download_url": "https://files.rcsb.org/download/6BR6.pdb",
-            "mapping_status": "pending",
+            "mapping_status": "alignment_qc_available",
         },
     ]
     return {
         "schema_version": "safe-bundle-v1",
-        "viewer_policy": "structures are loaded from public RCSB PDB IDs; sequence-to-structure mapping is marked pending until validated",
+        "viewer_policy": "structures are loaded from public RCSB PDB IDs; sequence-to-structure alignment QC is available, while residue coloring remains pending chain-number validation",
         "structures": structures,
     }
 
@@ -469,15 +555,16 @@ def build_claims_and_limits() -> dict[str, Any]:
         "allowed_claims": [
             "This app explores descriptive sequence-context and tokenization summaries from real derived FluGenome3D artifacts.",
             "Representation coordinates are reduced-coordinate artifacts with hashed IDs and minimal metadata.",
+            "AntigenLM latent coordinates are shown as a learned representation audit layer.",
             "CDS-dependent summaries are restricted to the refined CDS panel.",
-            "Structure views load public PDB structures and currently mark metric-to-structure mapping as pending unless explicitly validated.",
+            "Structure views load public PDB structures and report alignment QC before any residue-level metric coloring.",
         ],
         "prohibited_claims": [
             "The app predicts antigenic drift.",
             "The app identifies escape mutations or vaccine candidates.",
             "The app explains viral fitness, pathogenicity or transmissibility.",
             "Stable tokens are biological markers without further validation.",
-            "GROVER or BPE behavior is validated by these deterministic baselines.",
+            "GROVER or BPE behavior is validated by these deterministic or AntigenLM-derived baselines.",
         ],
     }
 
@@ -491,7 +578,9 @@ def build_data_governance() -> dict[str, Any]:
             "metric_summaries.safe.json",
             "tokenization_summaries.safe.json",
             "stability_summaries.safe.json",
+            "antigenlm_latent_atlas.safe.json",
             "structure_catalog.safe.json",
+            "structure_mapping.safe.json",
             "claims_and_limits.safe.json",
             "data_governance.safe.json",
         ],
@@ -499,6 +588,8 @@ def build_data_governance() -> dict[str, Any]:
             "aggregate tables",
             "aggregate country/region counts",
             "derived reduced coordinates with hashed IDs and minimal metadata",
+            "learned AntigenLM reduced coordinates with hash-based IDs",
+            "public PDB alignment-QC summaries",
             "short tokens of length <= 6",
             "public PDB identifiers",
             "captions, limitations and governance manifests",
@@ -510,6 +601,7 @@ def build_data_governance() -> dict[str, Any]:
             "per-sample sequence metrics with sensitive identifiers",
             "accession and isolate names",
             "sequence hashes from source panels",
+            "checkpoint weights",
             "tokens longer than 6 nt",
         ],
         "local_full_mode": {
@@ -556,7 +648,7 @@ def validate_bundle(bundle: dict[str, Any]) -> None:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    if path.name == "representation_maps.safe.json":
+    if path.name in {"representation_maps.safe.json", "antigenlm_latent_atlas.safe.json", "structure_mapping.safe.json"}:
         text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     else:
         text = json.dumps(payload, indent=2, ensure_ascii=False)
@@ -564,7 +656,7 @@ def write_json(path: Path, payload: dict[str, Any]) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Export Vercel-safe FluGenome3D JSON bundle.")
+    parser = argparse.ArgumentParser(description="Export deployable FluGenome3D derived JSON bundle.")
     parser.add_argument("--out", default=str(APP_DATA), help="Output directory for *.safe.json files.")
     parser.add_argument("--max-points", type=int, default=12000, help="Max reduced-coordinate points per representation.")
     args = parser.parse_args()
@@ -576,7 +668,9 @@ def main() -> None:
         "metric_summaries.safe.json": build_metric_summaries(),
         "tokenization_summaries.safe.json": build_tokenization_summaries(),
         "stability_summaries.safe.json": build_stability_summaries(),
+        "antigenlm_latent_atlas.safe.json": build_antigenlm_latent_atlas(),
         "structure_catalog.safe.json": build_structure_catalog(),
+        "structure_mapping.safe.json": build_structure_mapping_export(),
         "claims_and_limits.safe.json": build_claims_and_limits(),
         "data_governance.safe.json": build_data_governance(),
     }

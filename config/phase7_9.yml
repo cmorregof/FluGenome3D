@@ -1,0 +1,27 @@
+phase7_antigenlm_bridge:
+  parent_results_dir: "../results"
+  cache_path: "../results/embeddings_cache_full_all_available.pkl"
+  latent_metrics_path: "../results/latent_geometry_full_metrics.json"
+  clade_enrichment_path: "../results/gisaid_clade_enrichment_results.json"
+  random_baseline_path: "../paper_revision_outputs/random_embedding_baseline_results.json"
+  max_export_points: 24000
+  random_seed: 42
+
+phase8_latent_atlas:
+  default_projection: "antigenlm_full_pca"
+  compare_to_phase4_representations: true
+
+phase9_structure_mapping:
+  pdb_ids:
+    - "3LZG"
+    - "3VUN"
+    - "3NSS"
+    - "6BR6"
+  rcsb_fasta_url_template: "https://www.rcsb.org/fasta/entry/{pdb_id}/display"
+  max_public_track_rows_per_structure: 900
+  residue_signal_metrics:
+    - "gc_fraction_codon"
+    - "cpg_codon_fraction"
+    - "upa_codon_fraction"
+    - "aa_entropy"
+  interpretation: "alignment_qc_only"

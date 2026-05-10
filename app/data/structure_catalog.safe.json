@@ -1,6 +1,6 @@
 {
   "schema_version": "safe-bundle-v1",
-  "viewer_policy": "structures are loaded from public RCSB PDB IDs; sequence-to-structure mapping is marked pending until validated",
+  "viewer_policy": "structures are loaded from public RCSB PDB IDs; sequence-to-structure alignment QC is available, while residue coloring remains pending chain-number validation",
   "structures": [
     {
       "pdb_id": "3LZG",
@@ -9,7 +9,7 @@
       "subtype_context": "H1N1",
       "rcsb_url": "https://www.rcsb.org/structure/3LZG",
       "pdb_download_url": "https://files.rcsb.org/download/3LZG.pdb",
-      "mapping_status": "pending"
+      "mapping_status": "alignment_qc_available"
     },
     {
       "pdb_id": "3VUN",
@@ -18,7 +18,7 @@
       "subtype_context": "H3N2",
       "rcsb_url": "https://www.rcsb.org/structure/3VUN",
       "pdb_download_url": "https://files.rcsb.org/download/3VUN.pdb",
-      "mapping_status": "pending"
+      "mapping_status": "alignment_qc_available"
     },
     {
       "pdb_id": "3NSS",
@@ -27,7 +27,7 @@
       "subtype_context": "H1N1",
       "rcsb_url": "https://www.rcsb.org/structure/3NSS",
       "pdb_download_url": "https://files.rcsb.org/download/3NSS.pdb",
-      "mapping_status": "pending"
+      "mapping_status": "alignment_qc_available"
     },
     {
       "pdb_id": "6BR6",
@@ -36,7 +36,7 @@
       "subtype_context": "H3N2",
       "rcsb_url": "https://www.rcsb.org/structure/6BR6",
       "pdb_download_url": "https://files.rcsb.org/download/6BR6.pdb",
-      "mapping_status": "pending"
+      "mapping_status": "alignment_qc_available"
     }
   ]
 }

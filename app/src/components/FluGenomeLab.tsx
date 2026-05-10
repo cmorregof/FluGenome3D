@@ -164,25 +164,64 @@ function buildAtlasMapTraces(countryTotals: Record<string, any>[], subtypeCounts
   return [totalTrace, ...subtypeTraces];
 }
 
-function buildScatterTraces(points: Record<string, any>[], colorBy: string) {
+function buildProjectorTraces(points: Record<string, any>[], colorBy: string, use3d: boolean) {
   const values = uniqueValues(points.map((point) => String(point[colorBy] ?? "unknown")));
   return values.map((value, index) => {
     const subset = points.filter((point) => String(point[colorBy] ?? "unknown") === value);
     return {
-      type: "scattergl",
+      type: use3d ? "scatter3d" : "scattergl",
       mode: "markers",
       name: value,
       x: subset.map((point) => point.x),
       y: subset.map((point) => point.y),
+      ...(use3d ? { z: subset.map((point) => point.z) } : {}),
       text: subset.map((point) => `${point.group} · ${point.year_bin}`),
       customdata: subset,
       marker: {
         color: groupPalette[value] ?? palette[index % palette.length],
-        size: 5,
+        size: use3d ? 3.2 : 5,
         opacity: 0.72,
-        line: { color: "rgba(238,228,207,0.16)", width: 0.5 }
-      }
+        line: { color: "rgba(237,247,244,0.16)", width: use3d ? 0 : 0.5 }
+      },
+      hovertemplate: "%{text}<br>PC1=%{x:.3f}<br>PC2=%{y:.3f}" + (use3d ? "<br>PC3=%{z:.3f}" : "") + "<extra></extra>"
     };
+  });
+}
+
+function SilhouetteSummary({ rows }: { rows: Record<string, any>[] }) {
+  return (
+    <div className="space-y-2">
+      <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Silhouette summary</div>
+      {rows.map((row) => {
+        const value = Number(row.silhouette ?? 0);
+        return (
+          <div key={`${row.label_type}-${row.space}`} className="rounded-md border border-line bg-bg/35 p-3">
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted">{String(row.label_type).replace("_", " + ")}</span>
+              <span className="font-mono text-sm text-ivory">{formatNumber(value, 3)}</span>
+            </div>
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-ink">
+              <span className="block h-full rounded-full bg-teal" style={{ width: `${Math.max(0, Math.min(100, value * 100))}%` }} />
+            </div>
+            <div className="mt-1 text-[10px] uppercase tracking-[0.14em] text-muted">{row.space}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function decodeRepresentationPoints(rep: Record<string, any> | undefined): Record<string, any>[] {
+  const rawPoints = (rep?.points ?? []) as any[];
+  const schema = rep?.point_schema as string[] | undefined;
+  if (!schema) {
+    return rawPoints as Record<string, any>[];
+  }
+  return rawPoints.map((point) => {
+    if (!Array.isArray(point)) {
+      return point as Record<string, any>;
+    }
+    return Object.fromEntries(schema.map((field, index) => [field, point[index]]));
   });
 }
 
@@ -518,21 +557,50 @@ function DatasetAtlas({ bundle, mode }: { bundle: SafeBundle; mode: string }) {
 }
 
 function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
-  const reps = bundle.representations.representations as Record<string, any>[];
+  const reps = ((bundle.representations.representations as Record<string, any>[]) ?? []).filter((item) => !String(item.id).includes("umap"));
   const [repId, setRepId] = useState(reps[0]?.id ?? "");
   const [colorBy, setColorBy] = useState("group");
+  const [projectionMode, setProjectionMode] = useState<"3d" | "2d">("3d");
   const [selected, setSelected] = useState<Record<string, any> | null>(null);
   const rep = reps.find((item) => item.id === repId) ?? reps[0];
-  const points = (rep?.points ?? []) as Record<string, any>[];
+  const points = useMemo(() => decodeRepresentationPoints(rep), [rep]);
+  const has3d = points.some((point) => Number.isFinite(Number(point.z)));
+  const use3d = projectionMode === "3d" && has3d;
+  const explained = (rep?.pca_explained_variance ?? []) as Array<number | null>;
 
-  const traces = useMemo(() => buildScatterTraces(points, colorBy), [points, colorBy]);
+  const traces = useMemo(() => buildProjectorTraces(points, colorBy, use3d), [points, colorBy, use3d]);
+  useEffect(() => setSelected(null), [repId, colorBy, projectionMode]);
+  const projectorLayout = useMemo(
+    () =>
+      use3d
+        ? {
+            ...plotLayout,
+            title: rep?.label ?? "Representation",
+            height: 620,
+            margin: { l: 8, r: 8, t: 42, b: 8 },
+            scene: {
+              xaxis: { title: "PC1", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", zerolinecolor: "rgba(92,218,226,0.20)", backgroundcolor: "rgba(1,5,10,0.72)" },
+              yaxis: { title: "PC2", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", zerolinecolor: "rgba(92,218,226,0.20)", backgroundcolor: "rgba(1,5,10,0.72)" },
+              zaxis: { title: "PC3", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", zerolinecolor: "rgba(92,218,226,0.20)", backgroundcolor: "rgba(1,5,10,0.72)" },
+              camera: { eye: { x: 1.45, y: 1.45, z: 0.95 } }
+            }
+          }
+        : {
+            ...plotLayout,
+            title: rep?.label ?? "Representation",
+            height: 620,
+            xaxis: { ...plotLayout.xaxis, title: "PC1", tickformat: ".2f", nticks: 7, tickangle: 0 },
+            yaxis: { ...plotLayout.yaxis, title: "PC2", tickformat: ".2f", nticks: 7 },
+          },
+    [rep?.label, use3d]
+  );
 
   return (
     <div>
       <SectionTitle kicker="REPRESENTATION PROJECTOR" title="Reduced-coordinate maps">
-        Coordinates are real derived artifacts with hashed IDs.
+        PCA coordinates are real derived artifacts with hashed IDs.
       </SectionTitle>
-      <div className="mb-4 grid gap-3 md:grid-cols-3">
+      <div className="mb-4 grid gap-3 xl:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Representation</span>
           <select value={repId} onChange={(event) => setRepId(event.target.value)} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
@@ -542,6 +610,7 @@ function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
               </option>
             ))}
           </select>
+          <div className="mt-2 text-xs leading-5 text-muted">{rep?.description ?? "Safe derived coordinate map."}</div>
         </label>
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Color by</span>
@@ -553,16 +622,24 @@ function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
             ))}
           </select>
         </label>
+        <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Projection</span>
+          <select value={projectionMode} onChange={(event) => setProjectionMode(event.target.value as "3d" | "2d")} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
+            <option value="3d">3D PCA</option>
+            <option value="2d">2D PCA</option>
+          </select>
+          <div className="mt-2 text-xs leading-5 text-muted">Use 3D to inspect separation without overcrowded axes.</div>
+        </label>
         <Card label="Exported points" value={formatNumber(rep?.n_exported_points ?? 0, 0)} detail={rep?.privacy ?? "safe point metadata"} />
       </div>
-      <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
           <Plot
             data={traces}
-            layout={{ ...plotLayout, title: rep?.label ?? "Representation", height: 610 }}
-            config={{ responsive: true, displaylogo: false }}
+            layout={projectorLayout}
+            config={{ responsive: true, displaylogo: false, scrollZoom: false }}
             useResizeHandler
-            style={{ width: "100%", height: "610px" }}
+            style={{ width: "100%", height: "620px" }}
             onClick={(event: any) => setSelected(event.points?.[0]?.customdata ?? null)}
           />
         </div>
@@ -580,8 +657,19 @@ function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
           ) : (
             <p className="mt-4 text-sm leading-6 text-muted">Select a point to inspect its safe hash ID and minimal group metadata.</p>
           )}
-          <div className="mt-6">
-            <MiniTable rows={rep?.silhouette_scores ?? []} columns={["label_type", "silhouette", "space"]} limit={4} />
+          <div className="mt-6 rounded-lg border border-line bg-bg/25 p-3">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">PCA variance</div>
+            <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+              {["PC1", "PC2", "PC3"].map((axis, index) => (
+                <div key={axis} className="rounded-md border border-line bg-panel/55 px-2 py-2">
+                  <div className="font-mono text-[10px] text-muted">{axis}</div>
+                  <div className="text-sm font-semibold text-ivory">{explained[index] == null ? "NA" : `${formatNumber(Number(explained[index]) * 100, 1)}%`}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4">
+            <SilhouetteSummary rows={rep?.silhouette_scores ?? []} />
           </div>
         </div>
       </div>

@@ -41,7 +41,12 @@ def test_safe_token_exports_are_short() -> None:
 
 def test_representation_points_use_safe_ids() -> None:
     payload = json.loads((APP_DATA / "representation_maps.safe.json").read_text())
-    first = payload["representations"][0]["points"][0]
+    representation = payload["representations"][0]
+    first_raw = representation["points"][0]
+    if isinstance(first_raw, list):
+        first = dict(zip(representation["point_schema"], first_raw, strict=True))
+    else:
+        first = first_raw
     assert str(first["id"]).startswith("pt_")
     assert "fg3d_" not in json.dumps(first)
     forbidden = {"sequence", "sequence_sha256", "accession", "isolate", "strain_name"}

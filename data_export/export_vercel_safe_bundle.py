@@ -11,6 +11,8 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from scipy import sparse
+from scipy.sparse.linalg import svds
 
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -188,6 +190,36 @@ def stratified_points(df: pd.DataFrame, max_points: int, seed: int = 42) -> pd.D
     return df.loc[sorted(selected)].copy()
 
 
+def run_sparse_pca(matrix: sparse.spmatrix, n_components: int = 3) -> tuple[np.ndarray, list[float | None]]:
+    x = matrix.tocsr().astype(np.float32)
+    n_samples, n_features = x.shape
+    if n_samples == 0:
+        return np.empty((0, n_components), dtype=np.float32), [None] * n_components
+
+    dense_mean = np.asarray(x.mean(axis=0)).ravel().astype(np.float32)
+    centered = x.toarray().astype(np.float32, copy=False) - dense_mean
+    max_components = max(1, min(n_components, n_samples - 1, n_features - 1 if n_features > 1 else 1))
+    if max_components == 1:
+        u, singular_values, _ = np.linalg.svd(centered, full_matrices=False)
+        u = u[:, :1]
+        singular_values = singular_values[:1]
+    else:
+        u, singular_values, _ = svds(centered, k=max_components)
+        order = np.argsort(singular_values)[::-1]
+        singular_values = singular_values[order]
+        u = u[:, order]
+
+    embedding = u * singular_values
+    total_var = float(np.sum(centered * centered) / max(n_samples - 1, 1))
+    explained = (singular_values**2) / max(n_samples - 1, 1)
+    ratios = (explained / total_var).tolist() if total_var else [None] * len(singular_values)
+    clean_ratios = [finite_number(value, digits=6) for value in ratios]
+    if embedding.shape[1] < n_components:
+        embedding = np.hstack([embedding, np.zeros((n_samples, n_components - embedding.shape[1]), dtype=np.float32)])
+        clean_ratios.extend([None] * (n_components - len(clean_ratios)))
+    return embedding[:, :n_components].astype(np.float32), clean_ratios[:n_components]
+
+
 def build_dataset_overview() -> dict[str, Any]:
     dataset = read_csv("results/tables/phase1_dataset_summary.csv")
     panels = read_csv("results/tables/phase1_panel_summary.csv")
@@ -226,43 +258,96 @@ def build_dataset_overview() -> dict[str, Any]:
     }
 
 
-def build_representation_maps(max_points: int = 4000) -> dict[str, Any]:
+def build_representation_maps(max_points: int = 12000) -> dict[str, Any]:
     summary = read_csv("results/tables/phase4_representation_summary.csv")
     silhouettes = read_csv("results/tables/phase4_silhouette_scores.csv")
-    embeddings = [
-        ("kmer4_tfidf_pca", "data/processed/representations/kmer4_tfidf_pca_embedding.parquet", "raw nucleotide k-mer TF-IDF PCA"),
-        ("kmer4_tfidf_umap_or_fallback", "data/processed/representations/kmer4_tfidf_umap_embedding.parquet", "raw nucleotide k-mer TF-IDF UMAP/fallback"),
-        ("codon_freq_pca", "data/processed/representations/codon_freq_pca_embedding.parquet", "CDS refined codon-frequency PCA"),
-        ("rscu_pca", "data/processed/representations/rscu_pca_embedding.parquet", "CDS refined RSCU PCA"),
+    representations = [
+        {
+            "id": "raw_kmer4_tfidf_pca",
+            "matrix": "data/processed/representations/mvp_kmer4_tfidf.npz",
+            "metadata": "data/processed/representations/mvp_raw_representation_metadata.parquet",
+            "source_representation": "kmer4_tfidf",
+            "label": "Raw k-mer TF-IDF PCA (k=4)",
+            "source": "raw_nucleotide",
+            "cds_status": "not_required",
+            "description": "Raw nucleotide representation; CDS frame is not required.",
+        },
+        {
+            "id": "raw_kmer5_freq_pca",
+            "matrix": "data/processed/representations/mvp_kmer5_freq.npz",
+            "metadata": "data/processed/representations/mvp_raw_representation_metadata.parquet",
+            "source_representation": "kmer5_freq",
+            "label": "Raw k-mer frequency PCA (k=5)",
+            "source": "raw_nucleotide",
+            "cds_status": "not_required",
+            "description": "Raw nucleotide frequency baseline with a longer k-mer context.",
+        },
+        {
+            "id": "cds_codon_freq_pca",
+            "matrix": "data/processed/representations/mvp_codon_freq.npz",
+            "metadata": "data/processed/representations/mvp_cds_representation_metadata.parquet",
+            "source_representation": "codon_freq",
+            "label": "CDS refined codon-frequency PCA",
+            "source": "cds_refined",
+            "cds_status": "refined_cds",
+            "description": "Codon-level representation restricted to the refined CDS panel.",
+        },
+        {
+            "id": "cds_rscu_pca",
+            "matrix": "data/processed/representations/mvp_rscu.npz",
+            "metadata": "data/processed/representations/mvp_cds_representation_metadata.parquet",
+            "source_representation": "rscu",
+            "label": "CDS refined RSCU PCA",
+            "source": "cds_refined",
+            "cds_status": "refined_cds",
+            "description": "RSCU representation restricted to the refined CDS panel.",
+        },
     ]
     reps = []
-    for rep_id, path, label in embeddings:
-        df = read_parquet(path)
-        if df.empty:
+    for spec in representations:
+        matrix_path = PROJECT / spec["matrix"]
+        metadata = read_parquet(spec["metadata"])
+        if not matrix_path.exists() or metadata.empty:
             continue
+        matrix = sparse.load_npz(matrix_path)
+        if matrix.shape[0] != len(metadata):
+            continue
+        embedding, explained = run_sparse_pca(matrix, n_components=3)
+        df = metadata.copy()
+        df["axis1"] = embedding[:, 0]
+        df["axis2"] = embedding[:, 1]
+        df["axis3"] = embedding[:, 2]
+        df["representation"] = spec["source_representation"]
         sampled = stratified_points(df, max_points=max_points)
         points = []
         for row in sampled.itertuples(index=False):
             points.append(
-                {
-                    "id": safe_id(str(row.internal_sequence_id)),
-                    "x": finite_number(row.axis1, digits=7),
-                    "y": finite_number(row.axis2, digits=7),
-                    "protein": row.protein,
-                    "subtype": row.subtype,
-                    "group": row.protein_subtype,
-                    "year_bin": year_bin(row.year),
-                    "cds_status": "refined_cds" if rep_id in {"codon_freq_pca", "rscu_pca"} else "not_required",
-                }
+                [
+                    safe_id(str(row.internal_sequence_id)),
+                    finite_number(row.axis1, digits=7),
+                    finite_number(row.axis2, digits=7),
+                    finite_number(row.axis3, digits=7),
+                    row.protein,
+                    row.subtype,
+                    row.protein_subtype,
+                    year_bin(row.year),
+                    spec["cds_status"],
+                ]
             )
-        source_rep = str(df["representation"].iloc[0]) if "representation" in df.columns and len(df) else rep_id
+        source_rep = str(spec["source_representation"])
         rep_summary = summary[summary["representation"] == source_rep].to_dict(orient="records")
         sil = silhouettes[silhouettes["representation"] == source_rep].to_dict(orient="records")
         reps.append(
             {
-                "id": rep_id,
-                "label": label,
+                "id": spec["id"],
+                "label": spec["label"],
                 "source_representation": source_rep,
+                "source": spec["source"],
+                "description": spec["description"],
+                "projection": "pca_3d",
+                "axis_labels": ["PC1", "PC2", "PC3"],
+                "pca_explained_variance": explained,
+                "point_schema": ["id", "x", "y", "z", "protein", "subtype", "group", "year_bin", "cds_status"],
                 "n_source_points": int(len(df)),
                 "n_exported_points": int(len(points)),
                 "privacy": "hashed point IDs; no accessions, isolate names, sequences, sequence hashes, or exact locations",
@@ -274,7 +359,7 @@ def build_representation_maps(max_points: int = 4000) -> dict[str, Any]:
     return {
         "schema_version": "safe-bundle-v1",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "coordinate_policy": "real reduced coordinates exported with hashed IDs and minimal metadata",
+        "coordinate_policy": "real PCA coordinates exported with hashed IDs and minimal metadata; no sequences, accessions, isolate names, sequence hashes, or exact locations",
         "max_points_per_representation": max_points,
         "representations": reps,
     }
@@ -471,13 +556,17 @@ def validate_bundle(bundle: dict[str, Any]) -> None:
 
 def write_json(path: Path, payload: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    if path.name == "representation_maps.safe.json":
+        text = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+    else:
+        text = json.dumps(payload, indent=2, ensure_ascii=False)
+    path.write_text(text + "\n", encoding="utf-8")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export Vercel-safe FluGenome3D JSON bundle.")
     parser.add_argument("--out", default=str(APP_DATA), help="Output directory for *.safe.json files.")
-    parser.add_argument("--max-points", type=int, default=4000, help="Max reduced-coordinate points per representation.")
+    parser.add_argument("--max-points", type=int, default=12000, help="Max reduced-coordinate points per representation.")
     args = parser.parse_args()
 
     out_dir = Path(args.out)

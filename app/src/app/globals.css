@@ -4,17 +4,17 @@
 
 :root {
   color-scheme: dark;
-  --bg: #080807;
-  --panel: rgba(18, 17, 14, 0.82);
-  --panel-soft: rgba(24, 23, 19, 0.72);
-  --border: rgba(135, 169, 155, 0.16);
-  --border-strong: rgba(135, 169, 155, 0.36);
-  --text: #e8e1d2;
-  --muted: #a8a092;
-  --accent: #87a99b;
-  --accent-soft: #27473f;
-  --teal: #87a99b;
-  --sage: #9aab91;
+  --bg: #01050a;
+  --panel: rgba(5, 17, 24, 0.76);
+  --panel-soft: rgba(7, 26, 36, 0.68);
+  --border: rgba(92, 218, 226, 0.16);
+  --border-strong: rgba(92, 218, 226, 0.36);
+  --text: #edf7f4;
+  --muted: #9fb3ae;
+  --accent: #5cdce2;
+  --accent-soft: #0d3c43;
+  --teal: #5cdce2;
+  --sage: #79d99c;
   --rust: #b9785f;
   --danger-soft: #8a4d45;
 }
@@ -31,9 +31,9 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 18% 0%, rgba(135, 169, 155, 0.08), transparent 26rem),
-    radial-gradient(circle at 88% 10%, rgba(185, 120, 95, 0.055), transparent 24rem),
-    linear-gradient(135deg, var(--bg) 0%, #10100d 54%, #090a08 100%);
+    radial-gradient(circle at 20% 0%, rgba(92, 220, 226, 0.10), transparent 28rem),
+    radial-gradient(circle at 78% 8%, rgba(121, 217, 156, 0.08), transparent 28rem),
+    linear-gradient(135deg, var(--bg) 0%, #03111a 54%, #01070c 100%);
   color: var(--text);
 }
 
@@ -44,58 +44,27 @@ select {
 
 .lab-grid {
   background-image:
-    linear-gradient(rgba(232, 225, 210, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(232, 225, 210, 0.045) 1px, transparent 1px);
+    linear-gradient(rgba(237, 247, 244, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(237, 247, 244, 0.035) 1px, transparent 1px);
   background-size: 34px 34px;
+}
+
+.flu-hero-bg {
+  background-color: #01050a;
+  background-image:
+    linear-gradient(115deg, rgba(1, 5, 10, 0.98) 0%, rgba(1, 5, 10, 0.78) 34%, rgba(1, 5, 10, 0.26) 64%, rgba(1, 5, 10, 0.10) 100%),
+    linear-gradient(0deg, rgba(1, 5, 10, 0.90) 0%, rgba(1, 5, 10, 0.20) 45%, rgba(1, 5, 10, 0.34) 100%),
+    url("/images/flu-hero-bg.png"),
+    radial-gradient(circle at 70% 42%, rgba(92, 220, 226, 0.20), transparent 30rem),
+    linear-gradient(135deg, #01050a, #061724);
+  background-position: center;
+  background-size: cover;
 }
 
 .plot-shell .js-plotly-plot,
 .plot-shell .plot-container,
 .plot-shell .svg-container {
   border-radius: 8px;
-}
-
-.virion-shell {
-  transform-style: preserve-3d;
-  animation: virion-spin 18s linear infinite;
-}
-
-.virion-orbit {
-  animation: virion-orbit 9s ease-in-out infinite alternate;
-}
-
-.virion-pulse {
-  animation: virion-pulse 4s ease-in-out infinite;
-}
-
-@keyframes virion-spin {
-  from {
-    transform: rotateX(58deg) rotateZ(0deg);
-  }
-  to {
-    transform: rotateX(58deg) rotateZ(360deg);
-  }
-}
-
-@keyframes virion-orbit {
-  from {
-    transform: rotate(0deg) scale(0.96);
-    opacity: 0.38;
-  }
-  to {
-    transform: rotate(24deg) scale(1.04);
-    opacity: 0.78;
-  }
-}
-
-@keyframes virion-pulse {
-  0%,
-  100% {
-    opacity: 0.72;
-  }
-  50% {
-    opacity: 1;
-  }
 }
 
 .molecular-viewer canvas {

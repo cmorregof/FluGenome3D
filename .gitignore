@@ -19,6 +19,7 @@
 /app/data-local/
 /app/**/*.local.json
 /app/**/*.restricted.json
+/app/imagen_hero.*
 /app/.next/
 /app/node_modules/
 /app/out/

@@ -7,7 +7,6 @@ import {
   Database,
   Dna,
   Home,
-  Microscope,
   Network,
   ShieldCheck,
   SplitSquareVertical
@@ -234,7 +233,13 @@ export default function FluGenomeLab() {
             ))}
           </div>
 
-          <div className="rounded-lg border border-line bg-ink/82 p-4 md:p-6">
+          <div
+            className={
+              active === "home"
+                ? "overflow-hidden rounded-xl border border-line bg-bg/80"
+                : "rounded-lg border border-line bg-ink/82 p-4 md:p-6"
+            }
+          >
             {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} /> : null}
             {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} /> : null}
             {active === "projector" ? <RepresentationProjector bundle={bundle} /> : null}
@@ -248,72 +253,20 @@ export default function FluGenomeLab() {
   );
 }
 
-function ConceptualVirion() {
-  const spikes = Array.from({ length: 26 }, (_, index) => {
-    const angle = (index / 26) * 360;
-    const longSpike = index % 3 === 0;
-    return (
-      <span
-        key={index}
-        className={`absolute left-1/2 top-1/2 block origin-[0_0] rounded-full ${longSpike ? "h-16 w-[3px] bg-teal/70" : "h-12 w-[2px] bg-sage/60"}`}
-        style={{ transform: `rotate(${angle}deg) translateY(-144px)` }}
-      />
-    );
-  });
-
-  const segments = Array.from({ length: 8 }, (_, index) => (
-    <span
-      key={index}
-      className="absolute left-1/2 top-1/2 h-[2px] w-32 origin-left rounded-full bg-ivory/38"
-      style={{ transform: `rotate(${index * 22.5 - 78}deg) translateX(-18px)`, opacity: 0.32 + index * 0.045 }}
-    />
-  ));
-
-  return (
-    <div className="relative mx-auto flex h-[430px] max-w-[540px] items-center justify-center overflow-hidden rounded-lg border border-line bg-[radial-gradient(circle_at_center,rgba(135,169,155,0.12),rgba(8,8,7,0.26)_48%,rgba(8,8,7,0.88)_76%)]">
-      <div className="absolute left-5 top-5 rounded-md border border-line bg-bg/70 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.2em] text-muted">
-        conceptual virion schematic
-      </div>
-      <div className="virion-shell relative h-72 w-72 rounded-full border border-lineStrong bg-[radial-gradient(circle_at_35%_30%,rgba(232,225,210,0.22),rgba(135,169,155,0.10)_34%,rgba(18,17,14,0.86)_70%)] shadow-[0_0_70px_rgba(135,169,155,0.11)]">
-        {spikes}
-        <span className="virion-orbit absolute left-7 top-9 h-52 w-60 rounded-[50%] border border-teal/35" />
-        <span className="virion-orbit absolute left-11 top-14 h-44 w-52 rotate-45 rounded-[50%] border border-brass/25" />
-        <span className="absolute inset-10 rounded-full border border-ivory/10 bg-bg/20" />
-        <span className="absolute inset-16 rounded-full border border-teal/20" />
-        <div className="virion-pulse absolute inset-0">{segments}</div>
-      </div>
-      <div className="pointer-events-none absolute inset-x-6 bottom-5 grid grid-cols-2 gap-2 text-[10px] leading-tight text-muted md:grid-cols-3">
-        <span className="rounded border border-line bg-bg/70 px-2 py-1 text-center">HA/NA surface proteins</span>
-        <span className="rounded border border-line bg-bg/70 px-2 py-1 text-center">segmented genome</span>
-        <span className="rounded border border-line bg-bg/70 px-2 py-1 text-center">sequence context</span>
-        <span className="rounded border border-line bg-bg/70 px-2 py-1 text-center">representation space</span>
-        <span className="rounded border border-line bg-bg/70 px-2 py-1 text-center">structure view</span>
-      </div>
-    </div>
-  );
-}
-
 function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: string; setActive: (view: ViewId) => void }) {
-  const explores = [
-    ["Dataset Atlas", "Panel counts, H1N1/H3N2 balance, temporal bins and CDS reliability."],
-    ["Representation Projector", "Reduced-coordinate maps from real derived artifacts with hashed IDs."],
-    ["Sequence/Token Inspector", "Aggregate GC/CpG/UpA, token entropy, vocabulary and stability summaries."],
-    ["3D Molecular Viewer", "Public RCSB structures with sequence-to-structure mapping marked pending."],
-    ["Bridge View", "A compact sequence -> representation -> structure orientation panel."]
-  ];
-  const limits = [
-    "no antigenicity prediction",
-    "no vaccine recommendation",
-    "no escape prediction",
-    "no pathogenicity or fitness inference",
-    "no raw sequence redistribution"
+  const features = [
+    ["Sequence context", "GC, CpG/UpA, dinucleotide and k-mer summaries from safe derived artifacts."],
+    ["Tokenization audit", "Deterministic token baselines, entropy, vocabulary and stability summaries."],
+    ["Molecular structure", "Public RCSB structures with mapping status kept explicit and pending."]
   ];
 
   return (
-    <div>
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <section className="flex min-h-[430px] flex-col justify-center">
-          <div className="mb-4 flex flex-wrap gap-2">
+    <div className="bg-bg">
+      <section className="flu-hero-bg relative min-h-[calc(100vh-7.5rem)] overflow-hidden px-6 py-10 md:px-10 md:py-14 xl:px-14">
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,5,10,0.96)_0%,rgba(1,5,10,0.82)_29%,rgba(1,5,10,0.32)_58%,rgba(1,5,10,0.12)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(1,5,10,0.88)_0%,rgba(1,5,10,0.22)_44%,rgba(1,5,10,0.36)_100%)]" />
+        <div className="relative flex min-h-[calc(100vh-14rem)] max-w-3xl flex-col justify-center">
+          <div className="mb-6 flex flex-wrap gap-2">
             <span className="rounded-full border border-lineStrong bg-brassSoft/20 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-brass">
               {mode === "local-full" ? "Local full mode" : "Vercel safe mode"}
             </span>
@@ -321,64 +274,41 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
               Descriptive exploration only
             </span>
           </div>
-          <h2 className="text-5xl font-semibold tracking-[-0.03em] text-ivory md:text-7xl">FluGenome3D</h2>
-          <p className="mt-5 max-w-2xl text-xl leading-8 text-ivory/88">
-            A visual lab for exploring Influenza A HA/NA sequence, representation, tokenization, and structure.
+          <h2 className="text-6xl font-semibold tracking-[-0.045em] text-ivory md:text-8xl">FluGenome3D</h2>
+          <p className="mt-6 max-w-2xl text-xl leading-9 text-ivory/90 md:text-2xl">
+            A reproducible explorer connecting Influenza A sequence context, tokenization, and structural visualization.
           </p>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
+          <p className="mt-5 max-w-2xl text-sm leading-7 text-muted md:text-base">
             FluGenome3D is a private/restricted-data visual lab designed to inspect the Influenza A HA/NA dataset behind AntigenSDE. It connects dataset summaries, representation maps, sequence/token metrics, and molecular structure views without exposing raw sequences.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-9 flex flex-wrap gap-3">
             <button
               onClick={() => setActive("atlas")}
-              className="rounded-md border border-lineStrong bg-brassSoft/45 px-5 py-3 text-sm font-medium text-ivory transition hover:border-teal hover:bg-teal/20"
+              className="rounded-md border border-teal/45 bg-teal/18 px-5 py-3 text-sm font-medium text-ivory transition hover:border-teal hover:bg-teal/26"
             >
-              Enter Visual Lab
+              Explore dataset
             </button>
             <button
-              onClick={() => setActive("projector")}
-              className="rounded-md border border-line bg-panel2 px-5 py-3 text-sm text-muted transition hover:border-teal hover:text-ivory"
+              onClick={() => setActive("structure")}
+              className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
             >
-              Open Representation Projector
+              View molecular structures
             </button>
           </div>
-          <div className="mt-6 rounded-lg border border-line bg-panel2 p-4 text-xs leading-6 text-muted">
+          <div className="mt-8 max-w-2xl rounded-lg border border-line bg-bg/44 p-4 text-xs leading-6 text-muted backdrop-blur">
             <span className="font-mono uppercase tracking-[0.18em] text-brass">DATA GOVERNANCE</span>
             <span className="ml-2">{bundle.claims.data_statement}</span>
           </div>
-        </section>
-        <ConceptualVirion />
-      </div>
+        </div>
+      </section>
 
-      <div className="mt-7 grid gap-4 xl:grid-cols-2">
-        <section className="rounded-lg border border-line bg-panel/75 p-5">
-          <div className="mb-4 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">
-            <Microscope size={15} />
-            What this lab explores
+      <div className="grid gap-3 border-t border-line bg-bg px-6 py-5 md:grid-cols-3 md:px-10 xl:px-14">
+        {features.map(([title, text]) => (
+          <div key={title} className="rounded-lg border border-line bg-panel/62 p-5 backdrop-blur">
+            <div className="text-sm font-medium text-ivory">{title}</div>
+            <div className="mt-2 text-xs leading-6 text-muted">{text}</div>
           </div>
-          <div className="grid gap-3">
-            {explores.map(([title, text]) => (
-              <div key={title} className="rounded-md border border-line bg-bg/35 p-4">
-                <div className="text-sm font-medium text-ivory">{title}</div>
-                <div className="mt-1 text-xs leading-5 text-muted">{text}</div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-lg border border-line bg-panel/75 p-5">
-          <div className="mb-4 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">What this lab does not do</div>
-          <div className="grid gap-3">
-            {limits.map((item) => (
-              <div key={item} className="rounded-md border border-line bg-bg/35 px-4 py-3 text-sm text-muted">
-                {item}
-              </div>
-            ))}
-          </div>
-          <p className="mt-5 text-xs leading-6 text-muted">
-            Visual objects and labels on this page are explanatory UI elements. The virion is conceptual, not an experimentally exact molecular model.
-          </p>
-        </section>
+        ))}
       </div>
     </div>
   );

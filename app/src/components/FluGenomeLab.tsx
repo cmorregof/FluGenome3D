@@ -27,6 +27,31 @@ const subtypePalette: Record<string, string> = {
   H1N1: "#79d99c",
   H3N2: "#5cdce2"
 };
+const orderedGroups = ["HA-H1N1", "NA-H1N1", "HA-H3N2", "NA-H3N2"];
+
+const sequenceMetricSpecs = [
+  {
+    id: "gc_content",
+    label: "GC fraction",
+    short: "GC",
+    color: "#5cdce2",
+    definition: "Share of nucleotide positions that are G or C. A value of 0.42 means roughly 42% GC."
+  },
+  {
+    id: "cpg_oe",
+    label: "CpG observed/expected",
+    short: "CpG O/E",
+    color: "#79d99c",
+    definition: "Observed CpG frequency divided by the frequency expected from C and G abundance. Values below 1 indicate relative depletion."
+  },
+  {
+    id: "upa_oe",
+    label: "UpA observed/expected",
+    short: "UpA O/E",
+    color: "#b7d8d1",
+    definition: "DNA TA is used as the proxy for RNA UpA. Values below 1 indicate relative depletion against single-base expectations."
+  }
+];
 
 const views = [
   { id: "home", label: "Home / Overview", icon: Home },
@@ -223,6 +248,35 @@ function decodeRepresentationPoints(rep: Record<string, any> | undefined): Recor
     }
     return Object.fromEntries(schema.map((field, index) => [field, point[index]]));
   });
+}
+
+function friendlyTokenizer(tokenizer: unknown): string {
+  const value = String(tokenizer ?? "NA");
+  const labels: Record<string, string> = {
+    raw_overlap_k3: "Raw overlapping k=3",
+    raw_overlap_k6: "Raw overlapping k=6",
+    raw_nonoverlap_k6: "Raw non-overlap k=6",
+    cds_frame_k6: "CDS frame-aware k=6",
+    cds_codon: "CDS codons",
+    cds_frame_k3: "CDS frame-aware k=3",
+    cds_nonoverlap_k3_offset0: "CDS non-overlap k=3 offset 0",
+    cds_nonoverlap_k3_offset1: "CDS non-overlap k=3 offset 1",
+    cds_nonoverlap_k3_offset2: "CDS non-overlap k=3 offset 2"
+  };
+  return labels[value] ?? value.replaceAll("_", " ");
+}
+
+function metricGroup(row: Record<string, any>): string {
+  return row.protein_subtype ?? `${row.protein ?? ""}-${row.subtype ?? ""}`;
+}
+
+function metricRange(rows: Record<string, any>[], metric: string) {
+  const values = rows.filter((row) => row.metric === metric).map((row) => ({ group: metricGroup(row), value: Number(row.mean) }));
+  const finite = values.filter((row) => Number.isFinite(row.value));
+  if (!finite.length) return { min: NaN, max: NaN, minGroup: "NA", maxGroup: "NA" };
+  const min = finite.reduce((best, row) => (row.value < best.value ? row : best), finite[0]);
+  const max = finite.reduce((best, row) => (row.value > best.value ? row : best), finite[0]);
+  return { min: min.value, max: max.value, minGroup: min.group, maxGroup: max.group };
 }
 
 function useSafeData() {
@@ -684,42 +738,172 @@ function SequenceTokenInspector({ bundle }: { bundle: SafeBundle }) {
   const entropy = bundle.tokenization.entropy_by_group as Record<string, any>[];
   const ranking = bundle.stability.tokenizer_robustness_ranking as Record<string, any>[];
   const topTokens = bundle.tokenization.top_tokens_by_group as Record<string, any>[];
-  const gcPlot = ["gc_content", "cpg_oe", "upa_oe"].map((metric, index) => ({
+  const cdsQc = bundle.metrics.cds_translation_qc_summary as Record<string, any>[];
+  const mvpSequenceCount = Math.max(...sequenceMetricSpecs.map((spec) => gcRows.filter((row) => row.metric === spec.id).reduce((sum, row) => sum + Number(row.n ?? 0), 0)));
+  const refinedCdsCount = cdsQc.reduce((sum, row) => sum + Number(row.n_refined_sequences ?? 0), 0);
+  const gc = metricRange(gcRows, "gc_content");
+  const cpg = metricRange(gcRows, "cpg_oe");
+  const upa = metricRange(gcRows, "upa_oe");
+  const allCpgBelowOne = gcRows.filter((row) => row.metric === "cpg_oe").every((row) => Number(row.mean) < 1);
+  const allUpaBelowOne = gcRows.filter((row) => row.metric === "upa_oe").every((row) => Number(row.mean) < 1);
+  const separationLeader = ranking.reduce((best, row) => (Number(row.mean_js_distance ?? 0) > Number(best?.mean_js_distance ?? -1) ? row : best), ranking[0]);
+  const tokenStabilityLeader = ranking.reduce((best, row) => (Number(row.mean_top_token_jaccard ?? 0) > Number(best?.mean_top_token_jaccard ?? -1) ? row : best), ranking[0]);
+  const entropyRows = entropy.slice(0, 8).map((row) => ({
+    tokenizer: friendlyTokenizer(row.tokenizer),
+    group: row.protein_subtype,
+    entropy_bits: row.mean_entropy_bits,
+    effective_vocab: row.mean_effective_vocab_size
+  }));
+  const rankingRows = ranking.slice(0, 6).map((row) => ({
+    rank: row.rank,
+    tokenizer: friendlyTokenizer(row.tokenizer),
+    score: row.robustness_score,
+    js_distance: row.mean_js_distance,
+    top_token_overlap: row.mean_top_token_jaccard
+  }));
+  const gcPlot = sequenceMetricSpecs.map((spec) => ({
     type: "bar",
-    name: metric,
-    x: gcRows.filter((row) => row.metric === metric).map(groupKey),
-    y: gcRows.filter((row) => row.metric === metric).map((row) => Number(row.mean)),
-    marker: { color: palette[index] }
+    name: spec.label,
+    x: orderedGroups,
+    y: orderedGroups.map((group) => {
+      const row = gcRows.find((candidate) => candidate.metric === spec.id && metricGroup(candidate) === group);
+      return Number(row?.mean ?? 0);
+    }),
+    marker: { color: spec.color },
+    hovertemplate: `${spec.label}<br>%{x}<br>mean=%{y:.3f}<extra>${spec.definition}</extra>`
   }));
 
   return (
     <div>
-      <SectionTitle kicker="SEQUENCE CONTEXT" title="Metrics without sequences">
-        Aggregate GC/CpG/UpA, token entropy and robustness summaries.
+      <SectionTitle kicker="SEQUENCE / TOKEN INSPECTOR" title="Sequence context, translated">
+        Real aggregate metrics, no sequences. Descriptive only.
       </SectionTitle>
-      <div className="grid gap-3 md:grid-cols-3">
-        <Card label="Safe top tokens" value={formatNumber(topTokens.length, 0)} detail="All token strings length <= 6" />
-        <Card label="Robustness top" value={ranking[0]?.tokenizer ?? "NA"} detail={`Score ${formatNumber(ranking[0]?.robustness_score, 3)}`} />
-        <Card label="Tokenizers audited" value={formatNumber((bundle.tokenization.tokenizer_summary ?? []).length, 0)} detail="Deterministic only" />
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        <Card label="MVP sequences" value={formatNumber(mvpSequenceCount, 0)} detail="HA/NA records in the sequence-context audit" />
+        <Card label="Refined CDS sequences" value={formatNumber(refinedCdsCount, 0)} detail="Used only for codon-aware token summaries" />
+        <Card label="Robustness leader" value={friendlyTokenizer(ranking[0]?.tokenizer)} detail={`Composite score ${formatNumber(ranking[0]?.robustness_score, 3)}`} />
+        <Card label="Safe top tokens" value={formatNumber(topTokens.length, 0)} detail="Only short tokens, length <= 6" />
       </div>
-      <div className="mt-5 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
-          <Plot
-            data={gcPlot}
-            layout={{ ...plotLayout, barmode: "group", title: "MVP sequence-context metrics by group", height: 420 }}
-            config={{ responsive: true, displaylogo: false }}
-            useResizeHandler
-            style={{ width: "100%", height: "420px" }}
-          />
+
+      <div className="mt-4 grid gap-3 xl:grid-cols-3">
+        <div className="rounded-lg border border-line bg-panel/75 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">GC window</div>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            The four MVP groups sit in a narrow GC range: <span className="text-ivory">{formatNumber(gc.min * 100, 1)}%</span> to{" "}
+            <span className="text-ivory">{formatNumber(gc.max * 100, 1)}%</span>.
+          </p>
         </div>
+        <div className="rounded-lg border border-line bg-panel/75 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">CpG readout</div>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            CpG O/E stays below 1 across groups, ranging from <span className="text-ivory">{formatNumber(cpg.min, 3)}</span> to{" "}
+            <span className="text-ivory">{formatNumber(cpg.max, 3)}</span>.
+          </p>
+        </div>
+        <div className="rounded-lg border border-line bg-panel/75 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">UpA readout</div>
+          <p className="mt-2 text-sm leading-6 text-muted">
+            UpA O/E also stays below 1 across groups, ranging from <span className="text-ivory">{formatNumber(upa.min, 3)}</span> to{" "}
+            <span className="text-ivory">{formatNumber(upa.max, 3)}</span>.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="space-y-4">
-          <div>
-            <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">TOKEN ENTROPY</div>
-            <MiniTable rows={entropy} columns={["tokenizer", "protein_subtype", "mean_entropy_bits", "mean_effective_vocab_size"]} limit={8} />
+          <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
+            <Plot
+              data={gcPlot}
+              layout={{
+                ...plotLayout,
+                barmode: "group",
+                title: "MVP sequence-context metrics by HA/NA group",
+                height: 390,
+                yaxis: { ...plotLayout.yaxis, title: "Mean value", range: [0, 1] },
+                xaxis: { ...plotLayout.xaxis, tickangle: 0 }
+              }}
+              config={{ responsive: true, displaylogo: false }}
+              useResizeHandler
+              style={{ width: "100%", height: "390px" }}
+            />
           </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            {sequenceMetricSpecs.map((spec) => (
+              <div key={spec.id} className="rounded-lg border border-line bg-panel/70 p-4">
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">{spec.short}</div>
+                <div className="mt-2 text-sm font-semibold text-ivory">{spec.label}</div>
+                <p className="mt-2 text-xs leading-5 text-muted">{spec.definition}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">READING THE RESULT</div>
+            <div className="mt-3 space-y-3 text-sm leading-6 text-muted">
+              <p>
+                GC fraction is tightly bounded across the four MVP groups, from{" "}
+                <span className="text-ivory">{formatNumber(gc.min * 100, 1)}%</span> in <span className="text-ivory">{gc.minGroup}</span> to{" "}
+                <span className="text-ivory">{formatNumber(gc.max * 100, 1)}%</span> in <span className="text-ivory">{gc.maxGroup}</span>.
+              </p>
+              <p>
+                CpG O/E ranges from <span className="text-ivory">{formatNumber(cpg.min, 3)}</span> in <span className="text-ivory">{cpg.minGroup}</span> to{" "}
+                <span className="text-ivory">{formatNumber(cpg.max, 3)}</span> in <span className="text-ivory">{cpg.maxGroup}</span>
+                {allCpgBelowOne ? ", so CpG is below single-base expectation in each displayed group." : "."}
+              </p>
+              <p>
+                UpA O/E ranges from <span className="text-ivory">{formatNumber(upa.min, 3)}</span> in <span className="text-ivory">{upa.minGroup}</span> to{" "}
+                <span className="text-ivory">{formatNumber(upa.max, 3)}</span> in <span className="text-ivory">{upa.maxGroup}</span>
+                {allUpaBelowOne ? ", so UpA is also below expectation in each displayed group." : "."}
+              </p>
+              <p className="text-xs">
+                These are compositional summaries, not claims about antigenicity, pathogenicity, escape, vaccine relevance, or fitness.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">TOKEN METRICS, PLAINLY</div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="rounded-md border border-line bg-bg/30 p-3">
+                <div className="text-sm font-semibold text-ivory">Entropy</div>
+                <p className="mt-1 text-xs leading-5 text-muted">Higher entropy means token usage is more spread across the vocabulary.</p>
+              </div>
+              <div className="rounded-md border border-line bg-bg/30 p-3">
+                <div className="text-sm font-semibold text-ivory">Effective vocabulary</div>
+                <p className="mt-1 text-xs leading-5 text-muted">The equivalent number of equally common tokens needed to produce that entropy.</p>
+              </div>
+              <div className="rounded-md border border-line bg-bg/30 p-3">
+                <div className="text-sm font-semibold text-ivory">JS distance</div>
+                <p className="mt-1 text-xs leading-5 text-muted">A descriptive distance between group-level token distributions.</p>
+              </div>
+              <div className="rounded-md border border-line bg-bg/30 p-3">
+                <div className="text-sm font-semibold text-ivory">Top-token overlap</div>
+                <p className="mt-1 text-xs leading-5 text-muted">Jaccard overlap of top tokens under bootstrap. Higher means more stable top-token lists.</p>
+              </div>
+            </div>
+          </div>
+
           <div>
-            <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ROBUSTNESS RANKING</div>
-            <MiniTable rows={ranking} columns={["rank", "tokenizer", "robustness_score", "mean_js_distance", "mean_top_token_jaccard"]} limit={8} />
+            <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">TOKEN ENTROPY SNAPSHOT</div>
+            <MiniTable rows={entropyRows} columns={["tokenizer", "group", "entropy_bits", "effective_vocab"]} limit={8} />
+          </div>
+
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ROBUSTNESS INTERPRETATION</div>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              The composite leader is <span className="text-ivory">{friendlyTokenizer(ranking[0]?.tokenizer)}</span>. It balances coverage, low bootstrap variance and stable top-token lists.
+            </p>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              The largest mean JS distance here is <span className="text-ivory">{friendlyTokenizer(separationLeader?.tokenizer)}</span>{" "}
+              ({formatNumber(separationLeader?.mean_js_distance, 3)}), while the most stable top-token overlap is{" "}
+              <span className="text-ivory">{friendlyTokenizer(tokenStabilityLeader?.tokenizer)}</span> ({formatNumber(tokenStabilityLeader?.mean_top_token_jaccard, 3)}).
+            </p>
+            <div className="mt-4">
+              <MiniTable rows={rankingRows} columns={["rank", "tokenizer", "score", "js_distance", "top_token_overlap"]} limit={6} />
+            </div>
           </div>
         </div>
       </div>

@@ -464,8 +464,8 @@ def build_structure_catalog() -> dict[str, Any]:
 def build_claims_and_limits() -> dict[str, Any]:
     return {
         "schema_version": "safe-bundle-v1",
-        "banner": "Restricted-data visual lab. Descriptive exploration only. No raw sequence redistribution. No antigenicity, vaccine, escape, fitness, or pathogenicity prediction.",
-        "data_statement": "Data are real derived research artifacts. Raw sequences are not redistributed.",
+        "banner": "Cryptographic data layer for real Influenza A HA/NA research artifacts. Hash-based IDs, aggregate views, and no raw sequence release.",
+        "data_statement": "Real research artifacts exported as aggregate summaries, reduced coordinates, short tokens and cryptographic hash IDs. Raw sequences stay local.",
         "allowed_claims": [
             "This app explores descriptive sequence-context and tokenization summaries from real derived FluGenome3D artifacts.",
             "Representation coordinates are reduced-coordinate artifacts with hashed IDs and minimal metadata.",

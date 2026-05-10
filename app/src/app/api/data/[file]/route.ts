@@ -36,7 +36,7 @@ export async function GET(_request: Request, context: { params: Promise<{ file: 
         headers: { "x-flugenome3d-data-mode": "local-full" }
       });
     } catch {
-      // Local mode is opt-in and gitignored. Fall back to the safe bundle if local files are absent.
+      // Local mode is opt-in and gitignored. Fall back to the deployable derived-data layer if local files are absent.
     }
   }
 

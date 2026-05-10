@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import {
   Atom,
+  BookOpen,
   Database,
   Dna,
   Home,
@@ -55,6 +56,7 @@ const sequenceMetricSpecs = [
 
 const views = [
   { id: "home", label: "Home / Overview", icon: Home },
+  { id: "guide", label: "Project Guide", icon: BookOpen },
   { id: "atlas", label: "Dataset Atlas", icon: Database },
   { id: "projector", label: "Representation Projector", icon: SplitSquareVertical },
   { id: "inspector", label: "Sequence/Token Inspector", icon: Dna },
@@ -279,6 +281,10 @@ function metricRange(rows: Record<string, any>[], metric: string) {
   return { min: min.value, max: max.value, minGroup: min.group, maxGroup: max.group };
 }
 
+function dataModeLabel(mode: string) {
+  return mode === "local-full" ? "Local full layer" : "Cryptographic data layer";
+}
+
 function useSafeData() {
   const [bundle, setBundle] = useState<SafeBundle | null>(null);
   const [mode, setMode] = useState("loading");
@@ -307,7 +313,7 @@ export default function FluGenomeLab() {
   if (!bundle) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-ink text-ivory">
-        <div className="font-mono text-sm uppercase tracking-[0.3em] text-brass">Loading FluGenome3D safe bundle</div>
+        <div className="font-mono text-sm uppercase tracking-[0.3em] text-brass">Loading FluGenome3D data layer</div>
       </main>
     );
   }
@@ -322,7 +328,7 @@ export default function FluGenomeLab() {
           <div className="mb-6">
             <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-brass">SYSTEM STATUS</div>
             <h1 className="mt-3 text-2xl font-semibold text-ivory">FluGenome3D</h1>
-            <p className="mt-3 text-xs leading-5 text-muted">Visual lab for real derived Influenza A HA/NA artifacts.</p>
+            <p className="mt-3 text-xs leading-5 text-muted">Visual lab for real derived Influenza A HA/NA research artifacts.</p>
           </div>
           <nav className="space-y-2">
             {views.map((view) => {
@@ -346,7 +352,7 @@ export default function FluGenomeLab() {
           </nav>
           <div className="mt-6 rounded-lg border border-line bg-panel/70 p-3">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">DATA MODE</div>
-            <div className="mt-2 text-sm text-ivory">{mode === "local-full" ? "Local full" : "Vercel safe"}</div>
+            <div className="mt-2 text-sm text-ivory">{dataModeLabel(mode)}</div>
           </div>
         </aside>
 
@@ -355,7 +361,7 @@ export default function FluGenomeLab() {
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <span>{banner}</span>
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">
-                {mode === "local-full" ? "LOCAL FULL MODE" : "VERCEL SAFE MODE"}
+                {mode === "local-full" ? "LOCAL FULL LAYER" : "HASHED DATA LAYER"}
               </span>
             </div>
             <div className="mt-1 text-xs text-muted">{dataStatement}</div>
@@ -383,6 +389,7 @@ export default function FluGenomeLab() {
             }
           >
             {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} /> : null}
+            {active === "guide" ? <ProjectGuide bundle={bundle} setActive={setActive} /> : null}
             {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} /> : null}
             {active === "projector" ? <RepresentationProjector bundle={bundle} /> : null}
             {active === "inspector" ? <SequenceTokenInspector bundle={bundle} /> : null}
@@ -397,9 +404,9 @@ export default function FluGenomeLab() {
 
 function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: string; setActive: (view: ViewId) => void }) {
   const features = [
-    ["Sequence context", "GC, CpG/UpA, dinucleotide and k-mer summaries from safe derived artifacts."],
-    ["Tokenization audit", "Deterministic token baselines, entropy, vocabulary and stability summaries."],
-    ["Molecular structure", "Public RCSB structures with mapping status kept explicit and pending."]
+    ["Sequence context", "GC, CpG/UpA, dinucleotide and k-mer summaries from derived HA/NA analyses."],
+    ["Tokenization audit", "Deterministic token baselines with entropy, vocabulary and bootstrap stability."],
+    ["Molecular structure", "Public RCSB structures connected to the sequence story, with mapping status shown honestly."]
   ];
 
   return (
@@ -410,10 +417,10 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
         <div className="relative flex min-h-[calc(100vh-14rem)] max-w-3xl flex-col justify-center">
           <div className="mb-6 flex flex-wrap gap-2">
             <span className="rounded-full border border-lineStrong bg-brassSoft/20 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-brass">
-              {mode === "local-full" ? "Local full mode" : "Vercel safe mode"}
+              {dataModeLabel(mode)}
             </span>
             <span className="rounded-full border border-teal/30 bg-teal/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-teal">
-              Descriptive exploration only
+              Real derived artifacts
             </span>
           </div>
           <h2 className="text-6xl font-semibold tracking-[-0.045em] text-ivory md:text-8xl">FluGenome3D</h2>
@@ -421,7 +428,7 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
             A reproducible explorer connecting Influenza A sequence context, tokenization, and structural visualization.
           </p>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-muted md:text-base">
-            FluGenome3D is a private/restricted-data visual lab designed to inspect the Influenza A HA/NA dataset behind AntigenSDE. It connects dataset summaries, representation maps, sequence/token metrics, and molecular structure views without exposing raw sequences.
+            FluGenome3D turns local HA/NA analyses into maps, projections, token summaries and public structure views. The app shares derived layers with hash-based identifiers, while raw sequences remain local.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <button
@@ -431,6 +438,12 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
               Explore dataset
             </button>
             <button
+              onClick={() => setActive("guide")}
+              className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
+            >
+              Read project guide
+            </button>
+            <button
               onClick={() => setActive("structure")}
               className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
             >
@@ -438,7 +451,7 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
             </button>
           </div>
           <div className="mt-8 max-w-2xl rounded-lg border border-line bg-bg/44 p-4 text-xs leading-6 text-muted backdrop-blur">
-            <span className="font-mono uppercase tracking-[0.18em] text-brass">DATA GOVERNANCE</span>
+            <span className="font-mono uppercase tracking-[0.18em] text-brass">DATA LAYER</span>
             <span className="ml-2">{bundle.claims.data_statement}</span>
           </div>
         </div>
@@ -451,6 +464,103 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
             <div className="mt-2 text-xs leading-6 text-muted">{text}</div>
           </div>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (view: ViewId) => void }) {
+  const reps = bundle.representations.representations as Record<string, any>[];
+  const tokenizers = bundle.tokenization.tokenizer_summary as Record<string, any>[];
+  const formulas = [
+    ["GC fraction", "(G + C) / sequence length", "A compact readout of base composition."],
+    ["CpG O/E", "f(CG) / (f(C) x f(G))", "Compares CpG frequency against what C and G abundance would suggest."],
+    ["UpA O/E", "f(TA) / (f(T) x f(A))", "Uses DNA TA as the proxy for RNA UpA."],
+    ["Entropy", "-sum p(token) log2 p(token)", "Higher values mean token usage is more spread out."],
+    ["RSCU", "codon count / synonymous-codon average", "A codon-usage summary used only on the refined CDS panel."],
+    ["JS distance", "distance between token distributions", "A descriptive way to compare groups without making prediction claims."]
+  ];
+  const models = [
+    ["Dataset Atlas", "Country-level aggregate coverage, panel sizes and CDS reliability."],
+    ["PCA projector", `${formatNumber(reps.length, 0)} reduced-coordinate maps built from k-mer, codon and RSCU features.`],
+    ["Token audit", `${formatNumber(tokenizers.length, 0)} deterministic tokenizers: codons, overlapping k-mers, non-overlapping k-mers and frame-aware k-mers.`],
+    ["Bootstrap stability", "Stratified resampling checks whether token patterns are stable under repeated sampling."],
+    ["Structure viewer", "Public RCSB structures are loaded for inspection; residue-level metric coloring remains a future validated mapping step."]
+  ];
+
+  return (
+    <div>
+      <SectionTitle kicker="PROJECT GUIDE" title="What FluGenome3D is trying to show">
+        A readable map of the project logic, formulas and current models.
+      </SectionTitle>
+
+      <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">PROJECT IDEA</div>
+          <p className="mt-3 text-sm leading-7 text-muted">
+            FluGenome3D is a visual research layer for Influenza A HA/NA. It starts from real local analyses, exports only derived data, and helps a viewer move from dataset coverage to sequence composition, tokenization, representation space and public molecular structures.
+          </p>
+          <p className="mt-3 text-sm leading-7 text-muted">
+            The project is not trying to predict vaccine candidates, escape, pathogenicity or fitness. It is building a clear descriptive baseline: what is in the dataset, how sequences are represented, and which patterns are stable enough to inspect before learned tokenizers such as BPE or GROVER.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button onClick={() => setActive("atlas")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
+              Open atlas
+            </button>
+            <button onClick={() => setActive("projector")} className="rounded-md border border-line bg-bg/45 px-4 py-2 text-sm text-muted hover:border-teal hover:text-ivory">
+              Open projector
+            </button>
+            <button onClick={() => setActive("inspector")} className="rounded-md border border-line bg-bg/45 px-4 py-2 text-sm text-muted hover:border-teal hover:text-ivory">
+              Open metrics
+            </button>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">DATA LAYER</div>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="rounded-md border border-line bg-bg/30 p-3">
+              <div className="text-sm font-semibold text-ivory">Shared app layer</div>
+              <p className="mt-1 text-xs leading-5 text-muted">Aggregates, reduced coordinates, short tokens and hash-based point IDs.</p>
+            </div>
+            <div className="rounded-md border border-line bg-bg/30 p-3">
+              <div className="text-sm font-semibold text-ivory">Local-only layer</div>
+              <p className="mt-1 text-xs leading-5 text-muted">Raw sequences, restricted panels, detailed Parquet files and private metadata stay off the public app.</p>
+            </div>
+          </div>
+          <p className="mt-4 text-xs leading-6 text-muted">
+            "Cryptographic" here refers to hash-based internal IDs and a derived export boundary. It is a research-sharing layer, not a claim that raw data are published.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">FORMULAS, IN PLAIN LANGUAGE</div>
+          <div className="mt-4 grid gap-3">
+            {formulas.map(([name, formula, explanation]) => (
+              <div key={name} className="rounded-md border border-line bg-bg/30 p-3">
+                <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between">
+                  <div className="text-sm font-semibold text-ivory">{name}</div>
+                  <code className="font-mono text-xs text-teal">{formula}</code>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-muted">{explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">MODELS AND VIEWS USED NOW</div>
+          <div className="mt-4 grid gap-3">
+            {models.map(([name, explanation]) => (
+              <div key={name} className="rounded-md border border-line bg-bg/30 p-3">
+                <div className="text-sm font-semibold text-ivory">{name}</div>
+                <p className="mt-1 text-xs leading-5 text-muted">{explanation}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -507,7 +617,7 @@ function DatasetAtlas({ bundle, mode }: { bundle: SafeBundle; mode: string }) {
         </label>
         <Card label="Mapped countries" value={formatNumber(countryTotals.length, 0)} detail="Country aggregates only" />
         <Card label="Mapped pairs" value={formatNumber(totalMappedPairs, 0)} detail={atlasPanel === "full_panel" ? "Full deduplicated panel" : "Balanced MVP panel"} />
-        <Card label="Temporal span" value={`${Number.isFinite(yearMin) ? yearMin : "NA"}-${Number.isFinite(yearMax) ? yearMax : "NA"}`} detail={mode === "local-full" ? "Local full" : "Vercel safe"} />
+        <Card label="Temporal span" value={`${Number.isFinite(yearMin) ? yearMin : "NA"}-${Number.isFinite(yearMax) ? yearMax : "NA"}`} detail={dataModeLabel(mode)} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1fr_350px]">
@@ -978,7 +1088,7 @@ function BridgeView({ bundle }: { bundle: SafeBundle }) {
   const [group, setGroup] = useState("HA-H1N1");
   const [repId, setRepId] = useState(reps[0]?.id ?? "");
   const rep = reps.find((item) => item.id === repId) ?? reps[0];
-  const points = ((rep?.points ?? []) as Record<string, any>[]).filter((point) => point.group === group);
+  const points = decodeRepresentationPoints(rep).filter((point) => point.group === group);
   const [protein, subtype] = group.split("-");
   const structure = structures.find((item) => item.protein === protein && item.subtype_context === subtype) ?? structures[0];
   const metricRows = (bundle.metrics.gc_cpg_upa_summary as Record<string, any>[]).filter((row) => `${row.protein}-${row.subtype}` === group);

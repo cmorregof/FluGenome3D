@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "FluGenome3D Visual Lab",
-  description: "Restricted-data visual lab for real derived Influenza A HA/NA sequence-context artifacts."
+  description: "Visual lab for real derived Influenza A HA/NA sequence, tokenization and structure artifacts."
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

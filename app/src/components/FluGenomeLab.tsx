@@ -918,10 +918,10 @@ function StructureView({ bundle }: { bundle: SafeBundle }) {
 
   return (
     <div>
-      <SectionTitle kicker="STRUCTURE VIEW" title="Public PDB viewer">
-        Mapping is pending unless explicitly validated.
+      <SectionTitle kicker="STRUCTURE VIEW" title="Public structures, not residue maps yet">
+        The 3D coordinates are public. FluGenome3D metrics are not painted onto residues yet.
       </SectionTitle>
-      <div className="mb-4 grid gap-3 md:grid-cols-[1fr_2fr]">
+      <div className="mb-4 grid gap-3 xl:grid-cols-[0.8fr_1.1fr_1.1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Structure</span>
           <select value={pdbId} onChange={(event) => setPdbId(event.target.value)} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
@@ -931,15 +931,42 @@ function StructureView({ bundle }: { bundle: SafeBundle }) {
               </option>
             ))}
           </select>
+          <div className="mt-3 text-xs leading-5 text-muted">
+            {structure?.protein} · {structure?.subtype_context} context ·{" "}
+            <a className="text-teal underline-offset-4 hover:underline" href={structure?.rcsb_url} target="_blank" rel="noreferrer">
+              open RCSB
+            </a>
+          </div>
         </label>
         <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
-          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">MAPPING STATUS</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">WHAT IS LOADED</span>
           <p className="mt-2">
-            {structure?.label}. The viewer loads public RCSB coordinates. Sequence-to-structure metric mapping is marked{" "}
-            <span className="text-ivory">{structure?.mapping_status}</span>.
+            {structure?.label}. The viewer loads the public coordinate file from RCSB and lets you rotate, zoom and switch styles. This is safe to show because it is not a restricted sequence artifact.
+          </p>
+        </div>
+        <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">WHY MAPPING IS PENDING</span>
+          <p className="mt-2">
+            To color residues by FluGenome3D metrics, we still need a validated alignment from local HA/NA records to PDB residues, including numbering, chain choice, missing residues and mature-protein boundaries.
           </p>
         </div>
       </div>
+
+      <div className="mb-4 grid gap-3 xl:grid-cols-4">
+        {[
+          ["1", "Align sequence to structure", "Match each local HA/NA sequence position to the reference PDB sequence."],
+          ["2", "Resolve residue numbering", "Handle PDB chain IDs, insertion codes, missing residues and subtype-specific numbering."],
+          ["3", "Choose mapped metric", "Define whether a residue receives codon, token, entropy or group-level summaries."],
+          ["4", "Validate before coloring", "Only then should the viewer paint FluGenome3D-derived values onto the structure."]
+        ].map(([step, title, detail]) => (
+          <div key={step} className="rounded-lg border border-line bg-panel/70 p-4">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">Mapping step {step}</div>
+            <div className="mt-2 text-sm font-semibold text-ivory">{title}</div>
+            <p className="mt-2 text-xs leading-5 text-muted">{detail}</p>
+          </div>
+        ))}
+      </div>
+
       {structure ? <MolecularViewer structure={structure as any} /> : null}
     </div>
   );

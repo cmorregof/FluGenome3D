@@ -17,6 +17,18 @@ type ViewerState = "idle" | "loading" | "ready" | "error";
 type ViewerStyle = "cartoon" | "surface" | "stick";
 type ColorMode = "default" | "chain" | "pending";
 
+const colorModeLabels: Record<ColorMode, string> = {
+  default: "rainbow",
+  chain: "chain",
+  pending: "no mapping"
+};
+
+const colorModeDescriptions: Record<ColorMode, string> = {
+  default: "Rainbow colors are viewer colors along the public structure. They are not sequence metrics.",
+  chain: "Chain colors separate molecular chains in the public PDB entry.",
+  pending: "Uniform teal marks that no FluGenome3D metric has been mapped onto residues yet."
+};
+
 function controlClass(active: boolean) {
   return `rounded-md border px-3 py-2 text-xs transition ${
     active
@@ -57,7 +69,7 @@ export default function MolecularViewer({ structure }: { structure: StructureRec
     viewer.removeAllSurfaces?.();
 
     const chainStyle = colorMode === "chain" ? { colorscheme: "chainHetatm" } : {};
-    const pendingColor = colorMode === "pending" ? "#87a99b" : undefined;
+    const pendingColor = colorMode === "pending" ? "#5cdce2" : undefined;
 
     if (styleMode === "cartoon") {
       viewer.setStyle(
@@ -73,10 +85,10 @@ export default function MolecularViewer({ structure }: { structure: StructureRec
     }
 
     if (styleMode === "surface") {
-      viewer.setStyle({}, { cartoon: { opacity: 0.24, color: "#a8a092", ...chainStyle } });
+      viewer.setStyle({}, { cartoon: { opacity: 0.24, color: "#9fb3ae", ...chainStyle } });
       viewer.addSurface(threeDmol.SurfaceType.VDW, {
         opacity: 0.58,
-        color: pendingColor ?? "#87a99b"
+        color: pendingColor ?? "#5cdce2"
       });
     }
 
@@ -180,7 +192,7 @@ export default function MolecularViewer({ structure }: { structure: StructureRec
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">PUBLIC STRUCTURE VIEWER</div>
           <div className="mt-1 text-sm text-muted">
-            Structure viewer loads public RCSB coordinates. Mapping status: pending unless explicitly validated.
+            This panel shows public RCSB coordinates. Colors are visual aids, not FluGenome3D sequence metrics.
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -191,13 +203,30 @@ export default function MolecularViewer({ structure }: { structure: StructureRec
           ))}
           {(["default", "chain", "pending"] as ColorMode[]).map((mode) => (
             <button key={mode} onClick={() => setColorMode(mode)} className={controlClass(colorMode === mode)}>
-              {mode}
+              {colorModeLabels[mode]}
             </button>
           ))}
           <button onClick={resetCamera} className="inline-flex items-center gap-2 rounded-md border border-line bg-panel2 px-3 py-2 text-xs text-muted transition hover:border-teal hover:text-ivory">
             <RotateCcw size={13} />
             reset
           </button>
+        </div>
+      </div>
+
+      <div className="border-b border-line bg-panel/45 px-4 py-3">
+        <div className="grid gap-3 text-xs leading-5 text-muted md:grid-cols-3">
+          <div>
+            <span className="font-mono uppercase tracking-[0.18em] text-teal">Rainbow</span>
+            <p className="mt-1">{colorModeDescriptions.default}</p>
+          </div>
+          <div>
+            <span className="font-mono uppercase tracking-[0.18em] text-sage">Chain</span>
+            <p className="mt-1">{colorModeDescriptions.chain}</p>
+          </div>
+          <div>
+            <span className="font-mono uppercase tracking-[0.18em] text-ivory">No mapping</span>
+            <p className="mt-1">{colorModeDescriptions.pending}</p>
+          </div>
         </div>
       </div>
 

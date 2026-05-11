@@ -141,24 +141,63 @@ function MiniTable({ rows, columns, limit = 8 }: { rows: Record<string, any>[]; 
 function ViewExplainer({ prompts, openAsk }: { prompts?: AskPrompt[]; openAsk: (question: string) => void }) {
   if (!prompts?.length) return null;
   return (
-    <div className="mb-4 rounded-lg border border-line bg-panel/60 p-3">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">Explain this view</div>
-          <div className="mt-1 text-xs text-muted">Contextual questions open the grounded guide with citations.</div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {prompts.map((prompt) => (
-            <button
-              key={prompt.question}
-              onClick={() => openAsk(prompt.question)}
-              className="rounded-full border border-line bg-bg/40 px-3 py-1.5 text-xs text-muted transition hover:border-teal hover:text-ivory"
-            >
-              {prompt.label}
-            </button>
-          ))}
-        </div>
+    <div className="mb-4 flex flex-wrap items-center gap-2">
+      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Ask about this view</span>
+      <div className="flex flex-wrap gap-2">
+        {prompts.slice(0, 3).map((prompt) => (
+          <button
+            key={prompt.question}
+            onClick={() => openAsk(prompt.question)}
+            className="rounded-full border border-line bg-bg/35 px-3 py-1.5 text-xs text-muted transition hover:border-teal hover:text-ivory"
+          >
+            {prompt.label}
+          </button>
+        ))}
       </div>
+    </div>
+  );
+}
+
+function DetailPanel({
+  title,
+  children,
+  kicker = "More detail",
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  kicker?: string;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details className="group rounded-lg border border-line bg-panel/58 p-4" open={defaultOpen}>
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+        <span>
+          <span className="block font-mono text-[10px] uppercase tracking-[0.22em] text-muted">{kicker}</span>
+          <span className="mt-1 block text-sm font-semibold text-ivory">{title}</span>
+        </span>
+        <span className="rounded-full border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted group-open:hidden">
+          Open
+        </span>
+        <span className="hidden rounded-full border border-line px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted group-open:inline">
+          Close
+        </span>
+      </summary>
+      <div className="mt-4">{children}</div>
+    </details>
+  );
+}
+
+function InsightStrip({ items }: { items: Array<{ label: string; value: string; detail?: string }> }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-3">
+      {items.map((item) => (
+        <div key={item.label} className="rounded-lg border border-line bg-bg/36 p-4">
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">{item.label}</div>
+          <div className="mt-2 text-lg font-semibold text-ivory">{item.value}</div>
+          {item.detail ? <div className="mt-1 text-xs leading-5 text-muted">{item.detail}</div> : null}
+        </div>
+      ))}
     </div>
   );
 }
@@ -422,7 +461,6 @@ export default function FluGenomeLab() {
     );
   }
 
-  const banner = bundle.claims.banner;
   const dataStatement = bundle.claims.data_statement;
 
   return (
@@ -461,14 +499,14 @@ export default function FluGenomeLab() {
         </aside>
 
         <section className="min-w-0 flex-1">
-          <div className="mb-4 rounded-lg border border-lineStrong bg-brassSoft/20 px-4 py-3 text-sm text-ivory">
+          <div className="mb-4 rounded-lg border border-lineStrong bg-brassSoft/16 px-4 py-3 text-sm text-ivory">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <span>{banner}</span>
+              <span>Real derived HA/NA artifacts, shared through safe aggregate and hash-based visual layers.</span>
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">
                 {mode === "local-full" ? "LOCAL FULL LAYER" : "HASHED DATA LAYER"}
               </span>
             </div>
-            <div className="mt-1 text-xs text-muted">{dataStatement}</div>
+            <div className="mt-1 text-xs text-muted">{dataStatement} Descriptive exploration only.</div>
           </div>
 
           <div className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-line bg-ink/80 p-2 lg:hidden">
@@ -492,7 +530,7 @@ export default function FluGenomeLab() {
                 : "rounded-lg border border-line bg-ink/82 p-4 md:p-6"
             }
           >
-            {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} openAsk={openAsk} /> : null}
+            {active === "home" ? <HomeOverview mode={mode} setActive={setActive} /> : null}
             {active === "guide" ? <ProjectGuide bundle={bundle} setActive={setActive} openAsk={openAsk} /> : null}
             {active === "ask" ? <AskFluGenomeGuide bundle={bundle} setActive={setActive} askSeed={askSeed} /> : null}
             {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} openAsk={openAsk} /> : null}
@@ -509,20 +547,16 @@ export default function FluGenomeLab() {
 }
 
 function HomeOverview({
-  bundle,
   mode,
   setActive,
-  openAsk,
 }: {
-  bundle: SafeBundle;
   mode: string;
   setActive: (view: ViewId) => void;
-  openAsk: (question: string) => void;
 }) {
   const features = [
-    ["Sequence context", "GC, CpG/UpA, dinucleotide and k-mer summaries from derived HA/NA analyses."],
-    ["Learned representation", "AntigenLM latent geometry from the thesis repo, shown through hash-based reduced coordinates."],
-    ["Molecular structure", "Public RCSB structures connected to alignment QC and aggregate residue signals."]
+    ["Sequence context", "Composition and token summaries without exposing sequences."],
+    ["Latent atlas", "PCA and t-SNE views of AntigenLM-derived embeddings."],
+    ["Structure view", "Public RCSB structures plus alignment QC status."]
   ];
 
   return (
@@ -544,7 +578,7 @@ function HomeOverview({
             A reproducible explorer connecting Influenza A sequence context, tokenization, and structural visualization.
           </p>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-muted md:text-base">
-            FluGenome3D turns local HA/NA analyses into maps, projections, token summaries and public structure views. The app shares derived layers with hash-based identifiers, while raw sequences remain local.
+            FluGenome3D turns local HA/NA analyses into safe visual layers: atlas maps, representation spaces, token summaries and public structure views. Raw sequences remain local.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <button
@@ -554,10 +588,10 @@ function HomeOverview({
               Explore dataset
             </button>
             <button
-              onClick={() => openAsk("What is the fastest way to understand FluGenome3D?")}
+              onClick={() => setActive("latent")}
               className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
             >
-              Ask FluGenome3D
+              Open latent atlas
             </button>
             <button
               onClick={() => setActive("guide")}
@@ -565,16 +599,6 @@ function HomeOverview({
             >
               Read project guide
             </button>
-            <button
-              onClick={() => setActive("structure")}
-              className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
-            >
-              View molecular structures
-            </button>
-          </div>
-          <div className="mt-8 max-w-2xl rounded-lg border border-line bg-bg/44 p-4 text-xs leading-6 text-muted backdrop-blur">
-            <span className="font-mono uppercase tracking-[0.18em] text-brass">DATA LAYER</span>
-            <span className="ml-2">{bundle.claims.data_statement}</span>
           </div>
         </div>
       </section>
@@ -617,17 +641,14 @@ function ProjectGuide({
   return (
     <div>
       <SectionTitle kicker="PROJECT GUIDE" title="What FluGenome3D is trying to show">
-        A readable map of the project logic, formulas and current models.
+        Project logic without the lab-report wall of text.
       </SectionTitle>
 
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="rounded-lg border border-line bg-panel/75 p-5">
           <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">PROJECT IDEA</div>
           <p className="mt-3 text-sm leading-7 text-muted">
-            FluGenome3D is a visual research layer for Influenza A HA/NA. It starts from real local analyses, exports only derived data, and helps a viewer move from dataset coverage to sequence composition, tokenization, representation space and public molecular structures.
-          </p>
-          <p className="mt-3 text-sm leading-7 text-muted">
-            The project is not trying to predict vaccine candidates, escape, pathogenicity or fitness. It is building a clear descriptive baseline: what is in the dataset, how sequences are represented, and which patterns are stable enough to inspect before learned tokenizers such as BPE or GROVER.
+            A visual research layer for Influenza A HA/NA: start with dataset coverage, inspect sequence context, compare representations, then connect those views to public structures.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <button onClick={() => setActive("atlas")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
@@ -658,21 +679,19 @@ function ProjectGuide({
             </div>
           </div>
           <p className="mt-4 text-xs leading-6 text-muted">
-            "Cryptographic" here refers to hash-based internal IDs and a derived export boundary. It is a research-sharing layer, not a claim that raw data are published.
+            Hash-based IDs keep the shared interface useful without turning it into a raw data release.
           </p>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-lg border border-line bg-panel/75 p-5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">FORMULAS, IN PLAIN LANGUAGE</div>
+        <DetailPanel title="Formulas in plain language">
           <div className="mt-4">
             <FormulaCardGrid cards={formulaCards.slice(0, 6)} openAsk={openAsk} />
           </div>
-        </div>
+        </DetailPanel>
 
-        <div className="rounded-lg border border-line bg-panel/75 p-5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">MODELS AND VIEWS USED NOW</div>
+        <DetailPanel title="Models and views used now" defaultOpen>
           <div className="mt-4 grid gap-3">
             {models.map(([name, explanation]) => (
               <div key={name} className="rounded-md border border-line bg-bg/30 p-3">
@@ -681,17 +700,13 @@ function ProjectGuide({
               </div>
             ))}
           </div>
-        </div>
+        </DetailPanel>
       </div>
 
-      <div className="mt-4 rounded-lg border border-line bg-panel/75 p-5">
-        <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">GLOSSARY FOR FAST READING</div>
-        <p className="mt-3 text-sm leading-6 text-muted">
-          These are the words that make the app readable in an interview or lab meeting. Each card can open the guide with a focused question.
-        </p>
-        <div className="mt-4">
+      <div className="mt-4">
+        <DetailPanel title="Glossary for fast reading">
           <GlossaryGrid terms={glossaryTerms.slice(0, 8)} openAsk={openAsk} />
-        </div>
+        </DetailPanel>
       </div>
     </div>
   );
@@ -752,15 +767,12 @@ function AskFluGenomeGuide({
   return (
     <div>
       <SectionTitle kicker="ASK FLUGENOME3D" title="A grounded guide for the visual lab">
-        Plain-language answers from safe reports, formulas and exported summaries.
+        Plain-language answers from the safe project layer.
       </SectionTitle>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="rounded-lg border border-line bg-panel/75 p-5">
           <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ASK A QUESTION</div>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-muted">
-            This guide is meant to make the app understandable without turning it into a black box. It answers from the project reports, guide cards and safe JSON manifests already shipped with FluGenome3D.
-          </p>
           <div className="mt-5 flex flex-col gap-3 md:flex-row">
             <input
               value={question}
@@ -823,9 +835,8 @@ function AskFluGenomeGuide({
           <div className="rounded-lg border border-line bg-panel/75 p-4">
             <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">HOW IT WORKS</div>
             <div className="mt-3 space-y-3 text-sm leading-6 text-muted">
-              <p>Retrieval is local to the app: no raw sequence access, no external LLM call, no hidden biological predictor.</p>
-              <p>Answers cite safe guide chunks generated from docs, reports, formulas and governance manifests.</p>
-              <p>When a question asks for prediction or causal meaning, the guide keeps the answer inside the descriptive scope.</p>
+              <p>Answers are retrieved from safe guide chunks shipped with the app.</p>
+              <p>No raw sequence access, no external LLM call, no hidden biological predictor.</p>
             </div>
           </div>
           <div className="rounded-lg border border-line bg-panel/75 p-4">
@@ -858,24 +869,16 @@ function AskFluGenomeGuide({
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-        <div className="rounded-lg border border-line bg-panel/75 p-5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">FORMULA EXPLAINER</div>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            Click any formula to ask the guide for a focused, cited explanation. These are safe summaries, not sequence records.
-          </p>
+        <DetailPanel title="Formula explainer">
           <div className="mt-4">
             <FormulaCardGrid cards={formulaCards} openAsk={(nextQuestion) => askGuide(nextQuestion)} />
           </div>
-        </div>
-        <div className="rounded-lg border border-line bg-panel/75 p-5">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">INTERACTIVE GLOSSARY</div>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            A democratized vocabulary for reading the app without already knowing every metric or biological abbreviation.
-          </p>
+        </DetailPanel>
+        <DetailPanel title="Interactive glossary">
           <div className="mt-4">
             <GlossaryGrid terms={glossaryTerms} openAsk={(nextQuestion) => askGuide(nextQuestion)} />
           </div>
-        </div>
+        </DetailPanel>
       </div>
     </div>
   );
@@ -914,7 +917,7 @@ function DatasetAtlas({ bundle, mode, openAsk }: { bundle: SafeBundle; mode: str
   return (
     <div>
       <SectionTitle kicker="DATASET ATLAS" title="Geographic coverage of HA/NA pairs">
-        Country-level aggregates from real derived artifacts. No raw sequences, accessions or isolate names.
+        Country-level aggregates from the safe derived layer.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="mb-4 grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
@@ -1001,37 +1004,39 @@ function DatasetAtlas({ bundle, mode, openAsk }: { bundle: SafeBundle; mode: str
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
-          <Plot
-            data={regionTraces}
-            layout={{ ...plotLayout, barmode: "stack", title: "Regional subtype composition", height: 320 }}
-            config={{ responsive: true, displaylogo: false }}
-            useResizeHandler
-            style={{ width: "100%", height: "320px" }}
-          />
-        </div>
-        <div className="rounded-lg border border-line bg-panel/75 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">Panel interpretation</div>
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <div className="rounded-lg border border-line bg-bg/36 p-4">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">MVP panel</div>
-              <div className="mt-2 text-2xl font-semibold text-ivory">{formatNumber(mvp?.n_sequence_records ?? 0, 0)}</div>
-              <div className="mt-2 text-xs leading-5 text-muted">Balanced subset for CV-ready sequence-context figures.</div>
+      <div className="mt-4">
+        <DetailPanel title="Regional composition and panel notes">
+          <div className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+            <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
+              <Plot
+                data={regionTraces}
+                layout={{ ...plotLayout, barmode: "stack", title: "Regional subtype composition", height: 320 }}
+                config={{ responsive: true, displaylogo: false }}
+                useResizeHandler
+                style={{ width: "100%", height: "320px" }}
+              />
             </div>
-            <div className="rounded-lg border border-line bg-bg/36 p-4">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Full panel</div>
-              <div className="mt-2 text-2xl font-semibold text-ivory">{formatNumber(full?.n_pairs ?? 0, 0)}</div>
-              <div className="mt-2 text-xs leading-5 text-muted">Deduplicated HA+NA pairs for coverage context.</div>
-            </div>
+            <InsightStrip
+              items={[
+                {
+                  label: "MVP panel",
+                  value: formatNumber(mvp?.n_sequence_records ?? 0, 0),
+                  detail: "Balanced subset for sequence-context figures.",
+                },
+                {
+                  label: "Full panel",
+                  value: formatNumber(full?.n_pairs ?? 0, 0),
+                  detail: "Deduplicated HA+NA pairs for coverage context.",
+                },
+                {
+                  label: "Map privacy",
+                  value: "Country aggregates",
+                  detail: "Descriptive coverage, not sample-level locations.",
+                },
+              ]}
+            />
           </div>
-          <p className="mt-4 text-sm leading-6 text-muted">
-            Smoke-test rows are intentionally not foregrounded here. This atlas emphasizes the balanced MVP panel and the full deduplicated panel as the useful research views.
-          </p>
-          <p className="mt-3 text-xs leading-6 text-muted">
-            Map locations are country-level aggregates from safe derived metadata. They are descriptive coverage summaries, not sample-level locations.
-          </p>
-        </div>
+        </DetailPanel>
       </div>
     </div>
   );
@@ -1076,7 +1081,7 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
   return (
     <div>
       <SectionTitle kicker="ANTIGENLM LATENT ATLAS" title="Learned HA/NA representation layer">
-        AntigenLM embeddings from the parent thesis repo, exported as hash-based PCA and t-SNE coordinates.
+        PCA and t-SNE maps from real AntigenLM-derived embeddings.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
 
@@ -1118,7 +1123,7 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
         </label>
         <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">Reading this layer</span>
-          <p className="mt-2">PCA is linear and t-SNE is local-neighborhood preserving. Both are visual audits of learned embeddings, not prediction or sequence-generation panels.</p>
+          <p className="mt-2">PCA shows broad axes; t-SNE emphasizes local neighborhoods. Both are descriptive maps.</p>
         </div>
       </div>
 
@@ -1185,7 +1190,7 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
           <div className="rounded-lg border border-line bg-panel/75 p-4">
             <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">Interpretation</div>
             <p className="mt-3 text-sm leading-6 text-muted">
-              The parent audit found stronger latent correlation with HA+NA Hamming distance than with global time distance. In plain terms: this learned space is organized more by molecular similarity than by a simple calendar line.
+              The learned map is used as geometry for inspection: which records sit near each other, and how that changes by subtype or time bin.
             </p>
             <p className="mt-2 text-xs leading-5 text-muted">
               Mean HA+NA rho: <span className="text-ivory">{formatNumber(meanHamming, 3)}</span>. Mean temporal rho:{" "}
@@ -1195,25 +1200,22 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-        <div>
-          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">MOLECULAR GEOMETRY</div>
-          <MiniTable rows={spearman.map((row) => ({ metric: row.metric, subtype: row.subtype, rho_mean: row.rho_mean, valid_pairs: row.valid_pairs_mean }))} columns={["metric", "subtype", "rho_mean", "valid_pairs"]} limit={8} />
-        </div>
-        <div>
-          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">CLADE / BASELINE CHECKS</div>
-          <MiniTable rows={clade.map((row) => ({ subtype: row.subtype, label: row.label, k: row.k, precision: row.mean_precision, enrichment: row.enrichment_vs_random }))} columns={["subtype", "label", "k", "precision", "enrichment"]} limit={8} />
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-lg border border-line bg-panel/75 p-4">
-        <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">REPRESENTATION LADDER</div>
-        <p className="mt-2 text-sm leading-6 text-muted">
-          FluGenome3D now shows a ladder from interpretable baselines to a learned biological representation: raw k-mers, codon/RSCU vectors, deterministic tokenizers, and AntigenLM embeddings.
-        </p>
-        <div className="mt-3">
-          <MiniTable rows={comparison} columns={["family", "representation", "n_sequences", "n_features", "app_role"]} limit={8} />
-        </div>
+      <div className="mt-4">
+        <DetailPanel title="Audit tables behind the latent map">
+          <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+            <div>
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">MOLECULAR GEOMETRY</div>
+              <MiniTable rows={spearman.map((row) => ({ metric: row.metric, subtype: row.subtype, rho_mean: row.rho_mean, valid_pairs: row.valid_pairs_mean }))} columns={["metric", "subtype", "rho_mean", "valid_pairs"]} limit={8} />
+            </div>
+            <div>
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">CLADE / BASELINE CHECKS</div>
+              <MiniTable rows={clade.map((row) => ({ subtype: row.subtype, label: row.label, k: row.k, precision: row.mean_precision, enrichment: row.enrichment_vs_random }))} columns={["subtype", "label", "k", "precision", "enrichment"]} limit={8} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <MiniTable rows={comparison} columns={["family", "representation", "n_sequences", "n_features", "app_role"]} limit={8} />
+          </div>
+        </DetailPanel>
       </div>
     </div>
   );
@@ -1356,8 +1358,6 @@ function SequenceTokenInspector({ bundle, openAsk }: { bundle: SafeBundle; openA
   const gc = metricRange(gcRows, "gc_content");
   const cpg = metricRange(gcRows, "cpg_oe");
   const upa = metricRange(gcRows, "upa_oe");
-  const allCpgBelowOne = gcRows.filter((row) => row.metric === "cpg_oe").every((row) => Number(row.mean) < 1);
-  const allUpaBelowOne = gcRows.filter((row) => row.metric === "upa_oe").every((row) => Number(row.mean) < 1);
   const separationLeader = ranking.reduce((best, row) => (Number(row.mean_js_distance ?? 0) > Number(best?.mean_js_distance ?? -1) ? row : best), ranking[0]);
   const tokenStabilityLeader = ranking.reduce((best, row) => (Number(row.mean_top_token_jaccard ?? 0) > Number(best?.mean_top_token_jaccard ?? -1) ? row : best), ranking[0]);
   const entropyRows = entropy.slice(0, 8).map((row) => ({
@@ -1388,7 +1388,7 @@ function SequenceTokenInspector({ bundle, openAsk }: { bundle: SafeBundle; openA
   return (
     <div>
       <SectionTitle kicker="SEQUENCE / TOKEN INSPECTOR" title="Sequence context, translated">
-        Real aggregate metrics, no sequences. Descriptive only.
+        Aggregate sequence and token summaries, without sequences.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -1441,64 +1441,24 @@ function SequenceTokenInspector({ bundle, openAsk }: { bundle: SafeBundle; openA
             />
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3">
-            {sequenceMetricSpecs.map((spec) => (
-              <div key={spec.id} className="rounded-lg border border-line bg-panel/70 p-4">
-                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">{spec.short}</div>
-                <div className="mt-2 text-sm font-semibold text-ivory">{spec.label}</div>
-                <p className="mt-2 text-xs leading-5 text-muted">{spec.definition}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="rounded-lg border border-line bg-panel/75 p-4">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">READING THE RESULT</div>
-            <div className="mt-3 space-y-3 text-sm leading-6 text-muted">
-              <p>
-                GC fraction is tightly bounded across the four MVP groups, from{" "}
-                <span className="text-ivory">{formatNumber(gc.min * 100, 1)}%</span> in <span className="text-ivory">{gc.minGroup}</span> to{" "}
-                <span className="text-ivory">{formatNumber(gc.max * 100, 1)}%</span> in <span className="text-ivory">{gc.maxGroup}</span>.
-              </p>
-              <p>
-                CpG O/E ranges from <span className="text-ivory">{formatNumber(cpg.min, 3)}</span> in <span className="text-ivory">{cpg.minGroup}</span> to{" "}
-                <span className="text-ivory">{formatNumber(cpg.max, 3)}</span> in <span className="text-ivory">{cpg.maxGroup}</span>
-                {allCpgBelowOne ? ", so CpG is below single-base expectation in each displayed group." : "."}
-              </p>
-              <p>
-                UpA O/E ranges from <span className="text-ivory">{formatNumber(upa.min, 3)}</span> in <span className="text-ivory">{upa.minGroup}</span> to{" "}
-                <span className="text-ivory">{formatNumber(upa.max, 3)}</span> in <span className="text-ivory">{upa.maxGroup}</span>
-                {allUpaBelowOne ? ", so UpA is also below expectation in each displayed group." : "."}
-              </p>
-              <p className="text-xs">
-                These are compositional summaries, not claims about antigenicity, pathogenicity, escape, vaccine relevance, or fitness.
-              </p>
+          <DetailPanel title="What the sequence metrics mean">
+            <div className="grid gap-3 md:grid-cols-3">
+              {sequenceMetricSpecs.map((spec) => (
+                <div key={spec.id} className="rounded-lg border border-line bg-bg/35 p-4">
+                  <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">{spec.short}</div>
+                  <div className="mt-2 text-sm font-semibold text-ivory">{spec.label}</div>
+                  <p className="mt-2 text-xs leading-5 text-muted">{spec.definition}</p>
+                </div>
+              ))}
             </div>
-          </div>
+            <div className="mt-4 text-sm leading-6 text-muted">
+              GC ranges from <span className="text-ivory">{formatNumber(gc.min * 100, 1)}%</span> in <span className="text-ivory">{gc.minGroup}</span> to{" "}
+              <span className="text-ivory">{formatNumber(gc.max * 100, 1)}%</span> in <span className="text-ivory">{gc.maxGroup}</span>. CpG and UpA O/E are displayed as descriptive composition summaries.
+            </div>
+          </DetailPanel>
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-lg border border-line bg-panel/75 p-4">
-            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">TOKEN METRICS, PLAINLY</div>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div className="rounded-md border border-line bg-bg/30 p-3">
-                <div className="text-sm font-semibold text-ivory">Entropy</div>
-                <p className="mt-1 text-xs leading-5 text-muted">Higher entropy means token usage is more spread across the vocabulary.</p>
-              </div>
-              <div className="rounded-md border border-line bg-bg/30 p-3">
-                <div className="text-sm font-semibold text-ivory">Effective vocabulary</div>
-                <p className="mt-1 text-xs leading-5 text-muted">The equivalent number of equally common tokens needed to produce that entropy.</p>
-              </div>
-              <div className="rounded-md border border-line bg-bg/30 p-3">
-                <div className="text-sm font-semibold text-ivory">JS distance</div>
-                <p className="mt-1 text-xs leading-5 text-muted">A descriptive distance between group-level token distributions.</p>
-              </div>
-              <div className="rounded-md border border-line bg-bg/30 p-3">
-                <div className="text-sm font-semibold text-ivory">Top-token overlap</div>
-                <p className="mt-1 text-xs leading-5 text-muted">Jaccard overlap of top tokens under bootstrap. Higher means more stable top-token lists.</p>
-              </div>
-            </div>
-          </div>
-
           <div>
             <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">TOKEN ENTROPY SNAPSHOT</div>
             <MiniTable rows={entropyRows} columns={["tokenizer", "group", "entropy_bits", "effective_vocab"]} limit={8} />
@@ -1509,11 +1469,25 @@ function SequenceTokenInspector({ bundle, openAsk }: { bundle: SafeBundle; openA
             <p className="mt-3 text-sm leading-6 text-muted">
               The composite leader is <span className="text-ivory">{friendlyTokenizer(ranking[0]?.tokenizer)}</span>. It balances coverage, low bootstrap variance and stable top-token lists.
             </p>
-            <p className="mt-2 text-sm leading-6 text-muted">
-              The largest mean JS distance here is <span className="text-ivory">{friendlyTokenizer(separationLeader?.tokenizer)}</span>{" "}
-              ({formatNumber(separationLeader?.mean_js_distance, 3)}), while the most stable top-token overlap is{" "}
-              <span className="text-ivory">{friendlyTokenizer(tokenStabilityLeader?.tokenizer)}</span> ({formatNumber(tokenStabilityLeader?.mean_top_token_jaccard, 3)}).
-            </p>
+            <InsightStrip
+              items={[
+                {
+                  label: "Largest JS distance",
+                  value: friendlyTokenizer(separationLeader?.tokenizer),
+                  detail: formatNumber(separationLeader?.mean_js_distance, 3),
+                },
+                {
+                  label: "Most stable top tokens",
+                  value: friendlyTokenizer(tokenStabilityLeader?.tokenizer),
+                  detail: formatNumber(tokenStabilityLeader?.mean_top_token_jaccard, 3),
+                },
+                {
+                  label: "Claim boundary",
+                  value: "Descriptive",
+                  detail: "No antigenicity, escape, vaccine or fitness claims.",
+                },
+              ]}
+            />
             <div className="mt-4">
               <MiniTable rows={rankingRows} columns={["rank", "tokenizer", "score", "js_distance", "top_token_overlap"]} limit={6} />
             </div>
@@ -1539,7 +1513,7 @@ function StructureView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (ques
   return (
     <div>
       <SectionTitle kicker="STRUCTURE VIEW" title="Public structures with alignment QC">
-        Public RCSB structures plus a derived residue-signal bridge. Metric coloring still waits for chain-number validation.
+        Public RCSB structures with conservative mapping status.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="mb-4 grid gap-3 xl:grid-cols-[0.8fr_1.1fr_1.1fr]">
@@ -1562,13 +1536,13 @@ function StructureView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (ques
         <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">WHAT IS LOADED</span>
           <p className="mt-2">
-            {structure?.label}. The viewer loads the public coordinate file from RCSB and lets you rotate, zoom and switch styles. This is safe to show because it is not a restricted sequence artifact.
+            {structure?.label}. The viewer loads public coordinates from RCSB.
           </p>
         </div>
         <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">MAPPING STATUS</span>
           <p className="mt-2">
-            Alignment QC is now available: local refined CDS positions were aligned to public PDB polymer sequences. Residue coloring remains pending until chain IDs, residue numbering and missing residues are validated.
+            Alignment QC is available. Residue coloring waits for final chain and residue-number validation.
           </p>
         </div>
       </div>
@@ -1580,32 +1554,21 @@ function StructureView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (ques
         <Card label="Mean UpA codon signal" value={formatNumber(catalogRow?.mean_upa_codon_fraction ?? "NA", 3)} detail="DNA TA proxy for RNA UpA" />
       </div>
 
-      <div className="mb-4 grid gap-3 xl:grid-cols-4">
-        {[
-          ["1", "Align sequence to structure", "Match each local HA/NA sequence position to the reference PDB sequence."],
-          ["2", "Resolve residue numbering", "Handle PDB chain IDs, insertion codes, missing residues and subtype-specific numbering."],
-          ["3", "Choose mapped metric", "Define whether a residue receives codon, token, entropy or group-level summaries."],
-          ["4", "Validate before coloring", "Only then should the viewer paint FluGenome3D-derived values onto the structure."]
-        ].map(([step, title, detail]) => (
-          <div key={step} className="rounded-lg border border-line bg-panel/70 p-4">
-            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">Mapping step {step}</div>
-            <div className="mt-2 text-sm font-semibold text-ivory">{title}</div>
-            <p className="mt-2 text-xs leading-5 text-muted">{detail}</p>
-          </div>
-        ))}
-      </div>
-
       {structure ? <MolecularViewer structure={structure as any} /> : null}
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ALIGNMENT QC FOR SELECTED STRUCTURE</div>
-          <MiniTable rows={qcRows} columns={["pdb_entity", "chains", "pdb_sequence_length", "mapped_residues", "identity", "coverage_pdb", "local_start", "local_end"]} limit={6} />
-        </div>
-        <div>
-          <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">RESIDUE SIGNAL CATALOG</div>
-          <MiniTable rows={signalCatalog} columns={["group", "n_local_positions", "n_mapped_positions", "mean_gc_fraction_codon", "mean_aa_entropy"]} limit={6} />
-        </div>
+      <div className="mt-4">
+        <DetailPanel title="Mapping QC and residue-signal tables">
+          <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ALIGNMENT QC FOR SELECTED STRUCTURE</div>
+              <MiniTable rows={qcRows} columns={["pdb_entity", "chains", "pdb_sequence_length", "mapped_residues", "identity", "coverage_pdb", "local_start", "local_end"]} limit={6} />
+            </div>
+            <div>
+              <div className="mb-2 font-mono text-[11px] uppercase tracking-[0.22em] text-brass">RESIDUE SIGNAL CATALOG</div>
+              <MiniTable rows={signalCatalog} columns={["group", "n_local_positions", "n_mapped_positions", "mean_gc_fraction_codon", "mean_aa_entropy"]} limit={6} />
+            </div>
+          </div>
+        </DetailPanel>
       </div>
     </div>
   );

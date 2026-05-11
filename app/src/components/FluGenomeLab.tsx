@@ -287,7 +287,7 @@ function buildProjectorTraces(points: Record<string, any>[], colorBy: string, us
   });
 }
 
-function buildLatentTraces(points: Record<string, any>[], colorBy: string, use3d: boolean) {
+function buildLatentTraces(points: Record<string, any>[], colorBy: string, use3d: boolean, axisLabels: string[]) {
   const values = uniqueValues(points.map((point) => String(point[colorBy] ?? "unknown")));
   return values.map((value, index) => {
     const subset = points.filter((point) => String(point[colorBy] ?? "unknown") === value);
@@ -306,7 +306,10 @@ function buildLatentTraces(points: Record<string, any>[], colorBy: string, use3d
         opacity: 0.58,
         line: { color: "rgba(237,247,244,0.10)", width: use3d ? 0 : 0.3 }
       },
-      hovertemplate: "%{text}<br>PC1=%{x:.3f}<br>PC2=%{y:.3f}" + (use3d ? "<br>PC3=%{z:.3f}" : "") + "<extra></extra>"
+      hovertemplate:
+        `%{text}<br>${axisLabels[0] ?? "x"}=%{x:.3f}<br>${axisLabels[1] ?? "y"}=%{y:.3f}` +
+        (use3d ? `<br>${axisLabels[2] ?? "z"}=%{z:.3f}` : "") +
+        "<extra></extra>"
     };
   });
 }
@@ -1036,13 +1039,20 @@ function DatasetAtlas({ bundle, mode, openAsk }: { bundle: SafeBundle; mode: str
 
 function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (question: string) => void }) {
   const atlas = bundle.antigenlm ?? {};
-  const projection = atlas.projection ?? {};
+  const projectionViews = useMemo(
+    () => [atlas.projection, ...(((atlas.additional_projections ?? []) as Record<string, any>[]))].filter(Boolean),
+    [atlas]
+  ) as Record<string, any>[];
+  const [projectionId, setProjectionId] = useState(String(projectionViews[0]?.id ?? "antigenlm_full_pca"));
+  const projection = projectionViews.find((item) => item.id === projectionId) ?? projectionViews[0] ?? {};
   const points = useMemo(() => decodeRepresentationPoints(projection), [projection]);
   const [colorBy, setColorBy] = useState("subtype");
   const [projectionMode, setProjectionMode] = useState<"3d" | "2d">("3d");
   const [selected, setSelected] = useState<Record<string, any> | null>(null);
-  const use3d = projectionMode === "3d";
-  const traces = useMemo(() => buildLatentTraces(points, colorBy, use3d), [points, colorBy, use3d]);
+  const projectionIs2d = String(projection.projection ?? "").endsWith("_2d");
+  const axisLabels = (projection.axis_labels ?? ["PC1", "PC2", "PC3"]) as string[];
+  const use3d = projectionMode === "3d" && !projectionIs2d;
+  const traces = useMemo(() => buildLatentTraces(points, colorBy, use3d, axisLabels), [points, colorBy, use3d, axisLabels]);
   const cache = atlas.cache_summary ?? {};
   const spearman = (atlas.spearman_summary ?? []) as Record<string, any>[];
   const hammingHaNa = spearman.filter((row) => row.metric === "hamming_ha_na");
@@ -1056,23 +1066,39 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
   const meanTemporal = temporal.reduce((sum, row) => sum + Number(row.rho_mean ?? 0), 0) / Math.max(temporal.length, 1);
   const prompts = ((bundle.guide.view_prompts ?? {}).latent ?? []) as AskPrompt[];
 
-  useEffect(() => setSelected(null), [colorBy, projectionMode]);
+  useEffect(() => {
+    if (projectionIs2d && projectionMode === "3d") {
+      setProjectionMode("2d");
+    }
+  }, [projectionIs2d, projectionMode]);
+  useEffect(() => setSelected(null), [projectionId, colorBy, projectionMode]);
 
   return (
     <div>
       <SectionTitle kicker="ANTIGENLM LATENT ATLAS" title="Learned HA/NA representation layer">
-        AntigenLM embeddings from the parent thesis repo, exported as hash-based PCA coordinates.
+        AntigenLM embeddings from the parent thesis repo, exported as hash-based PCA and t-SNE coordinates.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
 
       <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card label="Latent records" value={formatNumber(cache.n_records ?? 0, 0)} detail={`${formatNumber(cache.embedding_dim ?? 0, 0)}-dimensional AntigenLM embeddings`} />
-        <Card label="Exported points" value={formatNumber(projection.n_exported_points ?? 0, 0)} detail="Hash IDs and coarse metadata only" />
+        <Card label="Exported points" value={formatNumber(projection.n_exported_points ?? 0, 0)} detail={projection.projection ?? "derived projection"} />
         <Card label="HA+NA molecular rho" value={formatNumber(meanHamming, 3)} detail="Mean Spearman vs Hamming proxy" />
         <Card label="Global PCA n95" value={formatNumber(globalPca?.n95 ?? "NA", 0)} detail="Components for 95% variance in parent audit" />
       </div>
 
-      <div className="mb-4 grid gap-3 xl:grid-cols-[1fr_1fr_1fr]">
+      <div className="mb-4 grid gap-3 xl:grid-cols-[1fr_1fr_1fr_1fr]">
+        <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
+          <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Latent map</span>
+          <select value={projectionId} onChange={(event) => setProjectionId(event.target.value)} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
+            {projectionViews.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label ?? item.id}
+              </option>
+            ))}
+          </select>
+          <div className="mt-2 text-xs leading-5 text-muted">{projection.description ?? "Derived AntigenLM coordinates."}</div>
+        </label>
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Color by</span>
           <select value={colorBy} onChange={(event) => setColorBy(event.target.value)} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
@@ -1086,13 +1112,13 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Projection</span>
           <select value={projectionMode} onChange={(event) => setProjectionMode(event.target.value as "3d" | "2d")} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
-            <option value="3d">3D PCA</option>
-            <option value="2d">2D PCA</option>
+            {!projectionIs2d ? <option value="3d">3D view</option> : null}
+            <option value="2d">2D view</option>
           </select>
         </label>
         <div className="rounded-lg border border-line bg-panel/70 p-4 text-sm leading-6 text-muted">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-brass">Reading this layer</span>
-          <p className="mt-2">The learned space is compared with molecular proxies and temporal locality. It is not a prediction or sequence-generation panel.</p>
+          <p className="mt-2">PCA is linear and t-SNE is local-neighborhood preserving. Both are visual audits of learned embeddings, not prediction or sequence-generation panels.</p>
         </div>
       </div>
 
@@ -1104,22 +1130,22 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
               use3d
                 ? {
                     ...plotLayout,
-                    title: projection.label ?? "AntigenLM latent PCA",
+                    title: projection.label ?? "AntigenLM latent map",
                     height: 620,
                     margin: { l: 8, r: 8, t: 42, b: 8 },
                     scene: {
-                      xaxis: { title: "PC1", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
-                      yaxis: { title: "PC2", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
-                      zaxis: { title: "PC3", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
+                      xaxis: { title: axisLabels[0] ?? "x", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
+                      yaxis: { title: axisLabels[1] ?? "y", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
+                      zaxis: { title: axisLabels[2] ?? "z", tickformat: ".2f", nticks: 5, gridcolor: "rgba(237,247,244,0.08)", backgroundcolor: "rgba(1,5,10,0.72)" },
                       camera: { eye: { x: 1.55, y: 1.35, z: 0.95 } }
                     }
                   }
                 : {
                     ...plotLayout,
-                    title: projection.label ?? "AntigenLM latent PCA",
+                    title: projection.label ?? "AntigenLM latent map",
                     height: 620,
-                    xaxis: { ...plotLayout.xaxis, title: "PC1", tickformat: ".2f", nticks: 7, tickangle: 0 },
-                    yaxis: { ...plotLayout.yaxis, title: "PC2", tickformat: ".2f", nticks: 7 },
+                    xaxis: { ...plotLayout.xaxis, title: axisLabels[0] ?? "x", tickformat: ".2f", nticks: 7, tickangle: 0 },
+                    yaxis: { ...plotLayout.yaxis, title: axisLabels[1] ?? "y", tickformat: ".2f", nticks: 7 },
                   }
             }
             config={{ responsive: true, displaylogo: false, scrollZoom: false }}

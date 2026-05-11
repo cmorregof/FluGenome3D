@@ -9,6 +9,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 
 LATENT_SAFE_SALT = "flugenome3d-antigenlm-latent-v1"
@@ -108,22 +109,12 @@ def stratified_sample_indices(metadata: pd.DataFrame, max_points: int, random_st
     return np.asarray(sorted(selected), dtype=int)
 
 
-def build_latent_pca_points(
-    cache_path: str | Path,
-    max_points: int = 30000,
-    random_state: int = 42,
-    n_components: int = 3,
-) -> tuple[pd.DataFrame, dict[str, Any]]:
-    payload = load_cache(cache_path)
-    embeddings = np.asarray(payload["embeddings"], dtype=np.float32)
+def latent_metadata(payload: dict[str, Any]) -> pd.DataFrame:
+    embeddings = np.asarray(payload["embeddings"])
     types = np.asarray(payload["types"]).astype(str)
     years = np.asarray(payload["years"])
     months = np.asarray(payload["months"])
     records = payload["records"]
-
-    pca = PCA(n_components=n_components, svd_solver="randomized", random_state=random_state)
-    coords = pca.fit_transform(embeddings)
-
     meta = pd.DataFrame(
         {
             "cache_index": np.arange(len(embeddings), dtype=int),
@@ -134,11 +125,27 @@ def build_latent_pca_points(
     )
     meta["year_bin"] = meta["year"].map(year_bin)
     meta["source"] = "AntigenLM HA+NA embedding"
-    meta["representation"] = "antigenlm_full_pca"
     meta["safe_id"] = [
         safe_latent_id(f"{idx}|{record.get('epi_isl', '')}|{record.get('subtype', subtype)}")
         for idx, record, subtype in zip(meta["cache_index"], records, types, strict=True)
     ]
+    return meta
+
+
+def build_latent_pca_points(
+    cache_path: str | Path,
+    max_points: int = 30000,
+    random_state: int = 42,
+    n_components: int = 3,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    payload = load_cache(cache_path)
+    embeddings = np.asarray(payload["embeddings"], dtype=np.float32)
+
+    pca = PCA(n_components=n_components, svd_solver="randomized", random_state=random_state)
+    coords = pca.fit_transform(embeddings)
+
+    meta = latent_metadata(payload)
+    meta["representation"] = "antigenlm_full_pca"
     for axis in range(n_components):
         meta[f"axis{axis + 1}"] = coords[:, axis]
 
@@ -157,6 +164,62 @@ def build_latent_pca_points(
         },
     }
     return points, summary
+
+
+def build_latent_tsne_points(
+    cache_path: str | Path,
+    max_points: int = 10000,
+    random_state: int = 42,
+    n_components: int = 2,
+    perplexity: float = 35.0,
+    pca_pre_components: int = 50,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    payload = load_cache(cache_path)
+    embeddings = np.asarray(payload["embeddings"], dtype=np.float32)
+    meta = latent_metadata(payload)
+    sample_idx = stratified_sample_indices(meta, max_points=max_points, random_state=random_state)
+    sampled_meta = meta.loc[sample_idx].copy()
+    sampled_embeddings = embeddings[sample_idx]
+
+    pre_components = max(2, min(pca_pre_components, sampled_embeddings.shape[1], sampled_embeddings.shape[0] - 1))
+    pre_pca = PCA(n_components=pre_components, svd_solver="randomized", random_state=random_state)
+    reduced = pre_pca.fit_transform(sampled_embeddings)
+    safe_perplexity = min(float(perplexity), max(5.0, (len(sampled_meta) - 1) / 3.0))
+    tsne = TSNE(
+        n_components=n_components,
+        perplexity=safe_perplexity,
+        learning_rate="auto",
+        init="pca",
+        max_iter=1000,
+        method="barnes_hut",
+        random_state=random_state,
+        n_jobs=-1,
+    )
+    coords = tsne.fit_transform(reduced)
+
+    sampled_meta["representation"] = f"antigenlm_tsne_{n_components}d"
+    for axis in range(3):
+        sampled_meta[f"axis{axis + 1}"] = coords[:, axis] if axis < n_components else 0.0
+
+    summary = {
+        "projection": f"tsne_{n_components}d",
+        "n_source_points": int(len(meta)),
+        "n_exported_points": int(len(sampled_meta)),
+        "sampling": {
+            "method": "subtype_year_bin_stratified",
+            "max_points": int(max_points),
+            "random_seed": int(random_state),
+        },
+        "tsne_parameters": {
+            "n_components": int(n_components),
+            "perplexity": finite_number(safe_perplexity, 3),
+            "learning_rate": "auto",
+            "init": "pca",
+            "max_iter": 1000,
+            "pca_pre_components": int(pre_components),
+        },
+    }
+    return sampled_meta, summary
 
 
 def summarize_spearman(metrics: dict[str, Any]) -> pd.DataFrame:
@@ -254,7 +317,7 @@ def write_public_tables(
     return tables
 
 
-def safe_point_records(points: pd.DataFrame) -> list[list[Any]]:
+def safe_point_records(points: pd.DataFrame, representation_label: str = "AntigenLM HA+NA") -> list[list[Any]]:
     rows = []
     for row in points.itertuples(index=False):
         rows.append(
@@ -265,7 +328,7 @@ def safe_point_records(points: pd.DataFrame) -> list[list[Any]]:
                 finite_number(row.axis3, 7),
                 row.subtype,
                 year_bin(row.year),
-                "AntigenLM HA+NA",
+                representation_label,
                 "learned_latent",
             ]
         )

@@ -103,6 +103,15 @@ GUIDE_FORMULA_CARDS = [
         "data_requirement": "feature matrix or learned embeddings",
         "claim_boundary": "visual geometry, not biological validation",
     },
+    {
+        "id": "formula_tsne",
+        "name": "t-SNE coordinates",
+        "formula": "nonlinear neighbor-preserving projection",
+        "plain_language": "A map that emphasizes local neighborhoods in high-dimensional embeddings, useful for visual cluster inspection.",
+        "used_in": ["AntigenLM Latent Atlas"],
+        "data_requirement": "sampled learned embeddings; exported only as hash-based coordinates",
+        "claim_boundary": "visual neighborhood audit, not biological proof",
+    },
 ]
 GUIDE_GLOSSARY = [
     {
@@ -142,6 +151,12 @@ GUIDE_GLOSSARY = [
         "ask": "How should I read the AntigenLM latent atlas?",
     },
     {
+        "term": "t-SNE",
+        "short_definition": "A nonlinear projection that helps inspect local neighborhoods in the AntigenLM latent space.",
+        "view": "AntigenLM Latent Atlas",
+        "ask": "How should I compare PCA and t-SNE in the AntigenLM Latent Atlas?",
+    },
+    {
         "term": "PDB structure",
         "short_definition": "A public molecular structure record loaded from RCSB for visual inspection.",
         "view": "3D Molecular Viewer",
@@ -161,6 +176,7 @@ GUIDE_VIEW_PROMPTS = {
     ],
     "latent": [
         {"label": "Read latent geometry", "question": "How should I read the AntigenLM latent atlas?"},
+        {"label": "PCA vs t-SNE", "question": "How should I compare PCA and t-SNE in the AntigenLM Latent Atlas?"},
         {"label": "What does rho mean?", "question": "What does the HA+NA molecular rho summary mean in the latent atlas?"},
     ],
     "projector": [
@@ -587,28 +603,33 @@ def build_antigenlm_latent_atlas() -> dict[str, Any]:
     clade = read_csv("results/tables/phase7_antigenlm_clade_enrichment_summary.csv")
     random_baseline = read_csv("results/tables/phase7_random_embedding_baseline_summary.csv")
     comparison = read_csv("results/tables/phase8_representation_family_comparison.csv")
+    pca_projection = {
+        "id": "antigenlm_full_pca",
+        "label": "AntigenLM PCA 3D",
+        "description": "Linear PCA coordinates derived from the parent AntigenLM embedding cache.",
+        "projection": "pca_3d",
+        "axis_labels": ["PC1", "PC2", "PC3"],
+        "point_schema": local.get("point_schema", ["id", "x", "y", "z", "subtype", "year_bin", "representation", "source"]),
+        "pca_explained_variance": local.get("pca_explained_variance", []),
+        "n_source_points": local.get("n_source_points", 0),
+        "n_exported_points": local.get("n_exported_points", 0),
+        "sampling": local.get("sampling", {}),
+        "privacy": "hash-based point IDs and coarse metadata only; no sequences, accessions, isolate names, sequence hashes, or checkpoint weights",
+        "points": local.get("points", []),
+    }
 
     return {
         "schema_version": "safe-bundle-v1",
         "generated_utc": datetime.now(timezone.utc).isoformat(),
-        "coordinate_policy": "real AntigenLM PCA coordinates exported with hash-based IDs and minimal metadata; no sequences, accessions, isolate names, sequence hashes, or checkpoint weights",
+        "coordinate_policy": "real AntigenLM PCA and t-SNE coordinates exported with hash-based IDs and minimal metadata; no sequences, accessions, isolate names, sequence hashes, or checkpoint weights",
         "model_card": {
             "name": "AntigenLM-derived HA+NA embedding cache",
             "role": "learned influenza representation layer from the parent thesis repository",
             "display_claim": "descriptive latent geometry audit only",
             "not_included": ["raw sequences", "source identifiers", "isolate names", "checkpoint weights", "sequence hashes"],
         },
-        "projection": {
-            "id": "antigenlm_full_pca",
-            "label": "AntigenLM HA+NA latent PCA",
-            "description": "Learned representation coordinates derived from the parent AntigenLM embedding cache.",
-            "point_schema": local.get("point_schema", ["id", "x", "y", "z", "subtype", "year_bin", "representation", "source"]),
-            "pca_explained_variance": local.get("pca_explained_variance", []),
-            "n_source_points": local.get("n_source_points", 0),
-            "n_exported_points": local.get("n_exported_points", 0),
-            "sampling": local.get("sampling", {}),
-            "points": local.get("points", []),
-        },
+        "projection": pca_projection,
+        "additional_projections": local.get("additional_projections", []),
         "cache_summary": local.get("cache", {}),
         "spearman_summary": records(spearman),
         "pca_summary": records(pca),

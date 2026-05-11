@@ -65,7 +65,10 @@ const ALIASES: Record<string, string[]> = {
   js: ["jensen", "shannon", "distance", "token"],
   pca: ["pca", "projection", "representation", "coordinate"],
   rscu: ["rscu", "codon", "cds"],
+  sne: ["tsne", "projection", "neighborhood", "latent"],
   structure: ["structure", "pdb", "rcsb", "mapping", "residue"],
+  tsne: ["tsne", "t", "sne", "projection", "neighborhood", "latent"],
+  "t-sne": ["tsne", "projection", "neighborhood", "latent"],
   upa: ["upa", "ta", "observed", "expected"],
 };
 

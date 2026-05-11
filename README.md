@@ -91,7 +91,7 @@ The app has nine views:
 - **Project Guide**: plain-language overview of project intent, formulas, data layers and current models.
 - **Ask FluGenome3D**: grounded explanatory guide using safe docs, reports, formula cards, glossary terms and view-specific prompts; no raw sequence access and no external model call.
 - **Dataset Atlas**: panel counts, subtype/protein balance, temporal distribution, CDS reliability and deduplication summaries.
-- **AntigenLM Latent Atlas**: learned HA+NA embedding geometry from the parent thesis repo, shown as hash-based PCA coordinates with aggregate geometry diagnostics.
+- **AntigenLM Latent Atlas**: learned HA+NA embedding geometry from the parent thesis repo, shown as hash-based PCA and t-SNE coordinates with aggregate geometry diagnostics.
 - **Representation Projector**: TensorFlow Projector-style scatter maps from real reduced-coordinate artifacts with safe hashed IDs.
 - **Sequence/Token Inspector**: aggregate GC/CpG/UpA metrics, token entropy, effective vocabulary and stability summaries.
 - **3D Molecular Viewer**: public RCSB structures `3LZG`, `3VUN`, `3NSS`, `6BR6` using 3Dmol.js, with alignment QC and aggregate residue-signal summaries.
@@ -160,6 +160,7 @@ Allowed:
 - This app provides descriptive exploration of real derived FluGenome3D artifacts.
 - Deterministic tokenization metrics are compared under bootstrap and temporal summaries.
 - AntigenLM latent coordinates are shown as a descriptive learned-representation layer.
+- AntigenLM PCA and t-SNE maps are safe reduced-coordinate views for visual inspection.
 - CDS-dependent views are restricted to refined CDS subsets.
 - Public PDB structures are shown with alignment QC and aggregate residue-signal context.
 

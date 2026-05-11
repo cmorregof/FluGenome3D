@@ -5,6 +5,7 @@ phase7_antigenlm_bridge:
   clade_enrichment_path: "../results/gisaid_clade_enrichment_results.json"
   random_baseline_path: "../paper_revision_outputs/random_embedding_baseline_results.json"
   max_export_points: 24000
+  tsne_max_export_points: 10000
   random_seed: 42
 
 phase8_latent_atlas:

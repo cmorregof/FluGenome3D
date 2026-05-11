@@ -66,6 +66,20 @@ def test_antigenlm_points_use_safe_ids() -> None:
     assert forbidden.isdisjoint(first.keys())
 
 
+def test_antigenlm_tsne_projections_are_safe() -> None:
+    payload = json.loads((APP_DATA / "antigenlm_latent_atlas.safe.json").read_text())
+    projections = {item["id"]: item for item in payload["additional_projections"]}
+    assert {"antigenlm_tsne_2d", "antigenlm_tsne_3d"}.issubset(projections)
+    forbidden = {"sequence", "sequence_sha256", "accession", "isolate", "strain_name", "epi_isl"}
+    for projection in projections.values():
+        assert projection["projection"].startswith("tsne_")
+        assert projection["n_exported_points"] > 0
+        first = dict(zip(projection["point_schema"], projection["points"][0], strict=True))
+        assert str(first["id"]).startswith("lm_")
+        assert forbidden.isdisjoint(first.keys())
+        assert "tsne_parameters" in projection
+
+
 def test_lab_guide_export_is_grounded_and_safe() -> None:
     payload = json.loads((APP_DATA / "lab_guide.safe.json").read_text())
     chunks = payload["chunks"]

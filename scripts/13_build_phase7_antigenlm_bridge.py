@@ -13,6 +13,7 @@ import yaml
 
 from flugenome3d.antigenlm_bridge import (
     build_latent_pca_points,
+    build_latent_tsne_points,
     load_json,
     safe_point_records,
     write_public_tables,
@@ -152,12 +153,27 @@ def main() -> None:
 
     cache_path = PROJECT / cfg.get("cache_path", "../results/embeddings_cache_full_all_available.pkl")
     max_points = int(cfg.get("max_export_points", 30000))
+    tsne_max_points = int(cfg.get("tsne_max_export_points", 10000))
     random_seed = int(cfg.get("random_seed", 42))
 
     points, summary = build_latent_pca_points(cache_path, max_points=max_points, random_state=random_seed)
+    tsne_2d_points, tsne_2d_summary = build_latent_tsne_points(
+        cache_path,
+        max_points=tsne_max_points,
+        random_state=random_seed,
+        n_components=2,
+    )
+    tsne_3d_points, tsne_3d_summary = build_latent_tsne_points(
+        cache_path,
+        max_points=tsne_max_points,
+        random_state=random_seed,
+        n_components=3,
+    )
     local_dir = PROJECT / "data" / "processed" / "antigenlm"
     local_dir.mkdir(parents=True, exist_ok=True)
     points.to_parquet(local_dir / "antigenlm_full_pca_points.parquet", index=False)
+    tsne_2d_points.to_parquet(local_dir / "antigenlm_tsne_2d_points.parquet", index=False)
+    tsne_3d_points.to_parquet(local_dir / "antigenlm_tsne_3d_points.parquet", index=False)
 
     results_dir = PROJECT / "results" / "tables"
     tables = write_public_tables(
@@ -182,7 +198,37 @@ def main() -> None:
     manifest = {
         **summary,
         "point_schema": ["id", "x", "y", "z", "subtype", "year_bin", "representation", "source"],
-        "points": safe_point_records(points),
+        "points": safe_point_records(points, representation_label="AntigenLM PCA"),
+        "additional_projections": [
+            {
+                "id": "antigenlm_tsne_2d",
+                "label": "AntigenLM t-SNE 2D",
+                "description": "Nonlinear t-SNE map of sampled AntigenLM HA+NA embeddings. Coordinates are derived artifacts with hash-based IDs.",
+                "projection": "tsne_2d",
+                "axis_labels": ["t-SNE 1", "t-SNE 2"],
+                "point_schema": ["id", "x", "y", "z", "subtype", "year_bin", "representation", "source"],
+                "n_source_points": tsne_2d_summary["n_source_points"],
+                "n_exported_points": tsne_2d_summary["n_exported_points"],
+                "sampling": tsne_2d_summary["sampling"],
+                "tsne_parameters": tsne_2d_summary["tsne_parameters"],
+                "privacy": "hash-based point IDs and coarse metadata only; no sequences, accessions, isolate names, sequence hashes, or checkpoint weights",
+                "points": safe_point_records(tsne_2d_points, representation_label="AntigenLM t-SNE 2D"),
+            },
+            {
+                "id": "antigenlm_tsne_3d",
+                "label": "AntigenLM t-SNE 3D",
+                "description": "Three-dimensional t-SNE map of sampled AntigenLM HA+NA embeddings. Coordinates are derived artifacts with hash-based IDs.",
+                "projection": "tsne_3d",
+                "axis_labels": ["t-SNE 1", "t-SNE 2", "t-SNE 3"],
+                "point_schema": ["id", "x", "y", "z", "subtype", "year_bin", "representation", "source"],
+                "n_source_points": tsne_3d_summary["n_source_points"],
+                "n_exported_points": tsne_3d_summary["n_exported_points"],
+                "sampling": tsne_3d_summary["sampling"],
+                "tsne_parameters": tsne_3d_summary["tsne_parameters"],
+                "privacy": "hash-based point IDs and coarse metadata only; no sequences, accessions, isolate names, sequence hashes, or checkpoint weights",
+                "points": safe_point_records(tsne_3d_points, representation_label="AntigenLM t-SNE 3D"),
+            },
+        ],
     }
     (local_dir / "antigenlm_latent_atlas.local.json").write_text(
         __import__("json").dumps(manifest, separators=(",", ":"), ensure_ascii=False) + "\n",

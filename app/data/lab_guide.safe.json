@@ -1,6 +1,6 @@
 {
   "schema_version": "safe-bundle-v1",
-  "generated_utc": "2026-05-11T12:57:29.596596+00:00",
+  "generated_utc": "2026-05-11T13:28:05.110515+00:00",
   "guide_policy": "Grounded explanatory guide built only from public docs, reports, safe formulas and governance text. It contains no raw sequences and does not call external models.",
   "answer_boundary": {
     "can_explain": [
@@ -111,6 +111,17 @@
       ],
       "data_requirement": "feature matrix or learned embeddings",
       "claim_boundary": "visual geometry, not biological validation"
+    },
+    {
+      "id": "formula_tsne",
+      "name": "t-SNE coordinates",
+      "formula": "nonlinear neighbor-preserving projection",
+      "plain_language": "A map that emphasizes local neighborhoods in high-dimensional embeddings, useful for visual cluster inspection.",
+      "used_in": [
+        "AntigenLM Latent Atlas"
+      ],
+      "data_requirement": "sampled learned embeddings; exported only as hash-based coordinates",
+      "claim_boundary": "visual neighborhood audit, not biological proof"
     }
   ],
   "glossary_terms": [
@@ -151,6 +162,12 @@
       "ask": "How should I read the AntigenLM latent atlas?"
     },
     {
+      "term": "t-SNE",
+      "short_definition": "A nonlinear projection that helps inspect local neighborhoods in the AntigenLM latent space.",
+      "view": "AntigenLM Latent Atlas",
+      "ask": "How should I compare PCA and t-SNE in the AntigenLM Latent Atlas?"
+    },
+    {
       "term": "PDB structure",
       "short_definition": "A public molecular structure record loaded from RCSB for visual inspection.",
       "view": "3D Molecular Viewer",
@@ -178,6 +195,10 @@
       {
         "label": "Read latent geometry",
         "question": "How should I read the AntigenLM latent atlas?"
+      },
+      {
+        "label": "PCA vs t-SNE",
+        "question": "How should I compare PCA and t-SNE in the AntigenLM Latent Atlas?"
       },
       {
         "label": "What does rho mean?",
@@ -300,6 +321,16 @@
       "text": "PCA coordinates: A projection that turns high-dimensional features into 2D or 3D coordinates for visual inspection. Formula: orthogonal axes capturing largest variance directions. Boundary: visual geometry, not biological validation."
     },
     {
+      "id": "guide_formula_tsne",
+      "title": "t-SNE coordinates",
+      "source": "FluGenome3D guide card",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "antigenlm"
+      ],
+      "text": "t-SNE coordinates: A map that emphasizes local neighborhoods in high-dimensional embeddings, useful for visual cluster inspection. Formula: nonlinear neighbor-preserving projection. Boundary: visual neighborhood audit, not biological proof."
+    },
+    {
       "id": "guide_71a3829366cf35db",
       "title": "HA",
       "source": "FluGenome3D glossary card",
@@ -364,6 +395,17 @@
         "antigenlm"
       ],
       "text": "AntigenLM embedding: A learned vector representation from the parent thesis repository, displayed here only as derived coordinates. Related view: AntigenLM Latent Atlas."
+    },
+    {
+      "id": "guide_13a1f762ece54578",
+      "title": "t-SNE",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
+      "topic_tags": [
+        "dataset",
+        "antigenlm"
+      ],
+      "text": "t-SNE: A nonlinear projection that helps inspect local neighborhoods in the AntigenLM latent space. Related view: AntigenLM Latent Atlas."
     },
     {
       "id": "guide_588d4613b2380c45",

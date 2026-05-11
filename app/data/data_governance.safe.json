@@ -9,6 +9,7 @@
     "antigenlm_latent_atlas.safe.json",
     "structure_catalog.safe.json",
     "structure_mapping.safe.json",
+    "lab_guide.safe.json",
     "claims_and_limits.safe.json",
     "data_governance.safe.json"
   ],
@@ -20,6 +21,7 @@
     "public PDB alignment-QC summaries",
     "short tokens of length <= 6",
     "public PDB identifiers",
+    "plain-language guide chunks sourced from public docs and reports",
     "captions, limitations and governance manifests"
   ],
   "excluded_data_classes": [

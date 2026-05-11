@@ -24,6 +24,21 @@ ATLAS_PANELS = {
     "mvp_panel": "Balanced MVP",
     "full_panel": "Full deduplicated",
 }
+GUIDE_SOURCE_FILES = [
+    "docs/biological_background.md",
+    "docs/data_governance.md",
+    "docs/reproducibility.md",
+    "docs/claims_and_limitations.md",
+    "reports/phase1_dataset_report.md",
+    "reports/phase2_sequence_context_report.md",
+    "reports/phase3_cds_refinement_report.md",
+    "reports/phase4_representation_audit_report.md",
+    "reports/phase5_tokenization_audit_report.md",
+    "reports/phase6_tokenization_stability_report.md",
+    "reports/phase7_antigenlm_bridge_report.md",
+    "reports/phase8_latent_atlas_report.md",
+    "reports/phase9_structure_mapping_report.md",
+]
 
 
 def read_csv(path: str) -> pd.DataFrame:
@@ -581,6 +596,7 @@ def build_data_governance() -> dict[str, Any]:
             "antigenlm_latent_atlas.safe.json",
             "structure_catalog.safe.json",
             "structure_mapping.safe.json",
+            "lab_guide.safe.json",
             "claims_and_limits.safe.json",
             "data_governance.safe.json",
         ],
@@ -592,6 +608,7 @@ def build_data_governance() -> dict[str, Any]:
             "public PDB alignment-QC summaries",
             "short tokens of length <= 6",
             "public PDB identifiers",
+            "plain-language guide chunks sourced from public docs and reports",
             "captions, limitations and governance manifests",
         ],
         "excluded_data_classes": [
@@ -613,6 +630,177 @@ def build_data_governance() -> dict[str, Any]:
             "long_sequence_regex": "[ACGTN]{80,}",
             "max_public_token_length": 6,
         },
+    }
+
+
+def clean_guide_text(text: str) -> str:
+    text = LONG_SEQUENCE_RE.sub("[redacted long nucleotide-like string]", text)
+    text = re.sub(r"`{3}.*?`{3}", " ", text, flags=re.DOTALL)
+    text = re.sub(r"\s+", " ", text.replace("|", " ")).strip()
+    return text
+
+
+def topic_tags(title: str, text: str, source: str) -> list[str]:
+    haystack = f"{title} {text} {source}".lower()
+    mapping = {
+        "dataset": ["dataset", "panel", "metadata", "atlas", "country", "coverage"],
+        "sequence_context": ["gc", "cpg", "upa", "dinucleotide", "k-mer", "sequence-context"],
+        "cds": ["cds", "codon", "rscu", "translation", "frame", "rescue"],
+        "tokenization": ["token", "tokenizer", "entropy", "vocab", "jaccard", "bootstrap"],
+        "representation": ["representation", "pca", "umap", "projector", "centroid", "silhouette"],
+        "antigenlm": ["antigenlm", "latent", "embedding", "learned"],
+        "structure": ["structure", "pdb", "rcsb", "alignment", "residue", "3lzg", "3vun", "3nss", "6br6"],
+        "governance": ["governance", "safe", "hash", "raw sequence", "fasta", "restricted"],
+        "claims": ["claim", "predict", "vaccine", "escape", "fitness", "pathogenicity", "limitation"],
+        "future": ["grover", "bpe", "phase", "future", "recommendation"],
+    }
+    tags = [tag for tag, needles in mapping.items() if any(needle in haystack for needle in needles)]
+    return tags or ["project"]
+
+
+def chunk_markdown_source(source: str, max_chunks_per_source: int = 8) -> list[dict[str, Any]]:
+    path = PROJECT / source
+    if not path.exists():
+        return []
+    raw = path.read_text(encoding="utf-8", errors="replace")
+    sections: list[tuple[str, list[str]]] = []
+    current_title = path.stem.replace("_", " ").replace("-", " ").title()
+    current_lines: list[str] = []
+    for line in raw.splitlines():
+        if line.lstrip().startswith("#"):
+            if current_lines:
+                sections.append((current_title, current_lines))
+            current_title = line.lstrip("#").strip() or current_title
+            current_lines = []
+        else:
+            current_lines.append(line)
+    if current_lines:
+        sections.append((current_title, current_lines))
+
+    chunks: list[dict[str, Any]] = []
+    for index, (title, lines) in enumerate(sections[:max_chunks_per_source], start=1):
+        text = clean_guide_text(" ".join(lines))
+        if len(text) < 80:
+            continue
+        chunks.append(
+            {
+                "id": safe_id(f"guide::{source}::{index}").replace("pt_", "guide_"),
+                "title": title[:120],
+                "source": source,
+                "section": title[:120],
+                "topic_tags": topic_tags(title, text, source),
+                "text": text[:950],
+            }
+        )
+    return chunks
+
+
+def manual_guide_cards() -> list[dict[str, Any]]:
+    cards = [
+        {
+            "id": "guide_formula_gc",
+            "title": "GC fraction",
+            "source": "FluGenome3D guide card",
+            "section": "Sequence-context formulas",
+            "topic_tags": ["sequence_context"],
+            "text": "GC fraction is the share of nucleotide positions that are G or C. It is a descriptive composition metric, useful for comparing HA and NA groups without showing raw sequences.",
+        },
+        {
+            "id": "guide_formula_cpg_upa",
+            "title": "CpG and UpA observed/expected",
+            "source": "FluGenome3D guide card",
+            "section": "Sequence-context formulas",
+            "topic_tags": ["sequence_context"],
+            "text": "CpG O/E compares observed CG dinucleotides with the amount expected from C and G frequencies. UpA O/E uses DNA TA as the proxy for RNA UpA. Both are descriptive features, not causal biological claims.",
+        },
+        {
+            "id": "guide_formula_rscu",
+            "title": "RSCU",
+            "source": "FluGenome3D guide card",
+            "section": "CDS/codon formulas",
+            "topic_tags": ["cds", "sequence_context"],
+            "text": "RSCU compares a codon count against the average count of synonymous codons for the same amino acid. FluGenome3D reports it only on the refined CDS panel because codon claims need a reliable coding frame.",
+        },
+        {
+            "id": "guide_formula_entropy_js",
+            "title": "Token entropy and JS distance",
+            "source": "FluGenome3D guide card",
+            "section": "Tokenization formulas",
+            "topic_tags": ["tokenization", "representation"],
+            "text": "Token entropy summarizes how spread out a tokenizer vocabulary is. Jensen-Shannon distance compares token distributions between groups. These are descriptive representation diagnostics, not prediction scores.",
+        },
+        {
+            "id": "guide_model_antigenlm",
+            "title": "AntigenLM latent layer",
+            "source": "FluGenome3D guide card",
+            "section": "Models and representations",
+            "topic_tags": ["antigenlm", "representation"],
+            "text": "AntigenLM is used here as a learned representation layer from the parent thesis repository. The app shows reduced coordinates and aggregate diagnostics, not model weights, raw sequences, source IDs or predictions.",
+        },
+        {
+            "id": "guide_future_grover_bpe",
+            "title": "Where GROVER and BPE fit",
+            "source": "FluGenome3D guide card",
+            "section": "Future tokenizer work",
+            "topic_tags": ["future", "tokenization"],
+            "text": "GROVER and BPE are future learned-tokenizer comparisons. The current app deliberately builds deterministic baselines first, so learned tokenizers can be evaluated against transparent k-mer and codon behavior.",
+        },
+        {
+            "id": "guide_structure_pending",
+            "title": "Structure mapping status",
+            "source": "FluGenome3D guide card",
+            "section": "Structure interpretation",
+            "topic_tags": ["structure", "claims"],
+            "text": "The structure viewer loads public RCSB coordinates. Alignment QC exists, but residue-level metric coloring remains pending until chain and residue-number mapping are explicitly validated.",
+        },
+        {
+            "id": "guide_data_governance_plain",
+            "title": "What the cryptographic data layer means",
+            "source": "FluGenome3D guide card",
+            "section": "Data governance",
+            "topic_tags": ["governance"],
+            "text": "The deployable layer contains aggregate summaries, reduced coordinates, short tokens and hash-based identifiers. It does not publish raw sequences, FASTA, restricted panels, accessions, isolate names or source sequence hashes.",
+        },
+    ]
+    return cards
+
+
+def build_lab_guide() -> dict[str, Any]:
+    chunks = manual_guide_cards()
+    for source in GUIDE_SOURCE_FILES:
+        chunks.extend(chunk_markdown_source(source))
+    return {
+        "schema_version": "safe-bundle-v1",
+        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "guide_policy": "Grounded explanatory guide built only from public docs, reports, safe formulas and governance text. It contains no raw sequences and does not call external models.",
+        "answer_boundary": {
+            "can_explain": [
+                "dataset and panel design",
+                "sequence-context metrics",
+                "CDS/codon QC",
+                "deterministic tokenization",
+                "AntigenLM representation audit",
+                "public structure viewer and mapping status",
+                "data governance and allowed claims",
+            ],
+            "cannot_claim": [
+                "antigenicity prediction",
+                "vaccine recommendation",
+                "escape prediction",
+                "fitness, pathogenicity or transmissibility inference",
+                "causal biological validation",
+                "raw sequence access",
+            ],
+        },
+        "suggested_questions": [
+            "What does CpG O/E mean in this app?",
+            "Why is codon usage separated from raw sequence context?",
+            "How should I read the AntigenLM latent atlas?",
+            "What does structure mapping still need before residue coloring?",
+            "What can FluGenome3D not claim?",
+            "Where would GROVER or BPE fit next?",
+        ],
+        "chunks": chunks,
     }
 
 
@@ -671,6 +859,7 @@ def main() -> None:
         "antigenlm_latent_atlas.safe.json": build_antigenlm_latent_atlas(),
         "structure_catalog.safe.json": build_structure_catalog(),
         "structure_mapping.safe.json": build_structure_mapping_export(),
+        "lab_guide.safe.json": build_lab_guide(),
         "claims_and_limits.safe.json": build_claims_and_limits(),
         "data_governance.safe.json": build_data_governance(),
     }

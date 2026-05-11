@@ -7,6 +7,7 @@ export const SAFE_DATA_FILES = [
   "antigenlm_latent_atlas.safe.json",
   "structure_catalog.safe.json",
   "structure_mapping.safe.json",
+  "lab_guide.safe.json",
   "claims_and_limits.safe.json",
   "data_governance.safe.json"
 ] as const;
@@ -20,6 +21,7 @@ export type SafeBundle = {
   antigenlm: Record<string, any>;
   structures: Record<string, any>;
   structureMapping: Record<string, any>;
+  guide: Record<string, any>;
   claims: Record<string, any>;
   governance: Record<string, any>;
 };
@@ -33,6 +35,7 @@ const bundleKeys: Array<keyof SafeBundle> = [
   "antigenlm",
   "structures",
   "structureMapping",
+  "guide",
   "claims",
   "governance"
 ];

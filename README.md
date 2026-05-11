@@ -10,6 +10,7 @@ It grew out of my AntigenLM/AntigenSDE thesis work as a satellite project: the P
 - A deterministic tokenization and representation explorer.
 - A learned AntigenLM latent-geometry atlas connected to the parent thesis repository.
 - A structure-aware alignment-QC layer for public HA/NA PDB entries.
+- A grounded in-app guide that explains formulas, views and limits from safe project artifacts.
 - A Vercel-ready visual interface built from real derived outputs.
 - A governance-first app that separates restricted local analysis from a cryptographic derived-data layer.
 
@@ -84,10 +85,11 @@ npm run build
 
 ## Web App Views
 
-The app has eight views:
+The app has nine views:
 
 - **Home / Overview**: cinematic entry point for the visual lab.
 - **Project Guide**: plain-language overview of project intent, formulas, data layers and current models.
+- **Ask FluGenome3D**: grounded explanatory guide using safe docs, reports and manifests; no raw sequence access and no external model call.
 - **Dataset Atlas**: panel counts, subtype/protein balance, temporal distribution, CDS reliability and deduplication summaries.
 - **AntigenLM Latent Atlas**: learned HA+NA embedding geometry from the parent thesis repo, shown as hash-based PCA coordinates with aggregate geometry diagnostics.
 - **Representation Projector**: TensorFlow Projector-style scatter maps from real reduced-coordinate artifacts with safe hashed IDs.
@@ -96,6 +98,12 @@ The app has eight views:
 - **Bridge View**: integrated group-level view connecting sequence context, representation maps and structure catalog entries.
 
 The visual language is a dark minimal research lab style inspired by The Velveteen Project and TensorFlow Projector, without copying assets or layouts.
+
+## Ask FluGenome3D
+
+The `Ask FluGenome3D` view is a local, grounded guide for visitors. It retrieves short explanation chunks from `app/data/lab_guide.safe.json`, cites the source docs/reports, and keeps answers inside the descriptive scope of the project.
+
+It does not call an external LLM, does not access raw sequence files, and cannot answer from restricted local panels.
 
 ## Safe Export Files
 
@@ -110,11 +118,12 @@ app/data/stability_summaries.safe.json
 app/data/antigenlm_latent_atlas.safe.json
 app/data/structure_catalog.safe.json
 app/data/structure_mapping.safe.json
+app/data/lab_guide.safe.json
 app/data/claims_and_limits.safe.json
 app/data/data_governance.safe.json
 ```
 
-These files are derived from real Phase 0-6 outputs. They are not simulated substitutes.
+These files are derived from real Phase 0-9 outputs and public project documentation. They are not simulated substitutes.
 
 ## Data Governance
 

@@ -1,0 +1,1062 @@
+{
+  "schema_version": "safe-bundle-v1",
+  "generated_utc": "2026-05-11T04:26:40.720403+00:00",
+  "guide_policy": "Grounded explanatory guide built only from public docs, reports, safe formulas and governance text. It contains no raw sequences and does not call external models.",
+  "answer_boundary": {
+    "can_explain": [
+      "dataset and panel design",
+      "sequence-context metrics",
+      "CDS/codon QC",
+      "deterministic tokenization",
+      "AntigenLM representation audit",
+      "public structure viewer and mapping status",
+      "data governance and allowed claims"
+    ],
+    "cannot_claim": [
+      "antigenicity prediction",
+      "vaccine recommendation",
+      "escape prediction",
+      "fitness, pathogenicity or transmissibility inference",
+      "causal biological validation",
+      "raw sequence access"
+    ]
+  },
+  "suggested_questions": [
+    "What does CpG O/E mean in this app?",
+    "Why is codon usage separated from raw sequence context?",
+    "How should I read the AntigenLM latent atlas?",
+    "What does structure mapping still need before residue coloring?",
+    "What can FluGenome3D not claim?",
+    "Where would GROVER or BPE fit next?"
+  ],
+  "chunks": [
+    {
+      "id": "guide_formula_gc",
+      "title": "GC fraction",
+      "source": "FluGenome3D guide card",
+      "section": "Sequence-context formulas",
+      "topic_tags": [
+        "sequence_context"
+      ],
+      "text": "GC fraction is the share of nucleotide positions that are G or C. It is a descriptive composition metric, useful for comparing HA and NA groups without showing raw sequences."
+    },
+    {
+      "id": "guide_formula_cpg_upa",
+      "title": "CpG and UpA observed/expected",
+      "source": "FluGenome3D guide card",
+      "section": "Sequence-context formulas",
+      "topic_tags": [
+        "sequence_context"
+      ],
+      "text": "CpG O/E compares observed CG dinucleotides with the amount expected from C and G frequencies. UpA O/E uses DNA TA as the proxy for RNA UpA. Both are descriptive features, not causal biological claims."
+    },
+    {
+      "id": "guide_formula_rscu",
+      "title": "RSCU",
+      "source": "FluGenome3D guide card",
+      "section": "CDS/codon formulas",
+      "topic_tags": [
+        "cds",
+        "sequence_context"
+      ],
+      "text": "RSCU compares a codon count against the average count of synonymous codons for the same amino acid. FluGenome3D reports it only on the refined CDS panel because codon claims need a reliable coding frame."
+    },
+    {
+      "id": "guide_formula_entropy_js",
+      "title": "Token entropy and JS distance",
+      "source": "FluGenome3D guide card",
+      "section": "Tokenization formulas",
+      "topic_tags": [
+        "tokenization",
+        "representation"
+      ],
+      "text": "Token entropy summarizes how spread out a tokenizer vocabulary is. Jensen-Shannon distance compares token distributions between groups. These are descriptive representation diagnostics, not prediction scores."
+    },
+    {
+      "id": "guide_model_antigenlm",
+      "title": "AntigenLM latent layer",
+      "source": "FluGenome3D guide card",
+      "section": "Models and representations",
+      "topic_tags": [
+        "antigenlm",
+        "representation"
+      ],
+      "text": "AntigenLM is used here as a learned representation layer from the parent thesis repository. The app shows reduced coordinates and aggregate diagnostics, not model weights, raw sequences, source IDs or predictions."
+    },
+    {
+      "id": "guide_future_grover_bpe",
+      "title": "Where GROVER and BPE fit",
+      "source": "FluGenome3D guide card",
+      "section": "Future tokenizer work",
+      "topic_tags": [
+        "future",
+        "tokenization"
+      ],
+      "text": "GROVER and BPE are future learned-tokenizer comparisons. The current app deliberately builds deterministic baselines first, so learned tokenizers can be evaluated against transparent k-mer and codon behavior."
+    },
+    {
+      "id": "guide_structure_pending",
+      "title": "Structure mapping status",
+      "source": "FluGenome3D guide card",
+      "section": "Structure interpretation",
+      "topic_tags": [
+        "structure",
+        "claims"
+      ],
+      "text": "The structure viewer loads public RCSB coordinates. Alignment QC exists, but residue-level metric coloring remains pending until chain and residue-number mapping are explicitly validated."
+    },
+    {
+      "id": "guide_data_governance_plain",
+      "title": "What the cryptographic data layer means",
+      "source": "FluGenome3D guide card",
+      "section": "Data governance",
+      "topic_tags": [
+        "governance"
+      ],
+      "text": "The deployable layer contains aggregate summaries, reduced coordinates, short tokens and hash-based identifiers. It does not publish raw sequences, FASTA, restricted panels, accessions, isolate names or source sequence hashes."
+    },
+    {
+      "id": "guide_fd92a81442897d9e",
+      "title": "Biological background",
+      "source": "docs/biological_background.md",
+      "section": "Biological background",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "antigenlm",
+        "structure",
+        "claims"
+      ],
+      "text": "Influenza A is an enveloped, segmented RNA virus. HA and NA are major surface glycoproteins and define common subtype labels such as H1N1 and H3N2. This project focuses on HA/NA because they connect naturally to AntigenLM/AntigenSDE, sequence-context analysis, codon usage and structure-aware visualization. This project does not infer antigenicity, immune escape, vaccine candidates, pathogenicity, transmissibility or viral fitness."
+    },
+    {
+      "id": "guide_771200701f9ab88b",
+      "title": "Local full mode",
+      "source": "docs/data_governance.md",
+      "section": "Local full mode",
+      "topic_tags": [
+        "dataset",
+        "governance"
+      ],
+      "text": "Local full mode may use non-redistributable GISAID-backed data already available on the developer's machine. Raw FASTA, metadata, BLAST databases, and accession-level restricted tables must not be committed. Recommended policy: - Commit scripts, configs, documentation and tests. - Commit only aggregate derived tables if allowed. - Do not commit raw sequences or raw metadata from restricted sources. - Store dataset DOI/acknowledgement information in `data_manifest/dataset_doi.txt`. - Keep `data/raw`, `data/interim`, and `data/processed` gitignored by default."
+    },
+    {
+      "id": "guide_5c6d36b24ee9bdab",
+      "title": "Public demo mode",
+      "source": "docs/data_governance.md",
+      "section": "Public demo mode",
+      "topic_tags": [
+        "dataset",
+        "governance"
+      ],
+      "text": "Public demo mode should use redistributable data or scripts that instruct users how to fetch public data themselves, for example through NCBI Datasets/NCBI Virus."
+    },
+    {
+      "id": "guide_8f818a27472c7e0d",
+      "title": "Reproducibility philosophy",
+      "source": "docs/reproducibility.md",
+      "section": "Reproducibility philosophy",
+      "topic_tags": [
+        "dataset",
+        "governance"
+      ],
+      "text": "The repository should reproduce code, filters, figures and aggregate descriptive outputs. It should not redistribute raw restricted biological datasets."
+    },
+    {
+      "id": "guide_6ca2cfe8fe219269",
+      "title": "Permitted claims",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Permitted claims",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "representation",
+        "structure",
+        "governance",
+        "claims"
+      ],
+      "text": "- Reproducible descriptive audit. - Sequence-context analysis of Influenza A HA/NA. - Codon usage and dinucleotide bias summaries. - Tokenizer-dependent representation audit inspired by DNA language models. - Lightweight structure-aware visualization of descriptive metrics. - Local GISAID-backed analysis with non-redistributable raw data. - Public demo mode where possible. - Grounded plain-language explanations from safe docs, reports and exported summaries."
+    },
+    {
+      "id": "guide_ff65ed73b8c8a0b7",
+      "title": "Prohibited claims",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Prohibited claims",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "tokenization",
+        "structure",
+        "governance",
+        "claims",
+        "future"
+      ],
+      "text": "- Predicts antigenic drift. - Predicts vaccine candidates. - Identifies escape mutations. - Predicts pathogenicity, transmissibility or fitness. - GROVER understands Influenza A. - Tokenization reveals functional sites. - CpG/UpA explains pathogenicity. - Structure mapping identifies antigenic residues. - The in-app guide is an autonomous biological predictor. - The in-app guide can access raw sequences or restricted local panels."
+    },
+    {
+      "id": "guide_e40b6593cb583b59",
+      "title": "Interpretation warning",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Interpretation warning",
+      "topic_tags": [
+        "structure",
+        "governance",
+        "claims"
+      ],
+      "text": "All structure mappings are exploratory projections of descriptive sequence metrics. They are not mechanistic validation, antigenic interpretation, vaccine design, or functional site discovery. The `Ask FluGenome3D` guide is an interpretive layer over safe artifacts. It can explain project concepts, formulas, views and governance, but it must not convert descriptive summaries into prediction, causality or biological validation."
+    },
+    {
+      "id": "guide_f42f5faa8dfbd6a7",
+      "title": "FluGenome3D Phase 1 dataset report",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "FluGenome3D Phase 1 dataset report",
+      "topic_tags": [
+        "dataset",
+        "governance",
+        "future"
+      ],
+      "text": "Generated from local restricted parent-repository data. This report contains only aggregate counts and no raw nucleotide sequences."
+    },
+    {
+      "id": "guide_bf89f17e7ed8e61b",
+      "title": "Detected datasets",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Detected datasets",
+      "topic_tags": [
+        "dataset",
+        "governance",
+        "future"
+      ],
+      "text": "- FASTA files detected: 8 - Paired HA/NA JSON datasets detected: 2 - Rich metadata CSV detected: True - Dedup metadata CSV detected: True"
+    },
+    {
+      "id": "guide_34c39fc8af11138c",
+      "title": "Columns used",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Columns used",
+      "topic_tags": [
+        "dataset",
+        "future"
+      ],
+      "text": "- Paired JSON: `epi_isl`, `subtype`, `year`, `month`, `day`, `ha_sequence`, `na_sequence`. - Rich metadata: `Isolate_Id`, `Subtype`, `Host`, `Location`, `Collection_Date`, `Clade`. - Dedup metadata: `epi_isl`, `subtype`, `year`, `month`, `matched`, `clade`, `major_clade`."
+    },
+    {
+      "id": "guide_ef023d5303dae29a",
+      "title": "Filtering and labels",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Filtering and labels",
+      "topic_tags": [
+        "dataset",
+        "governance",
+        "future"
+      ],
+      "text": "- Subtypes retained: H1N1 and H3N2. - Segment labels: paired HA and paired NA. - Date availability: year, month, and day required for `paired_pass_qc`. - HA expected length: 1650-1800 nt. - NA expected length: 1200-1600 nt. - Maximum ambiguous fraction: 0.01. - Alphabet filter: A/C/G/T/N only. - Duplicate definition: exact SHA256 identity of the HA+NA sequence-hash pair."
+    },
+    {
+      "id": "guide_1896909bf6f97dc2",
+      "title": "Pair counts by stage",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Pair counts by stage",
+      "topic_tags": [
+        "dataset",
+        "governance",
+        "future"
+      ],
+      "text": "stage n_pairs n_ha_sequences n_na_sequences n_sequence_records n_unique_pair_hashes n_duplicate_pair_records n_h1n1 n_h3n2 n_rich_metadata n_human_host year_min year_max --- --- --- --- --- --- --- --- --- --- --- --- --- all_valid_paired 111756 111756 111756 223512 82306 29450 46125 65631 81943 81943 2000 2022 exact_pair_deduplicated 82306 82306 82306 164612 82306 0 36753 45553 81943 81943 2000 2022 metadata_rich_subset 81943 81943 81943 163886 81943 0 36723 45220 81943 81943 2000 2022 human_metadata_subset 81943 81943 81943 163886 81943 0 36723 45220 81943 81943 2000 2022 smoke_panel 400 400 400 800 400 0 200 200 400 400 2000 2022 mvp_panel 10000 10000 10000 20000 10000 0 5000 5000 10000 10000 2000 2022 full_panel 82306 82306 82306 164612 82306 0 36753 45553 81943 81943 2000 2022"
+    },
+    {
+      "id": "guide_7da8cfb5a54d2048",
+      "title": "Panel definitions",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Panel definitions",
+      "topic_tags": [
+        "dataset",
+        "governance",
+        "future"
+      ],
+      "text": "- `smoke_panel`: small deduplicated local panel for fast tests. - `mvp_panel`: 10,000-pair deduplicated panel, balanced by subtype and spread across years where possible, preferring rich human metadata. - `full_panel`: all 82,306 exact HA+NA deduplicated pairs passing Phase 1 QC. panel subtype n_pairs n_sequence_records n_unique_pair_hashes n_duplicate_pair_records n_rich_metadata n_human_host year_min year_max --- --- --- --- --- --- --- --- --- --- smoke_panel H1N1 200 400 200 0 200 200 2000 2022 smoke_panel H3N2 200 400 200 0 200 200 2000 2022 mvp_panel H1N1 5000 10000 5000 0 5000 5000 2000 2022 mvp_panel H3N2 5000 10000 5000 0 5000 5000 2000 2022 full_panel H1N1 36753 73506 36753 0 36723 36723 2000 2022 full_panel H3N2 45553 91106 45553 0 45220 45220 2000 2022"
+    },
+    {
+      "id": "guide_21faa068e93e2261",
+      "title": "Duplicate accounting",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Duplicate accounting",
+      "topic_tags": [
+        "dataset",
+        "governance",
+        "future"
+      ],
+      "text": "panel n_pairs n_unique_pair_hashes n_duplicate_pair_records --- --- --- --- all_valid 111756 82306 29450 all_valid:H1N1 46125 36753 9372 all_valid:H3N2 65631 45553 20078 smoke_panel 400 400 0 smoke_panel:H1N1 200 200 0 smoke_panel:H3N2 200 200 0 mvp_panel 10000 10000 0 mvp_panel:H1N1 5000 5000 0 mvp_panel:H3N2 5000 5000 0 full_panel 82306 82306 0 full_panel:H1N1 36753 36753 0 full_panel:H3N2 45553 45553 0"
+    },
+    {
+      "id": "guide_b7f7d15ff0375402",
+      "title": "Metadata missingness",
+      "source": "reports/phase1_dataset_report.md",
+      "section": "Metadata missingness",
+      "topic_tags": [
+        "dataset",
+        "future"
+      ],
+      "text": "field n_rows missing missing_fraction --- --- --- --- subtype 111756 0 0 year 111756 0 0 month 111756 0 0 day 111756 0 0 host 111756 29813 0.266769 region 111756 29813 0.266769 country 111756 29828 0.266903 metadata_collection_date 111756 29813 0.266769 major_clade 111756 29813 0.266769 dedup_matched 111756 29450 0.263521"
+    },
+    {
+      "id": "guide_02ce7060c3a85d13",
+      "title": "FluGenome3D Phase 2 sequence-context report",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "FluGenome3D Phase 2 sequence-context report",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "structure",
+        "claims",
+        "future"
+      ],
+      "text": "This phase provides a descriptive sequence-context audit over the local Phase 1 panels. It compares compositional and codon-level patterns across HA/NA and H1N1/H3N2. It does not implement GROVER, BPE tokenization, 3D structure mapping, prediction, antigenicity, vaccine, escape, fitness, or sequence optimization."
+    },
+    {
+      "id": "guide_fcf4d6db83383e52",
+      "title": "Panel coverage",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "Panel coverage",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "future"
+      ],
+      "text": "- Smoke panel local metrics: `data/processed/metrics/smoke_sequence_metrics.parquet` and `data/processed/metrics/smoke_codon_metrics.parquet`. - MVP panel local metrics: `data/processed/metrics/mvp_sequence_metrics.parquet` and `data/processed/metrics/mvp_codon_metrics.parquet`. - MVP sequences analyzed: 20000. - MVP codon/translation-QC reliable sequences: 8723."
+    },
+    {
+      "id": "guide_3de38279487efc9a",
+      "title": "Composition summary",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "Composition summary",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "future"
+      ],
+      "text": "GC fraction, CpG observed/expected and UpA observed/expected are summarized as descriptive features. UpA is measured as TA in DNA alphabet. panel subtype protein metric n mean median std q05 q95 --- --- --- --- --- --- --- --- --- --- mvp H1N1 HA sequence_length 5000 1726.44 1724 26.9794 1699.9 1777 mvp H1N1 NA sequence_length 5000 1423.27 1418 15.3434 1410 1458 mvp H3N2 HA sequence_length 5000 1721.38 1721 19.5223 1701 1762 mvp H3N2 NA sequence_length 5000 1428.86 1431 18.7013 1410 1466 mvp H1N1 HA gc_content 5000 0.408105 0.407534 0.00329822 0.40388 0.414494 mvp H1N1 NA gc_content 5000 0.41728 0.41773 0.00347295 0.41118 0.421986 mvp H3N2 HA gc_content 5000 0.417756 0.417436 0.00380236 0.411629 0.424456 mvp H3N2 NA gc_content 5000 0.427813 0.427875 0.00271821 0.423207 0.432056 mvp H1N1 HA cpg_oe 5000 0.35979 0.365502 0.027403 0.29857 0.392281 mvp H1N1 NA cpg_oe 5000 0.386817 0.37708 0.0297099 0.348115 0.445748 mvp H3N2 HA cpg_oe 5000 0"
+    },
+    {
+      "id": "guide_2d8774e69c26621d",
+      "title": "Dinucleotide odds ratios",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "Dinucleotide odds ratios",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "future"
+      ],
+      "text": "The table below shows the highest mean dinucleotide odds ratios in the MVP panel by group. Full 16-dinucleotide summaries are in `results/tables/phase2_dinucleotide_odds_summary.csv`. subtype protein dinucleotide n mean median q05 q95 --- --- --- --- --- --- --- --- H3N2 NA TG 5000 1.43208 1.43199 1.39184 1.47473 H3N2 HA TG 5000 1.4148 1.41595 1.36603 1.45646 H3N2 NA CA 5000 1.37593 1.37666 1.33991 1.41101 H1N1 HA TG 5000 1.37239 1.37498 1.30339 1.44277 H1N1 NA CA 5000 1.36704 1.36802 1.32399 1.40413 H1N1 NA TG 5000 1.35837 1.35822 1.33179 1.3883 H1N1 HA CA 5000 1.31979 1.3258 1.25942 1.35333 H3N2 HA CA 5000 1.31251 1.31193 1.28577 1.33989 H3N2 HA GG 5000 1.27353 1.27133 1.23882 1.31364 H1N1 NA GG 5000 1.26682 1.26987 1.22796 1.29292 H1N1 HA GG 5000 1.25375 1.25591 1.20128 1.29086 H1N1 NA TC 5000 1.15901 1.1637 1.09547 1.2033 H3N2 HA TT 5000 1.14589 1.1429 1.11758 1.19011 H3N2 NA CC 5000 1.13621 1.13551 1.08938 1.18794 H3N2 NA GG 5000 1"
+    },
+    {
+      "id": "guide_0b87dc1036c2ced8",
+      "title": "Translation and codon QC",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "Translation and codon QC",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "future"
+      ],
+      "text": "Codon usage and RSCU are reported only for sequences that pass the naive frame check, ambiguity check, translation check and internal-stop check. These checks use the available nucleotide strings as provided; they do not infer CDS boundaries. panel subtype protein n_sequences n_frame_fail n_ambiguous_fail n_internal_stop_fail n_translation_fail n_codon_reliable reliable_fraction mean_internal_stop_count --- --- --- --- --- --- --- --- --- --- --- mvp H1N1 HA 5000 1154 0 2645 0 2354 0.4708 16.1648 mvp H1N1 NA 5000 1783 0 2499 0 2394 0.4788 14.3674 mvp H3N2 HA 5000 1540 0 3064 0 1922 0.3844 19.1378 mvp H3N2 NA 5000 1847 0 2936 0 2053 0.4106 14.0322"
+    },
+    {
+      "id": "guide_2620b3f68f24b078",
+      "title": "Codon usage and RSCU",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "Codon usage and RSCU",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "future"
+      ],
+      "text": "Codon usage summaries use translation-QC reliable sequences only. Stop codons are included in codon usage counts but excluded from RSCU. Top codons by mean frequency: subtype protein codon amino_acid n_reliable_sequences mean_frequency median_frequency --- --- --- --- --- --- --- H1N1 HA AAT N 2354 0.0487018 0.0493827 H1N1 NA AAT N 2394 0.0480809 0.0489362 H1N1 HA AAA K 2354 0.0465162 0.047619 H3N2 HA AAA K 1922 0.0459924 0.0440917 H1N1 NA ATA I 2394 0.0445369 0.0446809 H3N2 HA AAT N 1922 0.044204 0.0440917 H1N1 HA GAA E 2354 0.0427983 0.042328 H1N1 HA ACA T 2354 0.0426256 0.042328 H3N2 NA ATA I 2053 0.0385691 0.0382979 H1N1 NA GGA G 2394 0.0369036 0.0361702 H1N1 NA TGG W 2394 0.0340325 0.0340426 H3N2 NA AAT N 2053 0.0337943 0.0340426 H3N2 HA AAC N 1922 0.0335404 0.0335097 H1N1 NA AAC N 2394 0.032665 0.0319149 H3N2 NA AAA K 2053 0.0323766 0.0319149 H3N2 HA CAA Q 1922 0.0321255 0.031746 _Table truncated to 16 of 244 rows._ Top codons by "
+    },
+    {
+      "id": "guide_dbfbe07100fb1ba8",
+      "title": "K-mer entropy",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "K-mer entropy",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "tokenization",
+        "future"
+      ],
+      "text": "K-mer profiles were summarized for k=3,4,5. Versionable outputs keep entropy and top-kmer aggregate summaries only, not row-level sequence strings. panel subtype protein k n_sequences mean_entropy median_entropy mean_valid_kmers top1_kmer top1_frequency top2_kmer top2_frequency top3_kmer top3_frequency --- --- --- --- --- --- --- --- --- --- --- --- --- --- mvp H1N1 HA 3 5000 5.77202 5.77278 1724.39 AAA 0.0516589 GAA 0.0321563 AAT 0.0320417 mvp H1N1 HA 4 5000 7.59622 7.59639 1723.38 AAAA 0.0199223 GAAA 0.0134196 AAAT 0.0130836 mvp H1N1 HA 5 5000 9.15873 9.15787 1722.36 AAAAA 0.00765995 GGAAA 0.00739833 AAGAA 0.00576418 mvp H1N1 NA 3 5000 5.80614 5.80609 1421.24 AAT 0.0380207 TGG 0.0329407 AAA 0.0315844 mvp H1N1 NA 4 5000 7.63003 7.63015 1420.23 TGGA 0.012409 AATG 0.0119304 ACAA 0.0110182 mvp H1N1 NA 5 5000 9.14971 9.14961 1419.23 AGACA 0.00509137 AATGG 0.0050467 ACAAT 0.00461012 mvp H3N2 HA 3 5000 5.78731 5.78664 1719.32 AAA 0.0472469 C"
+    },
+    {
+      "id": "guide_8fa97fea5b864106",
+      "title": "Figures",
+      "source": "reports/phase2_sequence_context_report.md",
+      "section": "Figures",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "- `results/figures/fig4_gc_cpg_upa_by_group.png`: GC, CpG O/E and UpA O/E by subtype/protein group. - `results/figures/fig5_dinucleotide_odds_heatmap.png`: 16-dinucleotide mean odds-ratio heatmap. - `results/figures/fig6_codon_usage_rscu_heatmap.png`: codon/translation QC summary, because at least one MVP group was below the codon-QC threshold. - `results/figures/fig7_kmer_entropy_by_group.png`: k-mer entropy by group for k=3,4,5."
+    },
+    {
+      "id": "guide_3d0ba6122ecfa744",
+      "title": "FluGenome3D Phase 3 CDS refinement report",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "FluGenome3D Phase 3 CDS refinement report",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "future"
+      ],
+      "text": "This phase was necessary because Phase 2 found that naive codon-frame assumptions were not reliable for all HA/NA nucleotide records. Non-coding sequence-context metrics remain valid on raw nucleotide context, while codon usage and RSCU require a separate CDS-aware subset."
+    },
+    {
+      "id": "guide_d978f0ffd94d038e",
+      "title": "Representations",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Representations",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "representation",
+        "future"
+      ],
+      "text": "- `raw_nucleotide_context`: original normalized nucleotide strings for GC, CpG/UpA, dinucleotide odds and k-mer entropy. No coding frame is required. - `cds_strict`: sequences that pass conservative frame, ambiguity, translation, internal-stop and protein-length checks without trimming. - `cds_rescued`: sequences that fail naive QC but pass transparent 0-2 nt trim/frame rescue rules."
+    },
+    {
+      "id": "guide_2f97b83eb249f005",
+      "title": "Why naive QC failed",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Why naive QC failed",
+      "topic_tags": [
+        "cds",
+        "representation",
+        "future"
+      ],
+      "text": "Likely contributors include UTR or non-coding flanks, partial records, gaps or ambiguous characters, nonzero CDS frame offsets, aligned-vs-CDS nucleotide representations, non-multiple-of-3 lengths, and records not directly translatable from position 0. This phase audits those possibilities without assuming a single cause. subtype protein n_sequences n_naive_qc_pass n_any_qc_fail n_frame_fail n_internal_stop_fail n_ambiguous_fail n_translation_fail mean_length_nt median_length_nt mean_internal_stop_count --- --- --- --- --- --- --- --- --- --- --- --- H1N1 HA 5000 2354 2646 1154 2645 0 0 1726.44 1724 16.1648 H1N1 NA 5000 2394 2606 1783 2499 0 0 1423.27 1418 14.3674 H3N2 HA 5000 1922 3078 1540 3064 0 0 1721.38 1721 19.1378 H3N2 NA 5000 2053 2947 1847 2936 0 0 1428.86 1431 14.0322"
+    },
+    {
+      "id": "guide_d95685766cb593c4",
+      "title": "Length modulo 3",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Length modulo 3",
+      "topic_tags": [
+        "cds",
+        "future"
+      ],
+      "text": "subtype protein length_mod3 n_sequences --- --- --- --- H1N1 HA 0 3846 H1N1 HA 1 640 H1N1 HA 2 514 H1N1 NA 0 3217 H1N1 NA 1 437 H1N1 NA 2 1346 H3N2 HA 0 3460 H3N2 HA 1 861 H3N2 HA 2 679 H3N2 NA 0 3153 H3N2 NA 1 1182 H3N2 NA 2 665"
+    },
+    {
+      "id": "guide_cbed29ff75897e48",
+      "title": "Rescue rules",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Rescue rules",
+      "topic_tags": [
+        "cds",
+        "structure",
+        "claims",
+        "future"
+      ],
+      "text": "- Normalize to uppercase DNA alphabet and convert U to T. - Remove gaps only when configured, while recording `gaps_removed` and `gap_count_removed`. - Try deterministic trims of 0-2 nt at the left and 0-2 nt at the right. - Accept only candidates with no internal stops, ambiguity under threshold, no ambiguous amino acids, and expected HA/NA protein-length range. - Leave all other sequences as `unrescued`. - No reverse-complement rescue, alignment rescue, reference-guided repair, prediction, optimization or biological validation is performed."
+    },
+    {
+      "id": "guide_4ac85db25fc32e27",
+      "title": "Rescue outcome",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Rescue outcome",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "future"
+      ],
+      "text": "- Strict pass sequences: 8675 - Rescued sequences: 299 - Unrescued sequences: 11026 - Final refined CDS panel size: 8974 - Codon-reliable sequences after refinement: 8974 subtype protein status n_sequences --- --- --- --- H1N1 HA rescued 3 H1N1 HA strict_pass 2345 H1N1 HA unrescued 2652 H1N1 NA rescued 186 H1N1 NA strict_pass 2391 H1N1 NA unrescued 2423 H3N2 HA rescued 74 H3N2 HA strict_pass 1914 H3N2 HA unrescued 3012 H3N2 NA rescued 36 H3N2 NA strict_pass 2025 H3N2 NA unrescued 2939"
+    },
+    {
+      "id": "guide_9990eda5cff518da",
+      "title": "Refined codon/RSCU QC",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Refined codon/RSCU QC",
+      "topic_tags": [
+        "cds",
+        "future"
+      ],
+      "text": "Codon usage and RSCU are now reported on the strict/rescued CDS subset with explicit rescue status and QC flags. These are more reliable than Phase 2 naive codon summaries, but they are still not biological validation of CDS boundaries. subtype protein n_refined_sequences n_codon_reliable_after_refinement reliable_fraction_after_refinement n_frame_fail_after_refinement n_internal_stop_fail_after_refinement n_translation_fail_after_refinement n_strict_pass n_rescued n_unrescued --- --- --- --- --- --- --- --- --- --- --- H1N1 HA 2348 2348 1 0 0 0 2345 3 2652 H1N1 NA 2577 2577 1 0 0 0 2391 186 2423 H3N2 HA 1988 1988 1 0 0 0 1914 74 3012 H3N2 NA 2061 2061 1 0 0 0 2025 36 2939"
+    },
+    {
+      "id": "guide_f0bf05ec086aad8b",
+      "title": "Outputs",
+      "source": "reports/phase3_cds_refinement_report.md",
+      "section": "Outputs",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "future"
+      ],
+      "text": "Local gitignored panels: - `data/processed/panels/mvp_cds_strict_panel.parquet` - `data/processed/panels/mvp_cds_rescued_panel.parquet` - `data/processed/panels/mvp_cds_refined_panel.parquet` - `data/processed/metrics/mvp_cds_refined_codon_metrics.parquet` Public aggregate tables: - `results/tables/phase3_cds_qc_failure_breakdown.csv` - `results/tables/phase3_length_mod3_by_group.csv` - `results/tables/phase3_internal_stop_distribution.csv` - `results/tables/phase3_rescue_status_by_group.csv` - `results/tables/phase3_refined_codon_usage_summary.csv` - `results/tables/phase3_refined_rscu_summary.csv` - `results/tables/phase3_refined_translation_qc_summary.csv` Figures: - `results/figures/fig8_cds_qc_failure_breakdown.png` - `results/figures/fig9_length_mod3_by_group.png` - `results/figures/fig10_refined_rscu_heatmap.png` - `results/figures/fig11_rescue_status_by_group.png`"
+    },
+    {
+      "id": "guide_361d29105208b935",
+      "title": "FluGenome3D Phase 4 representation audit report",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "FluGenome3D Phase 4 representation audit report",
+      "topic_tags": [
+        "cds",
+        "tokenization",
+        "representation",
+        "future"
+      ],
+      "text": "This phase compares simple nucleotide and codon-level representations of Influenza A HA/NA before any GROVER or BPE tokenization. The analysis is descriptive and representation-focused."
+    },
+    {
+      "id": "guide_d72f034bb30562d0",
+      "title": "Dataset separation",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "Dataset separation",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "cds",
+        "representation",
+        "future"
+      ],
+      "text": "- Raw nucleotide representations use `mvp_panel`, because k-mer and compositional features do not require a validated CDS frame. - CDS/codon representations use `mvp_cds_refined_panel` and `mvp_cds_refined_codon_metrics`, because codon-frequency and RSCU features require explicit CDS QC."
+    },
+    {
+      "id": "guide_37fee24ef8cb786f",
+      "title": "Representations built",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "Representations built",
+      "topic_tags": [
+        "cds",
+        "representation",
+        "future"
+      ],
+      "text": "representation source n_sequences n_features nnz sparsity pca_explained_variance_pc1 pca_explained_variance_pc2 pca_explained_variance_total_2pc umap_method --- --- --- --- --- --- --- --- --- --- kmer3_freq raw_nucleotide 20000 64 1279894 8.28125e-05 0.46206 0.212951 0.675011 kmer4_freq raw_nucleotide 20000 256 4871551 0.0485252 0.35046 0.232325 0.582785 kmer5_freq raw_nucleotide 20000 1024 13918094 0.320406 0.277943 0.256372 0.534315 kmer3_tfidf raw_nucleotide 20000 64 1279894 8.28125e-05 0.456997 0.217556 0.674553 kmer4_tfidf raw_nucleotide 20000 256 4871551 0.0485252 0.347838 0.242105 0.589943 pca_fallback_for_umap codon_freq cds_refined 8974 64 531774 0.0741064 0.477261 0.205298 0.682559 rscu cds_refined 8974 61 522800 0.0449641 0.461943 0.244373 0.706316"
+    },
+    {
+      "id": "guide_aad8f24b0e2a974d",
+      "title": "PCA and UMAP summary",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "PCA and UMAP summary",
+      "topic_tags": [
+        "representation",
+        "future"
+      ],
+      "text": "PCA was run for all representations. UMAP was attempted for `kmer4_tfidf` on a stratified sample; if UMAP is unavailable, the script records and plots a deterministic PCA fallback under the UMAP figure filename."
+    },
+    {
+      "id": "guide_a302193f1274ffae",
+      "title": "Silhouette scores",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "Silhouette scores",
+      "topic_tags": [
+        "cds",
+        "representation",
+        "antigenlm",
+        "claims",
+        "future"
+      ],
+      "text": "Silhouette scores are computed on 2D PCA embeddings for protein, subtype and protein-subtype labels. These scores are descriptive separation diagnostics, not predictive performance metrics. representation label_type silhouette space --- --- --- --- kmer3_freq protein_subtype 0.834207 pca_2d kmer3_tfidf protein_subtype 0.83179 pca_2d kmer4_freq protein_subtype 0.821966 pca_2d rscu protein_subtype 0.818114 pca_2d kmer4_tfidf protein_subtype 0.785164 pca_2d"
+    },
+    {
+      "id": "guide_550303e2df47b6d7",
+      "title": "Centroid distances",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "Centroid distances",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "representation",
+        "future"
+      ],
+      "text": "Pairwise centroid distances are stored in `results/tables/phase4_group_centroid_distances.csv`. Figure 16 visualizes group distances for k-mer TF-IDF, codon frequency and RSCU representations. representation group_a group_b distance --- --- --- --- kmer3_freq HA-H1N1 HA-H1N1 0 kmer3_freq HA-H1N1 HA-H3N2 0.0276674 kmer3_freq HA-H1N1 NA-H1N1 0.0371195 kmer3_freq HA-H1N1 NA-H3N2 0.0391377 kmer3_freq HA-H3N2 HA-H1N1 0.0276674 kmer3_freq HA-H3N2 HA-H3N2 0 kmer3_freq HA-H3N2 NA-H1N1 0.0354595 kmer3_freq HA-H3N2 NA-H3N2 0.03488 kmer3_freq NA-H1N1 HA-H1N1 0.0371195 kmer3_freq NA-H1N1 HA-H3N2 0.0354595 kmer3_freq NA-H1N1 NA-H1N1 0 kmer3_freq NA-H1N1 NA-H3N2 0.0288007"
+    },
+    {
+      "id": "guide_ac601366eba2e4f6",
+      "title": "Top features",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "Top features",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "representation",
+        "claims",
+        "future"
+      ],
+      "text": "Top k-mer, codon-frequency and RSCU features are aggregated by group. These are high-weight descriptive features, not mutation, fitness, antigenicity or escape markers. representation protein subtype group rank feature mean_value k --- --- --- --- --- --- --- --- kmer3_freq HA H1N1 HA H1N1 1 AAA 0.0516294 3 kmer3_freq HA H1N1 HA H1N1 2 GAA 0.0321504 3 kmer3_freq HA H1N1 HA H1N1 3 AAT 0.0320418 3 kmer3_freq HA H1N1 HA H1N1 4 CAA 0.0314341 3 kmer3_freq HA H1N1 HA H1N1 5 ACA 0.0305524 3 kmer3_freq HA H1N1 HA H1N1 6 ATG 0.029231 3 kmer3_freq HA H1N1 HA H1N1 7 AGA 0.0286199 3 kmer3_freq HA H1N1 HA H1N1 8 AAG 0.0272342 3 kmer3_freq HA H1N1 HA H1N1 9 TGG 0.0254875 3 kmer3_freq HA H1N1 HA H1N1 10 ATT 0.0252658 3 kmer3_freq HA H3N2 HA H3N2 1 AAA 0.0472405 3 kmer3_freq HA H3N2 HA H3N2 2 CAA 0.0366196 3"
+    },
+    {
+      "id": "guide_4218d1f7428091a3",
+      "title": "Figures",
+      "source": "reports/phase4_representation_audit_report.md",
+      "section": "Figures",
+      "topic_tags": [
+        "cds",
+        "representation",
+        "future"
+      ],
+      "text": "- `results/figures/fig12_kmer_pca_by_group.png` - `results/figures/fig13_kmer_umap_by_group.png` - `results/figures/fig14_codon_pca_by_group.png` - `results/figures/fig15_rscu_pca_by_group.png` - `results/figures/fig16_group_centroid_distance_heatmap.png` - `results/figures/fig17_representation_silhouette_comparison.png`"
+    },
+    {
+      "id": "guide_c882184f3cef7036",
+      "title": "FluGenome3D Phase 5 tokenization audit report",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "FluGenome3D Phase 5 tokenization audit report",
+      "topic_tags": [
+        "tokenization",
+        "antigenlm",
+        "future"
+      ],
+      "text": "This phase audits how deterministic tokenization choices segment Influenza A HA/NA sequences. It is a descriptive tokenization audit before learned BPE or GROVER tokenizers."
+    },
+    {
+      "id": "guide_b8bd810fa1e26922",
+      "title": "Representation vs. tokenization",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "Representation vs. tokenization",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "representation",
+        "future"
+      ],
+      "text": "Phase 4 treated sequences as vector representations. Phase 5 treats tokenization itself as the object of study: vocabulary size, token entropy, CpG/UpA-containing token fractions, codon-boundary crossing and Jensen-Shannon distances between HA/NA and subtype groups."
+    },
+    {
+      "id": "guide_55e57a939e894047",
+      "title": "Datasets used",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "Datasets used",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "tokenization",
+        "governance",
+        "claims",
+        "future"
+      ],
+      "text": "- Raw nucleotide tokenizers use `mvp_panel`: 20,000 HA/NA sequences. - CDS-aware tokenizers use `mvp_cds_refined_panel`: 8,974 refined CDS sequences. - Codon and frame-aware claims are restricted to the CDS-refined panel."
+    },
+    {
+      "id": "guide_2ecaeb3ee70a8d91",
+      "title": "Tokenizers audited",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "Tokenizers audited",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "tokenizer dataset source family mode k offset n_sequences observed_vocab_size total_tokens --- --- --- --- --- --- --- --- --- --- cds_codon mvp_cds_refined_panel cds_refined codon codon 3 0 8974 68 4639220 cds_frame_k3 mvp_cds_refined_panel cds_refined frame_aware_kmer frame_aware 3 0 8974 68 4639220 cds_frame_k6 mvp_cds_refined_panel cds_refined frame_aware_kmer frame_aware 6 0 8974 3058 2317384 cds_nonoverlap_k3_offset0 mvp_cds_refined_panel cds_refined non_overlapping_kmer non_overlapping 3 0 8974 68 4639220 cds_nonoverlap_k3_offset1 mvp_cds_refined_panel cds_refined non_overlapping_kmer non_overlapping 3 1 8974 68 4630246 cds_nonoverlap_k3_offset2 mvp_cds_refined_panel cds_refined non_overlapping_kmer non_overlapping 3 2 8974 68 4630246 raw_nonoverlap_k3 mvp_panel raw_nucleotide non_overlapping_kmer non_overlapping 3 0 20000 114 10496741 raw_nonoverlap_k4 mvp_panel raw_nucleotide non_overlapping_kmer non_overlapping 4 0 20000 355 7"
+    },
+    {
+      "id": "guide_4db45127f4d88b1a",
+      "title": "Entropy and effective vocabulary",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "Entropy and effective vocabulary",
+      "topic_tags": [
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "Token entropy and effective vocabulary vary by tokenizer family, k, protein and subtype. Larger k generally increases the observed vocabulary available to the audit, while non-overlapping tokenizers produce fewer tokens per sequence. tokenizer mean_group_entropy_bits --- --- raw_overlap_k6 10.0835 raw_overlap_k5 9.16638 raw_nonoverlap_k6 7.90346 cds_frame_k6 7.89993 raw_nonoverlap_k5 7.87911 raw_overlap_k4 7.62741 raw_nonoverlap_k4 7.25876 raw_overlap_k3 5.79937 cds_nonoverlap_k3_offset1 5.67102 cds_nonoverlap_k3_offset2 5.65158 raw_nonoverlap_k3 5.63631 cds_codon 5.61835 _Table truncated to 12 of 14 rows._ tokenizer protein_subtype observed_vocab_size group_effective_vocab_size --- --- --- --- cds_codon HA-H1N1 66 48.1941 cds_codon HA-H3N2 64 50.199 cds_codon NA-H1N1 65 49.0558 cds_codon NA-H3N2 63 50.8799 cds_frame_k3 HA-H1N1 66 48.1941 cds_frame_k3 HA-H3N2 64 50.199 cds_frame_k3 NA-H1N1 65 49.0558 cds_frame_k3 NA-H3N2 63 50.8799 cds_"
+    },
+    {
+      "id": "guide_b0e3dea797ad756f",
+      "title": "CpG and UpA/TA token analysis",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "CpG and UpA/TA token analysis",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "CpG-containing and UpA/TA-containing token fractions are summarized descriptively by tokenizer and group. Because records are stored as DNA alphabet, TA is used as the DNA proxy for UpA. tokenizer protein_subtype mean_cpg_token_fraction mean_upa_token_fraction --- --- --- --- cds_codon HA-H1N1 0.0178382 0.127308 cds_codon HA-H3N2 0.0275682 0.0941805 cds_codon NA-H1N1 0.0201546 0.109489 cds_codon NA-H3N2 0.0248026 0.0940546 cds_frame_k3 HA-H1N1 0.0178382 0.127308 cds_frame_k3 HA-H3N2 0.0275682 0.0941805 cds_frame_k3 NA-H1N1 0.0201546 0.109489 cds_frame_k3 NA-H3N2 0.0248026 0.0940546 cds_frame_k6 HA-H1N1 0.0653312 0.288692 cds_frame_k6 HA-H3N2 0.0877964 0.239721 cds_frame_k6 NA-H1N1 0.0739212 0.24095 cds_frame_k6 NA-H3N2 0.0735961 0.223695 cds_nonoverlap_k3_offset0 HA-H1N1 0.0178382 0.127308 cds_nonoverlap_k3_offset0 HA-H3N2 0.0275682 0.0941805 cds_nonoverlap_k3_offset0 NA-H1N1 0.0201546 0.109489 cds_nonoverlap_k3_offset0 NA-H3N2 0.024802"
+    },
+    {
+      "id": "guide_0fda18c5748360ee",
+      "title": "Codon-boundary crossing",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "Codon-boundary crossing",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "Codon-boundary crossing is interpreted as CDS-aware only for tokenizers built on `mvp_cds_refined_panel`. For raw nucleotide tokenizers, boundary fractions are reported as position-0 segmentation diagnostics and should not be treated as coding-frame evidence. tokenizer boundary_context mean_codon_boundary_crossing_fraction --- --- --- cds_codon cds_refined_codon_aligned 0 cds_frame_k3 cds_refined_frame0 0 cds_frame_k6 cds_refined_frame0 1 cds_nonoverlap_k3_offset0 cds_refined_offset_sensitivity 0 cds_nonoverlap_k3_offset1 cds_refined_offset_sensitivity 1 cds_nonoverlap_k3_offset2 cds_refined_offset_sensitivity 1 raw_nonoverlap_k3 position0_proxy_not_cds 0 raw_nonoverlap_k4 position0_proxy_not_cds 1 raw_nonoverlap_k5 position0_proxy_not_cds 1 raw_nonoverlap_k6 position0_proxy_not_cds 1 raw_overlap_k3 position0_proxy_not_cds 0.666342 raw_overlap_k4 position0_proxy_not_cds 1 raw_overlap_k5 position0_proxy_not_cds 1 raw_overlap_k6 position0"
+    },
+    {
+      "id": "guide_ebc9877a71c1190f",
+      "title": "Jensen-Shannon distances",
+      "source": "reports/phase5_tokenization_audit_report.md",
+      "section": "Jensen-Shannon distances",
+      "topic_tags": [
+        "cds",
+        "tokenization",
+        "claims",
+        "future"
+      ],
+      "text": "Jensen-Shannon distances compare group-level token distributions across HA-H1N1, NA-H1N1, HA-H3N2 and NA-H3N2. Higher values indicate stronger descriptive separation of aggregate token distributions, not predictive performance. tokenizer mean_pairwise_js_distance --- --- cds_frame_k6 0.894248 raw_nonoverlap_k6 0.78688 raw_overlap_k6 0.684813 raw_nonoverlap_k5 0.549605 raw_overlap_k5 0.423933 raw_nonoverlap_k4 0.320845 raw_overlap_k4 0.224535 cds_nonoverlap_k3_offset2 0.219128 cds_codon 0.212845 cds_frame_k3 0.212845 cds_nonoverlap_k3_offset0 0.212845 cds_nonoverlap_k3_offset1 0.210403 _Table truncated to 12 of 14 rows._"
+    },
+    {
+      "id": "guide_332bfd41c7980f17",
+      "title": "FluGenome3D Phase 6 tokenization stability report",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "FluGenome3D Phase 6 tokenization stability report",
+      "topic_tags": [
+        "tokenization",
+        "antigenlm",
+        "future"
+      ],
+      "text": "This phase evaluates the stability of deterministic tokenization metrics under stratified bootstrap and temporal grouping. It is a descriptive robustness audit before learned BPE or GROVER tokenizers."
+    },
+    {
+      "id": "guide_9535bb8b8fee7b7a",
+      "title": "Why robustness before learned tokenizers",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "Why robustness before learned tokenizers",
+      "topic_tags": [
+        "dataset",
+        "tokenization",
+        "antigenlm",
+        "future"
+      ],
+      "text": "Phase 5 compared deterministic tokenization choices. Phase 6 checks whether those descriptive differences are stable under resampling, whether group distances are consistent through time windows, and whether top-token enrichment is robust to sampling variation. This avoids treating a single full-panel estimate as if it were automatically stable."
+    },
+    {
+      "id": "guide_4167ddd3dcb66543",
+      "title": "Tokenizers evaluated",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "Tokenizers evaluated",
+      "topic_tags": [
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "raw_overlap_k3, raw_overlap_k6, raw_nonoverlap_k6, cds_codon, cds_frame_k6, cds_nonoverlap_k3_offset0, cds_nonoverlap_k3_offset1, cds_nonoverlap_k3_offset2"
+    },
+    {
+      "id": "guide_233b98dd85ec40d4",
+      "title": "Bootstrap design",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "Bootstrap design",
+      "topic_tags": [
+        "tokenization",
+        "future"
+      ],
+      "text": "- Bootstrap replicates: 100 - Sequence metric bootstrap: stratified by HA-H1N1, NA-H1N1, HA-H3N2 and NA-H3N2. - Maximum sampled rows per group per bootstrap: 1000 - JS and top-token bootstrap: aggregate group token distributions were resampled within each tokenizer/group because Phase 5 does not store ordered token lists per sequence."
+    },
+    {
+      "id": "guide_207745e342b19e9f",
+      "title": "JS distance stability",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "JS distance stability",
+      "topic_tags": [
+        "cds",
+        "tokenization",
+        "claims",
+        "future"
+      ],
+      "text": "Mean pairwise Jensen-Shannon distance is summarized with bootstrap confidence intervals. Higher values indicate stronger descriptive separation of aggregate token distributions, not predictive performance. tokenizer mean std ci_lower ci_upper ci_width --- --- --- --- --- --- cds_frame_k6 0.895221 0.000241411 0.894746 0.895671 0.000924654 raw_nonoverlap_k6 0.789584 0.000404968 0.788726 0.790331 0.00160529 raw_overlap_k6 0.688757 0.000417339 0.688027 0.689468 0.00144075 cds_nonoverlap_k3_offset2 0.219342 0.000719688 0.218075 0.220684 0.00260925 cds_codon 0.213097 0.000789478 0.211668 0.214611 0.00294291 cds_nonoverlap_k3_offset0 0.21305 0.000765663 0.211656 0.214433 0.0027771 cds_nonoverlap_k3_offset1 0.210726 0.000855567 0.209118 0.212405 0.00328732 raw_overlap_k3 0.111653 0.000770245 0.110257 0.113245 0.00298811"
+    },
+    {
+      "id": "guide_db9c495e8dec4f6b",
+      "title": "Top-token stability",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "Top-token stability",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "Top-token stability is measured as Jaccard overlap between bootstrap top-20 enriched tokens and the full-panel top-20 reference for the same tokenizer/group. tokenizer mean_top_token_jaccard --- --- cds_nonoverlap_k3_offset1 0.932619 raw_overlap_k3 0.927398 cds_codon 0.906035 cds_nonoverlap_k3_offset2 0.903914 cds_nonoverlap_k3_offset0 0.903651 cds_frame_k6 0.366073 raw_nonoverlap_k6 0.23725 raw_overlap_k6 0.203458"
+    },
+    {
+      "id": "guide_4667eb0be56f0bf0",
+      "title": "Temporal stability",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "Temporal stability",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "Temporal bins used: 2009-2014, 2015-2019, 2020+, pre-2009 Temporal metrics are reported only for tokenizer/window combinations where all four protein-subtype groups pass the minimum group count threshold. row_type tokenizer time_window protein_subtype comparison n_sequences mean_token_entropy_bits mean_effective_vocab_size mean_cpg_token_fraction mean_upa_token_fraction js_distance --- --- --- --- --- --- --- --- --- --- --- group_metric cds_codon 2009-2014 HA-H1N1 985 5.57565 47.6918 0.0191748 0.133043 group_metric cds_codon 2009-2014 HA-H3N2 676 5.63381 49.654 0.0273707 0.0933161 group_metric cds_codon 2009-2014 NA-H1N1 1053 5.60622 48.7132 0.0206244 0.110882 group_metric cds_codon 2009-2014 NA-H3N2 791 5.6652 50.7459 0.0249278 0.0941946 group_metric cds_codon 2015-2019 HA-H1N1 749 5.56623 47.3815 0.01819 0.124097 group_metric cds_codon 2015-2019 HA-H3N2 507 5.6401 49.8703 0.0265014 0.0984158 group_metric cds_codon 2015-2019 NA-H1N1 8"
+    },
+    {
+      "id": "guide_e5a3d672ed830f72",
+      "title": "Robustness ranking",
+      "source": "reports/phase6_tokenization_stability_report.md",
+      "section": "Robustness ranking",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "tokenization",
+        "future"
+      ],
+      "text": "The ranking is a composite descriptive score combining higher JS distance, narrower JS confidence intervals, higher top-token Jaccard stability, narrower entropy intervals and coverage. rank tokenizer robustness_score mean_js_distance js_ci_width mean_top_token_jaccard n_sequences --- --- --- --- --- --- --- 1 raw_overlap_k3 0.623896 0.111653 0.00298811 0.927398 20000 2 raw_overlap_k6 0.616149 0.688757 0.00144075 0.203458 20000 3 cds_frame_k6 0.611779 0.895221 0.000924654 0.366073 8974 4 cds_nonoverlap_k3_offset2 0.527566 0.219342 0.00260925 0.903914 8974 5 raw_nonoverlap_k6 0.52469 0.789584 0.00160529 0.23725 20000 6 cds_nonoverlap_k3_offset0 0.509747 0.21305 0.0027771 0.903651 8974 7 cds_codon 0.501144 0.213097 0.00294291 0.906035 8974 8 cds_nonoverlap_k3_offset1 0.482838 0.210726 0.00328732 0.932619 8974"
+    },
+    {
+      "id": "guide_52164ac407517c53",
+      "title": "Phase 7 AntigenLM bridge report",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "Phase 7 AntigenLM bridge report",
+      "topic_tags": [
+        "representation",
+        "antigenlm",
+        "governance",
+        "future"
+      ],
+      "text": "Phase 7 imports the parent-repository AntigenLM geometry as a derived representation layer. It does not export raw sequences, accessions, isolate names, sequence hashes, FASTA, checkpoints, or restricted Parquet records."
+    },
+    {
+      "id": "guide_b6db715c4d02011a",
+      "title": "Cache summary",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "Cache summary",
+      "topic_tags": [
+        "dataset",
+        "representation",
+        "antigenlm",
+        "future"
+      ],
+      "text": "- Records represented: 111,756 - Embedding dimension: 384 - Year range: 2000-2022 - Exported latent atlas points: 24,000 - Projection: pca_3d"
+    },
+    {
+      "id": "guide_fb30c8809235c947",
+      "title": "Why this matters",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "Why this matters",
+      "topic_tags": [
+        "cds",
+        "tokenization",
+        "representation",
+        "antigenlm",
+        "future"
+      ],
+      "text": "The child repo already compares nucleotide, codon and token-level baselines. Phase 7 adds the learned AntigenLM layer from the thesis repo so the app can show how simple biological features relate to a learned influenza representation."
+    },
+    {
+      "id": "guide_cc7ff349f5fafa89",
+      "title": "Molecular geometry summary",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "Molecular geometry summary",
+      "topic_tags": [
+        "antigenlm",
+        "future"
+      ],
+      "text": "metric subtype rho_mean rho_sd valid_pairs_mean omitted_pairs_mean n_runs --- --- --- --- --- --- --- hamming_ha H1N1 0.8280156332049321 0.0010822611171559169 199914.33333333334 85.66666666666667 3 hamming_ha H3N2 0.6081682079220184 0.0006412968546132165 199988.66666666666 11.333333333333334 3 hamming_ha_na H1N1 0.8537804922836947 0.0007202431218106303 199903.0 97.0 3 hamming_ha_na H3N2 0.6677909555897313 0.001661629990917984 199537.66666666666 462.3333333333333 3 temporal H1N1 0.06117937914963284 0.001080895044009855 200000.0 0.0 3 temporal H3N2 0.15397261168018747 0.0009366835297727553 200000.0 0.0 3"
+    },
+    {
+      "id": "guide_6a4d34fd4b782200",
+      "title": "PCA effective dimension",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "PCA effective dimension",
+      "topic_tags": [
+        "representation",
+        "antigenlm",
+        "future"
+      ],
+      "text": "group n n80 n90 n95 n99 participation_ratio top1_evr top2_evr --- --- --- --- --- --- --- --- --- global None None None None None 1.910691053477228 None None H1N1 None None None None None 1.4305587487342268 None None H3N2 None None None None None 1.5294304210698815 None None"
+    },
+    {
+      "id": "guide_5dc8a8732e0fde2c",
+      "title": "Clade enrichment summary",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "Clade enrichment summary",
+      "topic_tags": [
+        "antigenlm",
+        "future"
+      ],
+      "text": "subtype label k classes n_labeled mean_precision random_baseline enrichment_vs_random permutation_p05 permutation_p95 --- --- --- --- --- --- --- --- --- --- H1N1 clade 5 17 36156 0.9148749089366567 0.2408784157539551 3.798077574003784 0.23864078162318683 0.24265750500272038 H1N1 clade 10 17 36156 0.893256569416128 0.24028284839768413 3.717521143821838 0.2389599637242145 0.24211028554394798 H1N1 clade 20 17 36156 0.8646618682189291 0.24042021610060113 3.5964607396289883 0.23923635647192779 0.24166657977196243 H3N2 clade 5 39 40082 0.8609146899708697 0.06893701245779486 12.48842471231177 0.06799296712442779 0.06984579692051603 H3N2 clade 10 39 40082 0.8324670570140091 0.06893950734327961 12.07532645785813 0.06828248258849577 0.06971586847925398 H3N2 clade 20 39 40082 0.7927227208488915 0.06884761239459108 11.514164301087233 0.06832653970483632 0.06948789259575315 H1N1 major_clade 5 5 36156 0.9735897861509946 0.491794815060663 1.979666634"
+    },
+    {
+      "id": "guide_4e72299cf3fa9151",
+      "title": "App boundary",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "App boundary",
+      "topic_tags": [
+        "dataset",
+        "representation",
+        "antigenlm",
+        "governance",
+        "future"
+      ],
+      "text": "- The app may show reduced coordinates with hash-based IDs and minimal metadata. - The app may show aggregate Spearman, PCA, TwoNN, temporal-locality and clade-enrichment summaries. - The app must not show raw sequences, source accessions, isolate names, sequence hashes or checkpoints."
+    },
+    {
+      "id": "guide_8645dae24237e4bc",
+      "title": "Claims allowed",
+      "source": "reports/phase7_antigenlm_bridge_report.md",
+      "section": "Claims allowed",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "representation",
+        "antigenlm",
+        "claims",
+        "future"
+      ],
+      "text": "- AntigenLM embeddings are summarized as a learned representation layer. - Latent distances can be compared descriptively with molecular and temporal proxies. - The learned layer is compared against deterministic k-mer/codon/RSCU baselines."
+    },
+    {
+      "id": "guide_fc779f7968f2c59f",
+      "title": "Phase 8 Latent Atlas report",
+      "source": "reports/phase8_latent_atlas_report.md",
+      "section": "Phase 8 Latent Atlas report",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "representation",
+        "antigenlm",
+        "future"
+      ],
+      "text": "Phase 8 turns Phase 7 outputs into a visual atlas concept for the app: deterministic nucleotide/codon representations and the learned AntigenLM layer are shown as complementary views of the same HA/NA research landscape."
+    },
+    {
+      "id": "guide_5118f72ce376f27b",
+      "title": "Representation families",
+      "source": "reports/phase8_latent_atlas_report.md",
+      "section": "Representation families",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "representation",
+        "antigenlm",
+        "future"
+      ],
+      "text": "family representation n_sequences n_features pca_2pc_variance protein_subtype_silhouette molecular_proxy app_role global_pca_n95 global_participation_ratio --- --- --- --- --- --- --- --- --- --- deterministic_baseline kmer3_freq 20000 64 0.6750106811523438 0.8342072563188496 not_computed_here baseline comparison nan nan deterministic_baseline kmer4_freq 20000 256 0.5827852636575699 0.8219655935456675 not_computed_here baseline comparison nan nan deterministic_baseline kmer5_freq 20000 1024 0.5343146920204163 0.7388535435339182 not_computed_here baseline comparison nan nan deterministic_baseline kmer3_tfidf 20000 64 0.6745526492595673 0.8317900525093036 not_computed_here baseline comparison nan nan deterministic_baseline kmer4_tfidf 20000 256 0.5899432450532913 0.7851643202087798 not_computed_here baseline comparison nan nan deterministic_baseline codon_freq 8974 64 0.6825591027736664 0.7848540089786886 not_computed_here baseline compar"
+    },
+    {
+      "id": "guide_b586094ecf91ab89",
+      "title": "Design decision",
+      "source": "reports/phase8_latent_atlas_report.md",
+      "section": "Design decision",
+      "topic_tags": [
+        "dataset",
+        "sequence_context",
+        "cds",
+        "representation",
+        "antigenlm",
+        "future"
+      ],
+      "text": "The AntigenLM layer should be foregrounded as a learned representation, while k-mer, codon-frequency and RSCU spaces remain transparent baselines. This avoids treating learned embeddings as magic and gives interviewers a clear ladder from interpretable biology to learned geometry."
+    },
+    {
+      "id": "guide_2ed9aaf8943930f0",
+      "title": "App behavior",
+      "source": "reports/phase8_latent_atlas_report.md",
+      "section": "App behavior",
+      "topic_tags": [
+        "dataset",
+        "representation",
+        "antigenlm",
+        "governance",
+        "future"
+      ],
+      "text": "- The Representation Projector remains the baseline feature-space explorer. - The new Latent Atlas view focuses on AntigenLM PCA points, molecular-geometry summaries, clade enrichment and temporal locality. - All displayed point IDs are hash-based internal IDs with minimal metadata."
+    },
+    {
+      "id": "guide_e035df67f45068b2",
+      "title": "Boundaries",
+      "source": "reports/phase8_latent_atlas_report.md",
+      "section": "Boundaries",
+      "topic_tags": [
+        "dataset",
+        "antigenlm",
+        "claims",
+        "future"
+      ],
+      "text": "This phase does not add GROVER, BPE, prediction, antigenicity, escape, vaccine, pathogenicity, fitness or sequence optimization claims."
+    },
+    {
+      "id": "guide_ce26074bd45f2b24",
+      "title": "Phase 9 structure mapping QC report",
+      "source": "reports/phase9_structure_mapping_report.md",
+      "section": "Phase 9 structure mapping QC report",
+      "topic_tags": [
+        "cds",
+        "structure",
+        "future"
+      ],
+      "text": "Phase 9 creates the first explicit bridge from refined HA/NA CDS positions to public PDB polymer sequences. It is an alignment-QC and residue-signal layer, not a validated antigenic or functional residue map."
+    },
+    {
+      "id": "guide_6f9175382c918301",
+      "title": "What was built",
+      "source": "reports/phase9_structure_mapping_report.md",
+      "section": "What was built",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "structure",
+        "governance",
+        "future"
+      ],
+      "text": "- Public RCSB FASTA sequences were loaded for 3LZG, 3VUN, 3NSS and 6BR6. - Refined CDS sequences were translated locally, without exporting sequences. - Per-residue aggregate signals were computed: codon GC fraction, CpG codon fraction, UpA/TA codon fraction and amino-acid entropy. - Local consensus amino-acid sequences were aligned to each public PDB polymer sequence."
+    },
+    {
+      "id": "guide_2b59ae1198c513f4",
+      "title": "Mapping QC",
+      "source": "reports/phase9_structure_mapping_report.md",
+      "section": "Mapping QC",
+      "topic_tags": [
+        "dataset",
+        "structure",
+        "future"
+      ],
+      "text": "pdb_id protein subtype pdb_entity chains pdb_sequence_length local_consensus_length identity mapped_residues coverage_pdb coverage_local local_start local_end mapping_status --- --- --- --- --- --- --- --- --- --- --- --- --- --- 3LZG HA H1N1 3LZG_1 Chains A, C, E, G, I, K 329 573 0.9694189602446484 327 0.993920972644377 0.5706806282722513 18 344 alignment_qc_available 3LZG HA H1N1 3LZG_2 Chains B, D, F, H, J, L 177 573 0.9827586206896551 174 0.9830508474576272 0.3036649214659686 345 518 alignment_qc_available 3VUN HA H3N2 3VUN_1 Chains A, C, E 329 577 0.8054711246200608 329 1.0 0.5701906412478336 17 345 alignment_qc_available 3VUN HA H3N2 3VUN_2 Chains B, D, F 175 577 0.9542857142857143 175 1.0 0.30329289428076256 346 520 alignment_qc_available 3NSS NA H1N1 3NSS_1 Chains A, B 388 477 0.979381443298969 388 1.0 0.8134171907756813 82 469 alignment_qc_available 6BR6 NA H3N2 6BR6_1 Chain A 387 476 0.9844961240310077 387 1.0 0.81302521008403"
+    },
+    {
+      "id": "guide_afc2da03990a8a7d",
+      "title": "Residue-signal catalog",
+      "source": "reports/phase9_structure_mapping_report.md",
+      "section": "Residue-signal catalog",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "structure",
+        "future"
+      ],
+      "text": "subtype protein group n_local_positions n_mapped_positions mean_gc_fraction_codon mean_cpg_codon_fraction mean_upa_codon_fraction mean_aa_entropy max_aa_entropy --- --- --- --- --- --- --- --- --- --- H1N1 HA HA-H1N1 573 501 0.4059569629894852 0.017649717110994168 0.12997203927223194 0.44978960064921686 1.7794533569415123 H1N1 NA NA-H1N1 477 388 0.41692828430134393 0.019874572897162622 0.1142137648811306 0.5123695991933372 1.8285363438280822 H3N2 HA HA-H3N2 577 504 0.4167718183338029 0.027096722449079222 0.09256928050103044 0.3775318982803106 1.954434002924965 H3N2 NA NA-H3N2 476 387 0.42608076880383317 0.02449146042442076 0.10035435599794695 0.21414215797956393 1.8020456244375826"
+    },
+    {
+      "id": "guide_49b4197d532a97f7",
+      "title": "Interpretation",
+      "source": "reports/phase9_structure_mapping_report.md",
+      "section": "Interpretation",
+      "topic_tags": [
+        "structure",
+        "future"
+      ],
+      "text": "The mapping is now more than pending: alignment QC is available. However, residue coloring in the 3D viewer still requires an additional chain/residue-number validation layer before FluGenome3D metrics are painted onto atoms."
+    },
+    {
+      "id": "guide_4535f9fde096d672",
+      "title": "Boundaries",
+      "source": "reports/phase9_structure_mapping_report.md",
+      "section": "Boundaries",
+      "topic_tags": [
+        "sequence_context",
+        "structure",
+        "governance",
+        "claims",
+        "future"
+      ],
+      "text": "- These mapped signals are descriptive sequence-context summaries. - They are not antigenic sites, vaccine markers, escape sites, pathogenicity markers, fitness estimates or causal explanations. - No raw sequences, FASTA records, accessions or isolate names are exported."
+    }
+  ]
+}

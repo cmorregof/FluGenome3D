@@ -11,6 +11,7 @@ const SAFE_FILES = new Set([
   "antigenlm_latent_atlas.safe.json",
   "structure_catalog.safe.json",
   "structure_mapping.safe.json",
+  "lab_guide.safe.json",
   "claims_and_limits.safe.json",
   "data_governance.safe.json"
 ]);

@@ -9,6 +9,7 @@ import {
   Database,
   Dna,
   Home,
+  MessageCircle,
   Network,
   ShieldCheck,
   SplitSquareVertical
@@ -58,6 +59,7 @@ const sequenceMetricSpecs = [
 const views = [
   { id: "home", label: "Home / Overview", icon: Home },
   { id: "guide", label: "Project Guide", icon: BookOpen },
+  { id: "ask", label: "Ask FluGenome3D", icon: MessageCircle },
   { id: "atlas", label: "Dataset Atlas", icon: Database },
   { id: "latent", label: "AntigenLM Latent Atlas", icon: Activity },
   { id: "projector", label: "Representation Projector", icon: SplitSquareVertical },
@@ -416,6 +418,7 @@ export default function FluGenomeLab() {
           >
             {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} /> : null}
             {active === "guide" ? <ProjectGuide bundle={bundle} setActive={setActive} /> : null}
+            {active === "ask" ? <AskFluGenomeGuide bundle={bundle} setActive={setActive} /> : null}
             {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} /> : null}
             {active === "latent" ? <LatentAtlas bundle={bundle} /> : null}
             {active === "projector" ? <RepresentationProjector bundle={bundle} /> : null}
@@ -465,16 +468,16 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
               Explore dataset
             </button>
             <button
+              onClick={() => setActive("ask")}
+              className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
+            >
+              Ask FluGenome3D
+            </button>
+            <button
               onClick={() => setActive("guide")}
               className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
             >
               Read project guide
-            </button>
-            <button
-              onClick={() => setActive("latent")}
-              className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
-            >
-              Open latent atlas
             </button>
             <button
               onClick={() => setActive("structure")}
@@ -515,6 +518,7 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
   ];
   const models = [
     ["Dataset Atlas", "Country-level aggregate coverage, panel sizes and CDS reliability."],
+    ["Ask FluGenome3D", "A grounded guide that answers plain-language questions from safe docs, reports and exported summaries."],
     ["AntigenLM Latent Atlas", "Learned HA+NA embedding geometry from the parent thesis repository, exported as hash-based reduced coordinates."],
     ["PCA projector", `${formatNumber(reps.length, 0)} reduced-coordinate maps built from k-mer, codon and RSCU features.`],
     ["Token audit", `${formatNumber(tokenizers.length, 0)} deterministic tokenizers: codons, overlapping k-mers, non-overlapping k-mers and frame-aware k-mers.`],
@@ -540,6 +544,9 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
           <div className="mt-5 flex flex-wrap gap-3">
             <button onClick={() => setActive("atlas")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
               Open atlas
+            </button>
+            <button onClick={() => setActive("ask")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
+              Ask the guide
             </button>
             <button onClick={() => setActive("projector")} className="rounded-md border border-line bg-bg/45 px-4 py-2 text-sm text-muted hover:border-teal hover:text-ivory">
               Open projector
@@ -593,6 +600,153 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
                 <p className="mt-1 text-xs leading-5 text-muted">{explanation}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type AskGuideResponse = {
+  answer: string;
+  citations: Array<{ marker: string; title: string; source: string; section: string; topic_tags?: string[] }>;
+  matched_topics: string[];
+  guardrails: string[];
+};
+
+function AskFluGenomeGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (view: ViewId) => void }) {
+  const suggestions = (bundle.guide.suggested_questions ?? []) as string[];
+  const [question, setQuestion] = useState("What does CpG O/E mean in this app?");
+  const [response, setResponse] = useState<AskGuideResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function askGuide(nextQuestion = question) {
+    const trimmed = nextQuestion.trim();
+    if (!trimmed) return;
+    setQuestion(trimmed);
+    setLoading(true);
+    setError("");
+    try {
+      const result = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ question: trimmed }),
+      });
+      const payload = await result.json();
+      if (!result.ok) throw new Error(payload.error ?? "Guide request failed");
+      setResponse(payload as AskGuideResponse);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Guide request failed");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div>
+      <SectionTitle kicker="ASK FLUGENOME3D" title="A grounded guide for the visual lab">
+        Plain-language answers from safe reports, formulas and exported summaries.
+      </SectionTitle>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ASK A QUESTION</div>
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-muted">
+            This guide is meant to make the app understandable without turning it into a black box. It answers from the project reports, guide cards and safe JSON manifests already shipped with FluGenome3D.
+          </p>
+          <div className="mt-5 flex flex-col gap-3 md:flex-row">
+            <input
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") askGuide();
+              }}
+              className="min-w-0 flex-1 rounded-md border border-line bg-bg/65 px-4 py-3 text-sm text-ivory outline-none transition placeholder:text-muted focus:border-teal"
+              placeholder="Ask about CpG, RSCU, PCA, AntigenLM, structure mapping..."
+            />
+            <button
+              onClick={() => askGuide()}
+              disabled={loading}
+              className="rounded-md border border-teal/45 bg-teal/18 px-5 py-3 text-sm font-medium text-ivory transition hover:border-teal hover:bg-teal/26 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Reading..." : "Ask"}
+            </button>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {suggestions.slice(0, 6).map((item) => (
+              <button
+                key={item}
+                onClick={() => askGuide(item)}
+                className="rounded-full border border-line bg-bg/40 px-3 py-1.5 text-xs text-muted transition hover:border-teal hover:text-ivory"
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-5 min-h-[340px] rounded-lg border border-line bg-bg/42 p-5">
+            {error ? <div className="text-sm text-rust">{error}</div> : null}
+            {!response && !error ? (
+              <div className="flex h-full min-h-[280px] flex-col justify-center text-sm leading-7 text-muted">
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">GROUNDING LAYER READY</div>
+                <p className="mt-3">
+                  Try asking: what does a metric mean, why a panel exists, how to read a projection, what AntigenLM contributes, or what structure mapping still needs.
+                </p>
+              </div>
+            ) : null}
+            {response ? (
+              <div>
+                <div className="whitespace-pre-wrap text-sm leading-7 text-muted">{response.answer}</div>
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {response.citations.map((citation) => (
+                    <div key={`${citation.marker}-${citation.source}-${citation.section}`} className="rounded-md border border-line bg-panel/55 p-3">
+                      <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-teal">{citation.marker}</div>
+                      <div className="mt-1 text-sm font-medium text-ivory">{citation.title}</div>
+                      <div className="mt-1 text-xs leading-5 text-muted">{citation.source}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">HOW IT WORKS</div>
+            <div className="mt-3 space-y-3 text-sm leading-6 text-muted">
+              <p>Retrieval is local to the app: no raw sequence access, no external LLM call, no hidden biological predictor.</p>
+              <p>Answers cite safe guide chunks generated from docs, reports, formulas and governance manifests.</p>
+              <p>When a question asks for prediction or causal meaning, the guide keeps the answer inside the descriptive scope.</p>
+            </div>
+          </div>
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">FAST PATHS</div>
+            <div className="mt-3 grid gap-2">
+              {[
+                ["Project formulas", "guide"],
+                ["Dataset atlas", "atlas"],
+                ["AntigenLM layer", "latent"],
+                ["Structure status", "structure"],
+              ].map(([label, view]) => (
+                <button
+                  key={label}
+                  onClick={() => setActive(view as ViewId)}
+                  className="rounded-md border border-line bg-bg/35 px-3 py-2 text-left text-sm text-muted transition hover:border-teal hover:text-ivory"
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-lg border border-line bg-panel/75 p-4">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">SOURCE CORPUS</div>
+            <div className="mt-3 text-3xl font-semibold text-ivory">{formatNumber((bundle.guide.chunks ?? []).length, 0)}</div>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              Safe explanation chunks. No FASTA, raw sequences, restricted panels, accessions or isolate names.
+            </p>
           </div>
         </div>
       </div>

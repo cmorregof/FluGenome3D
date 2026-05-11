@@ -19,6 +19,7 @@ def test_safe_export_files_exist() -> None:
         "antigenlm_latent_atlas.safe.json",
         "structure_catalog.safe.json",
         "structure_mapping.safe.json",
+        "lab_guide.safe.json",
         "claims_and_limits.safe.json",
         "data_governance.safe.json",
     ]
@@ -63,3 +64,16 @@ def test_antigenlm_points_use_safe_ids() -> None:
     assert "EPI_ISL" not in json.dumps(first)
     forbidden = {"sequence", "sequence_sha256", "accession", "isolate", "strain_name", "epi_isl"}
     assert forbidden.isdisjoint(first.keys())
+
+
+def test_lab_guide_export_is_grounded_and_safe() -> None:
+    payload = json.loads((APP_DATA / "lab_guide.safe.json").read_text())
+    chunks = payload["chunks"]
+    assert chunks
+    assert payload["guide_policy"].startswith("Grounded explanatory guide")
+    assert all("text" in chunk and "source" in chunk for chunk in chunks)
+    forbidden_sources = ("data/processed", "data/raw", ".parquet", ".fa", ".fasta", ".fna", ".ffn")
+    assert not any(any(term in str(chunk["source"]).lower() for term in forbidden_sources) for chunk in chunks)
+    text = json.dumps(payload)
+    assert "EPI_ISL" not in text
+    assert "sequence_sha256" not in text

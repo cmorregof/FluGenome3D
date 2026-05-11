@@ -72,6 +72,12 @@ type ViewId = (typeof views)[number]["id"];
 type AskSeed = { question: string; nonce: number };
 type AskPrompt = { label: string; question: string };
 
+const viewSections: Array<{ label: string; ids: ViewId[] }> = [
+  { label: "Start", ids: ["home", "guide", "ask"] },
+  { label: "Explore", ids: ["atlas", "latent", "inspector", "structure", "bridge"] },
+  { label: "Technical", ids: ["projector"] },
+];
+
 const plotLayout = {
   paper_bgcolor: "rgba(0,0,0,0)",
   plot_bgcolor: "rgba(3,9,16,0.88)",
@@ -419,6 +425,24 @@ function metricRange(rows: Record<string, any>[], metric: string) {
   return { min: min.value, max: max.value, minGroup: min.group, maxGroup: max.group };
 }
 
+function sampleEvenly<T>(items: T[], maxItems: number) {
+  if (items.length <= maxItems) return items;
+  const step = items.length / maxItems;
+  return Array.from({ length: maxItems }, (_, index) => items[Math.floor(index * step)]);
+}
+
+function metricMean(rows: Record<string, any>[], metric: string) {
+  const row = rows.find((candidate) => candidate.metric === metric);
+  return Number(row?.mean ?? NaN);
+}
+
+function compactMetricValue(metric: string, value: number) {
+  if (!Number.isFinite(value)) return "NA";
+  if (metric === "sequence_length") return formatNumber(value, 0);
+  if (metric === "gc_content" || metric === "ambiguous_fraction") return `${formatNumber(value * 100, 1)}%`;
+  return formatNumber(value, 3);
+}
+
 function dataModeLabel(mode: string) {
   return mode === "local-full" ? "Local full layer" : "Cryptographic data layer";
 }
@@ -472,25 +496,33 @@ export default function FluGenomeLab() {
             <h1 className="mt-3 text-2xl font-semibold text-ivory">FluGenome3D</h1>
             <p className="mt-3 text-xs leading-5 text-muted">Visual lab for real derived Influenza A HA/NA research artifacts.</p>
           </div>
-          <nav className="space-y-2">
-            {views.map((view) => {
-              const Icon = view.icon;
-              const selected = active === view.id;
-              return (
-                <button
-                  key={view.id}
-                  onClick={() => setActive(view.id)}
-                  className={`flex w-full items-center gap-3 rounded-md border px-3 py-3 text-left text-sm transition ${
-                    selected
-                      ? "border-lineStrong bg-brassSoft/35 text-ivory"
-                      : "border-line bg-panel/50 text-muted hover:border-teal hover:text-ivory"
-                  }`}
-                >
-                  <Icon size={16} />
-                  <span>{view.label}</span>
-                </button>
-              );
-            })}
+          <nav className="space-y-5">
+            {viewSections.map((section) => (
+              <div key={section.label}>
+                <div className="mb-2 font-mono text-[9px] uppercase tracking-[0.24em] text-muted/80">{section.label}</div>
+                <div className="space-y-2">
+                  {section.ids.map((id) => {
+                    const view = views.find((item) => item.id === id)!;
+                    const Icon = view.icon;
+                    const selected = active === view.id;
+                    return (
+                      <button
+                        key={view.id}
+                        onClick={() => setActive(view.id)}
+                        className={`flex w-full items-center gap-3 rounded-md border px-3 py-2.5 text-left text-sm transition ${
+                          selected
+                            ? "border-lineStrong bg-brassSoft/35 text-ivory"
+                            : "border-line bg-panel/42 text-muted hover:border-teal hover:text-ivory"
+                        }`}
+                      >
+                        <Icon size={15} />
+                        <span>{view.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
           <div className="mt-6 rounded-lg border border-line bg-panel/70 p-3">
             <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">DATA MODE</div>
@@ -1580,21 +1612,56 @@ function BridgeView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questio
   const [group, setGroup] = useState("HA-H1N1");
   const [repId, setRepId] = useState(reps[0]?.id ?? "");
   const rep = reps.find((item) => item.id === repId) ?? reps[0];
-  const points = decodeRepresentationPoints(rep).filter((point) => point.group === group);
+  const allPoints = useMemo(
+    () => decodeRepresentationPoints(rep).filter((point) => Number.isFinite(Number(point.x)) && Number.isFinite(Number(point.y))),
+    [rep]
+  );
+  const points = useMemo(() => allPoints.filter((point) => point.group === group), [allPoints, group]);
+  const bridgePoints = useMemo(() => sampleEvenly(points, 1200), [points]);
+  const contextPoints = useMemo(() => sampleEvenly(allPoints.filter((point) => point.group !== group), 1400), [allPoints, group]);
   const [protein, subtype] = group.split("-");
   const structure = structures.find((item) => item.protein === protein && item.subtype_context === subtype) ?? structures[0];
   const metricRows = (bundle.metrics.gc_cpg_upa_summary as Record<string, any>[]).filter((row) => `${row.protein}-${row.subtype}` === group);
   const stabilityRows = (bundle.stability.tokenizer_robustness_ranking as Record<string, any>[]).slice(0, 4);
   const latentCache = bundle.antigenlm?.cache_summary ?? {};
   const prompts = ((bundle.guide.view_prompts ?? {}).bridge ?? []) as AskPrompt[];
+  const bridgeMetricCards = [
+    { label: "Length", metric: "sequence_length" },
+    { label: "GC", metric: "gc_content" },
+    { label: "CpG O/E", metric: "cpg_oe" },
+    { label: "UpA O/E", metric: "upa_oe" },
+  ].map((item) => ({ ...item, value: compactMetricValue(item.metric, metricMean(metricRows, item.metric)) }));
+  const bridgeLayout = {
+    ...plotLayout,
+    title: "",
+    height: 390,
+    margin: { l: 12, r: 12, t: 12, b: 12 },
+    xaxis: {
+      ...plotLayout.xaxis,
+      title: "",
+      showticklabels: false,
+      ticks: "",
+      showgrid: false,
+      zeroline: false,
+    },
+    yaxis: {
+      ...plotLayout.yaxis,
+      title: "",
+      showticklabels: false,
+      ticks: "",
+      showgrid: false,
+      zeroline: false,
+    },
+    showlegend: false,
+  };
 
   return (
     <div>
-      <SectionTitle kicker="BRIDGE MODE" title="Sequence context to representation to structure">
-        Integrated view of safe derived artifacts.
+      <SectionTitle kicker="BRIDGE MODE" title="One group, three linked views">
+        A compact path from sequence summaries to representation space to public structure.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
-      <div className="mb-4 grid gap-3 md:grid-cols-2">
+      <div className="mb-4 grid gap-3 md:grid-cols-[0.8fr_1.2fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Group</span>
           <select value={group} onChange={(event) => setGroup(event.target.value)} className="mt-2 w-full rounded-md border border-line bg-ink px-3 py-2 text-ivory">
@@ -1616,47 +1683,98 @@ function BridgeView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questio
           </select>
         </label>
       </div>
-      <div className="grid gap-4 xl:grid-cols-[1fr_1fr]">
+
+      <div className="mb-4 grid gap-3 xl:grid-cols-4">
+        {bridgeMetricCards.map((item) => (
+          <div key={item.metric} className="rounded-lg border border-line bg-panel/70 p-4">
+            <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">{item.label}</div>
+            <div className="mt-2 text-xl font-semibold text-ivory">{item.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
         <div className="plot-shell rounded-lg border border-line bg-panel/75 p-3">
+          <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">Representation neighborhood</div>
+              <p className="mt-1 text-xs text-muted">{formatNumber(points.length, 0)} safe points for {group}; other groups are shown only as context.</p>
+            </div>
+            <div className="rounded-full border border-line px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-muted">{rep?.label}</div>
+          </div>
           <Plot
             data={[
               {
                 type: "scattergl",
                 mode: "markers",
+                name: "Context",
+                x: contextPoints.map((point) => point.x),
+                y: contextPoints.map((point) => point.y),
+                marker: { color: "rgba(159,179,174,0.32)", size: 4, opacity: 0.22 },
+                hoverinfo: "skip",
+              },
+              {
+                type: "scattergl",
+                mode: "markers",
                 name: group,
-                x: points.map((point) => point.x),
-                y: points.map((point) => point.y),
-                marker: { color: groupPalette[group], size: 6, opacity: 0.78 },
-                text: points.map((point) => `${point.id} · ${point.year_bin}`)
+                x: bridgePoints.map((point) => point.x),
+                y: bridgePoints.map((point) => point.y),
+                marker: { color: groupPalette[group], size: 6, opacity: 0.82, line: { color: "rgba(237,247,244,0.18)", width: 0.4 } },
+                text: bridgePoints.map((point) => `${point.id} · ${point.year_bin}`),
+                hovertemplate: "%{text}<extra></extra>",
               }
             ]}
-            layout={{ ...plotLayout, title: `${group} mini projector`, height: 360 }}
+            layout={bridgeLayout}
             config={{ responsive: true, displaylogo: false }}
             useResizeHandler
-            style={{ width: "100%", height: "360px" }}
+            style={{ width: "100%", height: "390px" }}
           />
-          <div className="mt-3 grid gap-3 md:grid-cols-2">
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-lg border border-line bg-panel/75 p-5">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">Associated structure</div>
+            <div className="mt-3 text-2xl font-semibold text-ivory">{structure?.pdb_id}</div>
+            <p className="mt-2 text-sm leading-6 text-muted">
+              {structure?.label}. Alignment QC is available; residue-level coloring is intentionally not asserted here.
+            </p>
+            <div className="mt-4 rounded-lg border border-line bg-bg/35 p-3 text-xs leading-6 text-muted">
+              <ShieldCheck className="mb-2 text-teal" size={18} />
+              Safe bridge only: no raw sequences, accessions, FASTA or restricted panels.
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-line bg-panel/75 p-5">
+            <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">Bridge readout</div>
+            <div className="mt-4 grid gap-3">
+              {[
+                ["1", "Sequence context", "Use aggregate GC, CpG and UpA summaries for the selected HA/NA group."],
+                ["2", "Representation space", "Inspect where that group sits in a safe reduced-coordinate map."],
+                ["3", "Structure anchor", "Open the matching public PDB structure when a reference is available."],
+              ].map(([step, title, detail]) => (
+                <div key={step} className="flex gap-3 rounded-md border border-line bg-bg/30 p-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-teal/35 font-mono text-xs text-teal">{step}</div>
+                  <div>
+                    <div className="text-sm font-semibold text-ivory">{title}</div>
+                    <p className="mt-1 text-xs leading-5 text-muted">{detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <DetailPanel title="Metric and tokenizer tables behind this bridge">
+          <div className="grid gap-3 md:grid-cols-2">
             <MiniTable rows={metricRows} columns={["metric", "mean", "median", "q05", "q95"]} limit={5} />
             <MiniTable rows={stabilityRows} columns={["rank", "tokenizer", "robustness_score"]} limit={4} />
           </div>
-        </div>
-        <div className="rounded-lg border border-line bg-panel/75 p-4">
-          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">ASSOCIATED STRUCTURE</div>
-          <div className="mt-3 text-xl font-semibold text-ivory">{structure?.pdb_id}</div>
-          <p className="mt-2 text-sm leading-6 text-muted">
-            {structure?.label}. Mapping status is {structure?.mapping_status}; this bridge shows alignment QC but does not claim residue-level functional interpretation.
+          <p className="mt-3 text-xs leading-5 text-muted">
+            Parent AntigenLM cache represented {formatNumber(latentCache.n_records ?? 0, 0)} HA+NA records. This bridge remains descriptive and does not make prediction claims.
           </p>
-          <div className="mt-5 rounded-lg border border-line bg-ink p-4 text-xs leading-6 text-muted">
-            <ShieldCheck className="mb-3 text-brass" size={18} />
-            Data are real derived research artifacts. Raw sequences, FASTA, accessions, isolate names and restricted Parquet panels are not redistributed.
-          </div>
-          <div className="mt-4 rounded-lg border border-line bg-ink p-4 text-xs leading-6 text-muted">
-            <span className="font-mono uppercase tracking-[0.18em] text-teal">AntigenLM layer</span>
-            <p className="mt-2">
-              Parent latent cache represented {formatNumber(latentCache.n_records ?? 0, 0)} HA+NA records. The learned layer is used as descriptive geometry, not prediction.
-            </p>
-          </div>
-        </div>
+        </DetailPanel>
       </div>
     </div>
   );

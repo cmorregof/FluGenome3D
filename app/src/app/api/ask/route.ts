@@ -146,9 +146,9 @@ function viewHint(chunks: GuideChunk[]) {
   const tags = new Set(chunks.flatMap((chunk) => chunk.topic_tags ?? []));
   if (tags.has("structure")) return "Open 3D Molecular Viewer or Bridge View for the structure-side context.";
   if (tags.has("antigenlm")) return "Open AntigenLM Latent Atlas for the learned representation layer.";
-  if (tags.has("representation")) return "Open Representation Projector to inspect reduced-coordinate maps.";
-  if (tags.has("tokenization") || tags.has("sequence_context")) return "Open Sequence/Token Inspector for metrics, entropy and token stability.";
   if (tags.has("dataset")) return "Open Dataset Atlas for panel design, geography and coverage.";
+  if (tags.has("tokenization") || tags.has("sequence_context")) return "Open Sequence/Token Inspector for metrics, entropy and token stability.";
+  if (tags.has("representation")) return "Open Representation Projector to inspect reduced-coordinate maps.";
   return "Open Project Guide for the plain-language map of the project.";
 }
 

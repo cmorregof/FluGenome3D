@@ -1,6 +1,6 @@
 {
   "schema_version": "safe-bundle-v1",
-  "generated_utc": "2026-05-11T04:26:40.720403+00:00",
+  "generated_utc": "2026-05-11T12:57:29.596596+00:00",
   "guide_policy": "Grounded explanatory guide built only from public docs, reports, safe formulas and governance text. It contains no raw sequences and does not call external models.",
   "answer_boundary": {
     "can_explain": [
@@ -29,59 +29,361 @@
     "What can FluGenome3D not claim?",
     "Where would GROVER or BPE fit next?"
   ],
-  "chunks": [
+  "formula_cards": [
     {
-      "id": "guide_formula_gc",
-      "title": "GC fraction",
-      "source": "FluGenome3D guide card",
-      "section": "Sequence-context formulas",
-      "topic_tags": [
-        "sequence_context"
+      "id": "formula_gc_fraction",
+      "name": "GC fraction",
+      "formula": "(G + C) / sequence length",
+      "plain_language": "The share of positions that are G or C. It is a compact way to compare nucleotide composition across HA/NA groups.",
+      "used_in": [
+        "Sequence/Token Inspector",
+        "Project Guide"
       ],
-      "text": "GC fraction is the share of nucleotide positions that are G or C. It is a descriptive composition metric, useful for comparing HA and NA groups without showing raw sequences."
+      "data_requirement": "raw nucleotide context; no coding frame required",
+      "claim_boundary": "composition summary only"
     },
     {
-      "id": "guide_formula_cpg_upa",
-      "title": "CpG and UpA observed/expected",
+      "id": "formula_cpg_oe",
+      "name": "CpG observed/expected",
+      "formula": "f(CG) / (f(C) x f(G))",
+      "plain_language": "Compares how often CG appears with how often it would be expected from C and G abundance.",
+      "used_in": [
+        "Sequence/Token Inspector"
+      ],
+      "data_requirement": "raw nucleotide context; no coding frame required",
+      "claim_boundary": "descriptive dinucleotide feature, not a causal statement"
+    },
+    {
+      "id": "formula_upa_oe",
+      "name": "UpA observed/expected",
+      "formula": "f(TA) / (f(T) x f(A))",
+      "plain_language": "Uses DNA TA as the proxy for RNA UpA and compares observed TA with single-base expectation.",
+      "used_in": [
+        "Sequence/Token Inspector"
+      ],
+      "data_requirement": "raw nucleotide context; no coding frame required",
+      "claim_boundary": "descriptive dinucleotide feature, not pathogenicity or antigenicity inference"
+    },
+    {
+      "id": "formula_token_entropy",
+      "name": "Token entropy",
+      "formula": "-sum p(token) log2 p(token)",
+      "plain_language": "Summarizes how spread out a tokenizer vocabulary is. Higher entropy means token usage is less concentrated.",
+      "used_in": [
+        "Sequence/Token Inspector",
+        "Ask FluGenome3D"
+      ],
+      "data_requirement": "token counts by tokenizer and group",
+      "claim_boundary": "representation diagnostic only"
+    },
+    {
+      "id": "formula_js_distance",
+      "name": "Jensen-Shannon distance",
+      "formula": "sqrt(JS divergence between token distributions)",
+      "plain_language": "A bounded distance between two group-level token distributions. Larger values mean the token distributions are more different.",
+      "used_in": [
+        "Sequence/Token Inspector",
+        "Tokenization stability"
+      ],
+      "data_requirement": "aggregate token frequency distributions",
+      "claim_boundary": "group comparison only; not prediction"
+    },
+    {
+      "id": "formula_rscu",
+      "name": "RSCU",
+      "formula": "codon count / mean synonymous-codon count",
+      "plain_language": "Compares each codon with the average usage of codons that encode the same amino acid.",
+      "used_in": [
+        "Project Guide",
+        "CDS/codon summaries"
+      ],
+      "data_requirement": "refined CDS panel with translation/frame QC",
+      "claim_boundary": "codon-usage summary only"
+    },
+    {
+      "id": "formula_pca",
+      "name": "PCA coordinates",
+      "formula": "orthogonal axes capturing largest variance directions",
+      "plain_language": "A projection that turns high-dimensional features into 2D or 3D coordinates for visual inspection.",
+      "used_in": [
+        "Representation Projector",
+        "AntigenLM Latent Atlas"
+      ],
+      "data_requirement": "feature matrix or learned embeddings",
+      "claim_boundary": "visual geometry, not biological validation"
+    }
+  ],
+  "glossary_terms": [
+    {
+      "term": "HA",
+      "short_definition": "Hemagglutinin, an Influenza A surface glycoprotein and one half of the HA/NA pair audited here.",
+      "view": "Dataset Atlas",
+      "ask": "What is HA in the FluGenome3D dataset?"
+    },
+    {
+      "term": "NA",
+      "short_definition": "Neuraminidase, the second surface glycoprotein paired with HA in this project.",
+      "view": "Dataset Atlas",
+      "ask": "What is NA in the FluGenome3D dataset?"
+    },
+    {
+      "term": "MVP panel",
+      "short_definition": "The balanced analysis panel used for the main descriptive figures and representation views.",
+      "view": "Dataset Atlas",
+      "ask": "Why does FluGenome3D use an MVP panel?"
+    },
+    {
+      "term": "Refined CDS",
+      "short_definition": "A subset of sequences with explicit coding-frame rescue or strict translation QC for codon-level analyses.",
+      "view": "Sequence/Token Inspector",
+      "ask": "Why is codon usage separated from raw sequence context?"
+    },
+    {
+      "term": "Tokenizer",
+      "short_definition": "A rule for splitting sequence text into small units such as codons or k-mers.",
+      "view": "Sequence/Token Inspector",
+      "ask": "What is a tokenizer in FluGenome3D?"
+    },
+    {
+      "term": "AntigenLM embedding",
+      "short_definition": "A learned vector representation from the parent thesis repository, displayed here only as derived coordinates.",
+      "view": "AntigenLM Latent Atlas",
+      "ask": "How should I read the AntigenLM latent atlas?"
+    },
+    {
+      "term": "PDB structure",
+      "short_definition": "A public molecular structure record loaded from RCSB for visual inspection.",
+      "view": "3D Molecular Viewer",
+      "ask": "What does the structure viewer load from RCSB?"
+    },
+    {
+      "term": "Mapping pending",
+      "short_definition": "Alignment QC exists, but residue-level metric coloring waits for chain and residue-number validation.",
+      "view": "3D Molecular Viewer",
+      "ask": "What does structure mapping still need before residue coloring?"
+    }
+  ],
+  "view_prompts": {
+    "atlas": [
+      {
+        "label": "Why country-level only?",
+        "question": "Why does the Dataset Atlas show country-level aggregates instead of sample-level locations?"
+      },
+      {
+        "label": "MVP vs full panel",
+        "question": "How should I interpret the MVP panel versus the full deduplicated panel?"
+      }
+    ],
+    "latent": [
+      {
+        "label": "Read latent geometry",
+        "question": "How should I read the AntigenLM latent atlas?"
+      },
+      {
+        "label": "What does rho mean?",
+        "question": "What does the HA+NA molecular rho summary mean in the latent atlas?"
+      }
+    ],
+    "projector": [
+      {
+        "label": "PCA axes",
+        "question": "What do PCA axes mean in the Representation Projector?"
+      },
+      {
+        "label": "Compare representations",
+        "question": "How do raw k-mer, codon frequency and RSCU representations differ?"
+      }
+    ],
+    "inspector": [
+      {
+        "label": "CpG / UpA",
+        "question": "What do CpG O/E and UpA O/E mean in FluGenome3D?"
+      },
+      {
+        "label": "Token entropy",
+        "question": "How should I interpret token entropy and effective vocabulary?"
+      }
+    ],
+    "structure": [
+      {
+        "label": "Mapping status",
+        "question": "What does structure mapping still need before residue coloring?"
+      },
+      {
+        "label": "RCSB structures",
+        "question": "What does the structure viewer load from RCSB and what does it not claim?"
+      }
+    ],
+    "bridge": [
+      {
+        "label": "Bridge logic",
+        "question": "How does Bridge View connect sequence context, representation space and structure?"
+      },
+      {
+        "label": "Claim boundary",
+        "question": "What can FluGenome3D say and not say from the Bridge View?"
+      }
+    ]
+  },
+  "chunks": [
+    {
+      "id": "guide_formula_gc_fraction",
+      "title": "GC fraction",
       "source": "FluGenome3D guide card",
-      "section": "Sequence-context formulas",
+      "section": "Plain-language formulas",
       "topic_tags": [
         "sequence_context"
       ],
-      "text": "CpG O/E compares observed CG dinucleotides with the amount expected from C and G frequencies. UpA O/E uses DNA TA as the proxy for RNA UpA. Both are descriptive features, not causal biological claims."
+      "text": "GC fraction: The share of positions that are G or C. It is a compact way to compare nucleotide composition across HA/NA groups. Formula: (G + C) / sequence length. Boundary: composition summary only."
+    },
+    {
+      "id": "guide_formula_cpg_oe",
+      "title": "CpG observed/expected",
+      "source": "FluGenome3D guide card",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "sequence_context"
+      ],
+      "text": "CpG observed/expected: Compares how often CG appears with how often it would be expected from C and G abundance. Formula: f(CG) / (f(C) x f(G)). Boundary: descriptive dinucleotide feature, not a causal statement."
+    },
+    {
+      "id": "guide_formula_upa_oe",
+      "title": "UpA observed/expected",
+      "source": "FluGenome3D guide card",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "sequence_context",
+        "claims"
+      ],
+      "text": "UpA observed/expected: Uses DNA TA as the proxy for RNA UpA and compares observed TA with single-base expectation. Formula: f(TA) / (f(T) x f(A)). Boundary: descriptive dinucleotide feature, not pathogenicity or antigenicity inference."
+    },
+    {
+      "id": "guide_formula_token_entropy",
+      "title": "Token entropy",
+      "source": "FluGenome3D guide card",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "tokenization",
+        "representation"
+      ],
+      "text": "Token entropy: Summarizes how spread out a tokenizer vocabulary is. Higher entropy means token usage is less concentrated. Formula: -sum p(token) log2 p(token). Boundary: representation diagnostic only."
+    },
+    {
+      "id": "guide_formula_js_distance",
+      "title": "Jensen-Shannon distance",
+      "source": "FluGenome3D guide card",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "tokenization",
+        "claims"
+      ],
+      "text": "Jensen-Shannon distance: A bounded distance between two group-level token distributions. Larger values mean the token distributions are more different. Formula: sqrt(JS divergence between token distributions). Boundary: group comparison only; not prediction."
     },
     {
       "id": "guide_formula_rscu",
       "title": "RSCU",
       "source": "FluGenome3D guide card",
-      "section": "CDS/codon formulas",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "cds"
+      ],
+      "text": "RSCU: Compares each codon with the average usage of codons that encode the same amino acid. Formula: codon count / mean synonymous-codon count. Boundary: codon-usage summary only."
+    },
+    {
+      "id": "guide_formula_pca",
+      "title": "PCA coordinates",
+      "source": "FluGenome3D guide card",
+      "section": "Plain-language formulas",
+      "topic_tags": [
+        "representation"
+      ],
+      "text": "PCA coordinates: A projection that turns high-dimensional features into 2D or 3D coordinates for visual inspection. Formula: orthogonal axes capturing largest variance directions. Boundary: visual geometry, not biological validation."
+    },
+    {
+      "id": "guide_71a3829366cf35db",
+      "title": "HA",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
+      "topic_tags": [
+        "dataset"
+      ],
+      "text": "HA: Hemagglutinin, an Influenza A surface glycoprotein and one half of the HA/NA pair audited here. Related view: Dataset Atlas."
+    },
+    {
+      "id": "guide_fddf70ecf1bf8beb",
+      "title": "NA",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
+      "topic_tags": [
+        "dataset"
+      ],
+      "text": "NA: Neuraminidase, the second surface glycoprotein paired with HA in this project. Related view: Dataset Atlas."
+    },
+    {
+      "id": "guide_c855b854d592e197",
+      "title": "MVP panel",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
+      "topic_tags": [
+        "dataset",
+        "representation"
+      ],
+      "text": "MVP panel: The balanced analysis panel used for the main descriptive figures and representation views. Related view: Dataset Atlas."
+    },
+    {
+      "id": "guide_58f2e7161d73deb1",
+      "title": "Refined CDS",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
       "topic_tags": [
         "cds",
-        "sequence_context"
+        "tokenization"
       ],
-      "text": "RSCU compares a codon count against the average count of synonymous codons for the same amino acid. FluGenome3D reports it only on the refined CDS panel because codon claims need a reliable coding frame."
+      "text": "Refined CDS: A subset of sequences with explicit coding-frame rescue or strict translation QC for codon-level analyses. Related view: Sequence/Token Inspector."
     },
     {
-      "id": "guide_formula_entropy_js",
-      "title": "Token entropy and JS distance",
-      "source": "FluGenome3D guide card",
-      "section": "Tokenization formulas",
+      "id": "guide_c70e9f641e05c5e9",
+      "title": "Tokenizer",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
       "topic_tags": [
-        "tokenization",
-        "representation"
+        "sequence_context",
+        "cds",
+        "tokenization"
       ],
-      "text": "Token entropy summarizes how spread out a tokenizer vocabulary is. Jensen-Shannon distance compares token distributions between groups. These are descriptive representation diagnostics, not prediction scores."
+      "text": "Tokenizer: A rule for splitting sequence text into small units such as codons or k-mers. Related view: Sequence/Token Inspector."
     },
     {
-      "id": "guide_model_antigenlm",
-      "title": "AntigenLM latent layer",
-      "source": "FluGenome3D guide card",
-      "section": "Models and representations",
+      "id": "guide_53b02c5dbfe3a915",
+      "title": "AntigenLM embedding",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
       "topic_tags": [
-        "antigenlm",
-        "representation"
+        "dataset",
+        "representation",
+        "antigenlm"
       ],
-      "text": "AntigenLM is used here as a learned representation layer from the parent thesis repository. The app shows reduced coordinates and aggregate diagnostics, not model weights, raw sequences, source IDs or predictions."
+      "text": "AntigenLM embedding: A learned vector representation from the parent thesis repository, displayed here only as derived coordinates. Related view: AntigenLM Latent Atlas."
+    },
+    {
+      "id": "guide_588d4613b2380c45",
+      "title": "PDB structure",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
+      "topic_tags": [
+        "structure"
+      ],
+      "text": "PDB structure: A public molecular structure record loaded from RCSB for visual inspection. Related view: 3D Molecular Viewer."
+    },
+    {
+      "id": "guide_c73a6f7ebb1a203e",
+      "title": "Mapping pending",
+      "source": "FluGenome3D glossary card",
+      "section": "Glossary",
+      "topic_tags": [
+        "structure"
+      ],
+      "text": "Mapping pending: Alignment QC exists, but residue-level metric coloring waits for chain and residue-number validation. Related view: 3D Molecular Viewer."
     },
     {
       "id": "guide_future_grover_bpe",
@@ -93,17 +395,6 @@
         "tokenization"
       ],
       "text": "GROVER and BPE are future learned-tokenizer comparisons. The current app deliberately builds deterministic baselines first, so learned tokenizers can be evaluated against transparent k-mer and codon behavior."
-    },
-    {
-      "id": "guide_structure_pending",
-      "title": "Structure mapping status",
-      "source": "FluGenome3D guide card",
-      "section": "Structure interpretation",
-      "topic_tags": [
-        "structure",
-        "claims"
-      ],
-      "text": "The structure viewer loads public RCSB coordinates. Alignment QC exists, but residue-level metric coloring remains pending until chain and residue-number mapping are explicitly validated."
     },
     {
       "id": "guide_data_governance_plain",

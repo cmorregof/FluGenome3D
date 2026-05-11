@@ -69,6 +69,8 @@ const views = [
 ] as const;
 
 type ViewId = (typeof views)[number]["id"];
+type AskSeed = { question: string; nonce: number };
+type AskPrompt = { label: string; question: string };
 
 const plotLayout = {
   paper_bgcolor: "rgba(0,0,0,0)",
@@ -132,6 +134,72 @@ function MiniTable({ rows, columns, limit = 8 }: { rows: Record<string, any>[]; 
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function ViewExplainer({ prompts, openAsk }: { prompts?: AskPrompt[]; openAsk: (question: string) => void }) {
+  if (!prompts?.length) return null;
+  return (
+    <div className="mb-4 rounded-lg border border-line bg-panel/60 p-3">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">Explain this view</div>
+          <div className="mt-1 text-xs text-muted">Contextual questions open the grounded guide with citations.</div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {prompts.map((prompt) => (
+            <button
+              key={prompt.question}
+              onClick={() => openAsk(prompt.question)}
+              className="rounded-full border border-line bg-bg/40 px-3 py-1.5 text-xs text-muted transition hover:border-teal hover:text-ivory"
+            >
+              {prompt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FormulaCardGrid({ cards, openAsk }: { cards: Record<string, any>[]; openAsk: (question: string) => void }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {cards.map((card) => (
+        <button
+          key={card.id ?? card.name}
+          onClick={() => openAsk(`Explain ${card.name} in FluGenome3D.`)}
+          className="rounded-lg border border-line bg-bg/35 p-4 text-left transition hover:border-teal hover:bg-teal/8"
+        >
+          <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+            <div className="text-sm font-semibold text-ivory">{card.name}</div>
+            <code className="font-mono text-[11px] text-teal">{card.formula}</code>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-muted">{card.plain_language}</p>
+          <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{card.data_requirement}</div>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function GlossaryGrid({ terms, openAsk }: { terms: Record<string, any>[]; openAsk: (question: string) => void }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {terms.map((item) => (
+        <button
+          key={item.term}
+          onClick={() => openAsk(String(item.ask ?? `What does ${item.term} mean in FluGenome3D?`))}
+          className="rounded-lg border border-line bg-bg/35 p-4 text-left transition hover:border-teal hover:bg-teal/8"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="text-sm font-semibold text-ivory">{item.term}</div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-teal">{item.view}</div>
+          </div>
+          <p className="mt-3 text-xs leading-5 text-muted">{item.short_definition}</p>
+        </button>
+      ))}
     </div>
   );
 }
@@ -333,6 +401,11 @@ function useSafeData() {
 export default function FluGenomeLab() {
   const { bundle, mode, error } = useSafeData();
   const [active, setActive] = useState<ViewId>("home");
+  const [askSeed, setAskSeed] = useState<AskSeed | null>(null);
+  const openAsk = (question: string) => {
+    setAskSeed({ question, nonce: Date.now() });
+    setActive("ask");
+  };
 
   if (error) {
     return <div className="p-8 text-rust">{error}</div>;
@@ -416,15 +489,15 @@ export default function FluGenomeLab() {
                 : "rounded-lg border border-line bg-ink/82 p-4 md:p-6"
             }
           >
-            {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} /> : null}
-            {active === "guide" ? <ProjectGuide bundle={bundle} setActive={setActive} /> : null}
-            {active === "ask" ? <AskFluGenomeGuide bundle={bundle} setActive={setActive} /> : null}
-            {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} /> : null}
-            {active === "latent" ? <LatentAtlas bundle={bundle} /> : null}
-            {active === "projector" ? <RepresentationProjector bundle={bundle} /> : null}
-            {active === "inspector" ? <SequenceTokenInspector bundle={bundle} /> : null}
-            {active === "structure" ? <StructureView bundle={bundle} /> : null}
-            {active === "bridge" ? <BridgeView bundle={bundle} /> : null}
+            {active === "home" ? <HomeOverview bundle={bundle} mode={mode} setActive={setActive} openAsk={openAsk} /> : null}
+            {active === "guide" ? <ProjectGuide bundle={bundle} setActive={setActive} openAsk={openAsk} /> : null}
+            {active === "ask" ? <AskFluGenomeGuide bundle={bundle} setActive={setActive} askSeed={askSeed} /> : null}
+            {active === "atlas" ? <DatasetAtlas bundle={bundle} mode={mode} openAsk={openAsk} /> : null}
+            {active === "latent" ? <LatentAtlas bundle={bundle} openAsk={openAsk} /> : null}
+            {active === "projector" ? <RepresentationProjector bundle={bundle} openAsk={openAsk} /> : null}
+            {active === "inspector" ? <SequenceTokenInspector bundle={bundle} openAsk={openAsk} /> : null}
+            {active === "structure" ? <StructureView bundle={bundle} openAsk={openAsk} /> : null}
+            {active === "bridge" ? <BridgeView bundle={bundle} openAsk={openAsk} /> : null}
           </div>
         </section>
       </div>
@@ -432,7 +505,17 @@ export default function FluGenomeLab() {
   );
 }
 
-function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: string; setActive: (view: ViewId) => void }) {
+function HomeOverview({
+  bundle,
+  mode,
+  setActive,
+  openAsk,
+}: {
+  bundle: SafeBundle;
+  mode: string;
+  setActive: (view: ViewId) => void;
+  openAsk: (question: string) => void;
+}) {
   const features = [
     ["Sequence context", "GC, CpG/UpA, dinucleotide and k-mer summaries from derived HA/NA analyses."],
     ["Learned representation", "AntigenLM latent geometry from the thesis repo, shown through hash-based reduced coordinates."],
@@ -468,7 +551,7 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
               Explore dataset
             </button>
             <button
-              onClick={() => setActive("ask")}
+              onClick={() => openAsk("What is the fastest way to understand FluGenome3D?")}
               className="rounded-md border border-line bg-bg/46 px-5 py-3 text-sm text-muted backdrop-blur transition hover:border-teal hover:text-ivory"
             >
               Ask FluGenome3D
@@ -505,17 +588,19 @@ function HomeOverview({ bundle, mode, setActive }: { bundle: SafeBundle; mode: s
   );
 }
 
-function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (view: ViewId) => void }) {
+function ProjectGuide({
+  bundle,
+  setActive,
+  openAsk,
+}: {
+  bundle: SafeBundle;
+  setActive: (view: ViewId) => void;
+  openAsk: (question: string) => void;
+}) {
   const reps = bundle.representations.representations as Record<string, any>[];
   const tokenizers = bundle.tokenization.tokenizer_summary as Record<string, any>[];
-  const formulas = [
-    ["GC fraction", "(G + C) / sequence length", "A compact readout of base composition."],
-    ["CpG O/E", "f(CG) / (f(C) x f(G))", "Compares CpG frequency against what C and G abundance would suggest."],
-    ["UpA O/E", "f(TA) / (f(T) x f(A))", "Uses DNA TA as the proxy for RNA UpA."],
-    ["Entropy", "-sum p(token) log2 p(token)", "Higher values mean token usage is more spread out."],
-    ["RSCU", "codon count / synonymous-codon average", "A codon-usage summary used only on the refined CDS panel."],
-    ["JS distance", "distance between token distributions", "A descriptive way to compare groups without making prediction claims."]
-  ];
+  const formulaCards = (bundle.guide.formula_cards ?? []) as Record<string, any>[];
+  const glossaryTerms = (bundle.guide.glossary_terms ?? []) as Record<string, any>[];
   const models = [
     ["Dataset Atlas", "Country-level aggregate coverage, panel sizes and CDS reliability."],
     ["Ask FluGenome3D", "A grounded guide that answers plain-language questions from safe docs, reports and exported summaries."],
@@ -545,7 +630,7 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
             <button onClick={() => setActive("atlas")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
               Open atlas
             </button>
-            <button onClick={() => setActive("ask")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
+            <button onClick={() => openAsk("What is FluGenome3D trying to show?")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
               Ask the guide
             </button>
             <button onClick={() => setActive("projector")} className="rounded-md border border-line bg-bg/45 px-4 py-2 text-sm text-muted hover:border-teal hover:text-ivory">
@@ -578,16 +663,8 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
       <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
         <div className="rounded-lg border border-line bg-panel/75 p-5">
           <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">FORMULAS, IN PLAIN LANGUAGE</div>
-          <div className="mt-4 grid gap-3">
-            {formulas.map(([name, formula, explanation]) => (
-              <div key={name} className="rounded-md border border-line bg-bg/30 p-3">
-                <div className="flex flex-col gap-1 md:flex-row md:items-baseline md:justify-between">
-                  <div className="text-sm font-semibold text-ivory">{name}</div>
-                  <code className="font-mono text-xs text-teal">{formula}</code>
-                </div>
-                <p className="mt-2 text-xs leading-5 text-muted">{explanation}</p>
-              </div>
-            ))}
+          <div className="mt-4">
+            <FormulaCardGrid cards={formulaCards.slice(0, 6)} openAsk={openAsk} />
           </div>
         </div>
 
@@ -603,6 +680,16 @@ function ProjectGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (v
           </div>
         </div>
       </div>
+
+      <div className="mt-4 rounded-lg border border-line bg-panel/75 p-5">
+        <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">GLOSSARY FOR FAST READING</div>
+        <p className="mt-3 text-sm leading-6 text-muted">
+          These are the words that make the app readable in an interview or lab meeting. Each card can open the guide with a focused question.
+        </p>
+        <div className="mt-4">
+          <GlossaryGrid terms={glossaryTerms.slice(0, 8)} openAsk={openAsk} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -614,8 +701,18 @@ type AskGuideResponse = {
   guardrails: string[];
 };
 
-function AskFluGenomeGuide({ bundle, setActive }: { bundle: SafeBundle; setActive: (view: ViewId) => void }) {
+function AskFluGenomeGuide({
+  bundle,
+  setActive,
+  askSeed,
+}: {
+  bundle: SafeBundle;
+  setActive: (view: ViewId) => void;
+  askSeed: AskSeed | null;
+}) {
   const suggestions = (bundle.guide.suggested_questions ?? []) as string[];
+  const formulaCards = (bundle.guide.formula_cards ?? []) as Record<string, any>[];
+  const glossaryTerms = (bundle.guide.glossary_terms ?? []) as Record<string, any>[];
   const [question, setQuestion] = useState("What does CpG O/E mean in this app?");
   const [response, setResponse] = useState<AskGuideResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -642,6 +739,12 @@ function AskFluGenomeGuide({ bundle, setActive }: { bundle: SafeBundle; setActiv
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    if (askSeed?.question) {
+      void askGuide(askSeed.question);
+    }
+  }, [askSeed?.nonce]);
 
   return (
     <div>
@@ -750,11 +853,32 @@ function AskFluGenomeGuide({ bundle, setActive }: { bundle: SafeBundle; setActiv
           </div>
         </div>
       </div>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">FORMULA EXPLAINER</div>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            Click any formula to ask the guide for a focused, cited explanation. These are safe summaries, not sequence records.
+          </p>
+          <div className="mt-4">
+            <FormulaCardGrid cards={formulaCards} openAsk={(nextQuestion) => askGuide(nextQuestion)} />
+          </div>
+        </div>
+        <div className="rounded-lg border border-line bg-panel/75 p-5">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">INTERACTIVE GLOSSARY</div>
+          <p className="mt-3 text-sm leading-6 text-muted">
+            A democratized vocabulary for reading the app without already knowing every metric or biological abbreviation.
+          </p>
+          <div className="mt-4">
+            <GlossaryGrid terms={glossaryTerms} openAsk={(nextQuestion) => askGuide(nextQuestion)} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
 
-function DatasetAtlas({ bundle, mode }: { bundle: SafeBundle; mode: string }) {
+function DatasetAtlas({ bundle, mode, openAsk }: { bundle: SafeBundle; mode: string; openAsk: (question: string) => void }) {
   const datasetRows = bundle.dataset.dataset_summary as Record<string, any>[];
   const refined = bundle.dataset.cds_refined_qc as Record<string, any>[];
   const atlas = bundle.dataset.geographic_atlas ?? {};
@@ -782,12 +906,14 @@ function DatasetAtlas({ bundle, mode }: { bundle: SafeBundle; mode: string }) {
   const yearMax = Math.max(...countryTotals.map((row) => Number(row.year_max ?? -Infinity)));
   const mapTraces = useMemo(() => buildAtlasMapTraces(countryTotals, subtypeCounts), [countryTotals, subtypeCounts]);
   const regionTraces = useMemo(() => buildRegionPlot(regionRows), [regionRows]);
+  const prompts = ((bundle.guide.view_prompts ?? {}).atlas ?? []) as AskPrompt[];
 
   return (
     <div>
       <SectionTitle kicker="DATASET ATLAS" title="Geographic coverage of HA/NA pairs">
         Country-level aggregates from real derived artifacts. No raw sequences, accessions or isolate names.
       </SectionTitle>
+      <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="mb-4 grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Atlas layer</span>
@@ -908,7 +1034,7 @@ function DatasetAtlas({ bundle, mode }: { bundle: SafeBundle; mode: string }) {
   );
 }
 
-function LatentAtlas({ bundle }: { bundle: SafeBundle }) {
+function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (question: string) => void }) {
   const atlas = bundle.antigenlm ?? {};
   const projection = atlas.projection ?? {};
   const points = useMemo(() => decodeRepresentationPoints(projection), [projection]);
@@ -928,6 +1054,7 @@ function LatentAtlas({ bundle }: { bundle: SafeBundle }) {
   const globalPca = pca.find((row) => row.group === "global");
   const meanHamming = hammingHaNa.reduce((sum, row) => sum + Number(row.rho_mean ?? 0), 0) / Math.max(hammingHaNa.length, 1);
   const meanTemporal = temporal.reduce((sum, row) => sum + Number(row.rho_mean ?? 0), 0) / Math.max(temporal.length, 1);
+  const prompts = ((bundle.guide.view_prompts ?? {}).latent ?? []) as AskPrompt[];
 
   useEffect(() => setSelected(null), [colorBy, projectionMode]);
 
@@ -936,6 +1063,7 @@ function LatentAtlas({ bundle }: { bundle: SafeBundle }) {
       <SectionTitle kicker="ANTIGENLM LATENT ATLAS" title="Learned HA/NA representation layer">
         AntigenLM embeddings from the parent thesis repo, exported as hash-based PCA coordinates.
       </SectionTitle>
+      <ViewExplainer prompts={prompts} openAsk={openAsk} />
 
       <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card label="Latent records" value={formatNumber(cache.n_records ?? 0, 0)} detail={`${formatNumber(cache.embedding_dim ?? 0, 0)}-dimensional AntigenLM embeddings`} />
@@ -1065,7 +1193,7 @@ function LatentAtlas({ bundle }: { bundle: SafeBundle }) {
   );
 }
 
-function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
+function RepresentationProjector({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (question: string) => void }) {
   const reps = ((bundle.representations.representations as Record<string, any>[]) ?? []).filter((item) => !String(item.id).includes("umap"));
   const [repId, setRepId] = useState(reps[0]?.id ?? "");
   const [colorBy, setColorBy] = useState("group");
@@ -1076,6 +1204,7 @@ function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
   const has3d = points.some((point) => Number.isFinite(Number(point.z)));
   const use3d = projectionMode === "3d" && has3d;
   const explained = (rep?.pca_explained_variance ?? []) as Array<number | null>;
+  const prompts = ((bundle.guide.view_prompts ?? {}).projector ?? []) as AskPrompt[];
 
   const traces = useMemo(() => buildProjectorTraces(points, colorBy, use3d), [points, colorBy, use3d]);
   useEffect(() => setSelected(null), [repId, colorBy, projectionMode]);
@@ -1109,6 +1238,7 @@ function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
       <SectionTitle kicker="REPRESENTATION PROJECTOR" title="Reduced-coordinate maps">
         PCA coordinates are real derived artifacts with hashed IDs.
       </SectionTitle>
+      <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="mb-4 grid gap-3 xl:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Representation</span>
@@ -1186,7 +1316,7 @@ function RepresentationProjector({ bundle }: { bundle: SafeBundle }) {
   );
 }
 
-function SequenceTokenInspector({ bundle }: { bundle: SafeBundle }) {
+function SequenceTokenInspector({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (question: string) => void }) {
   const gcRows = (bundle.metrics.gc_cpg_upa_summary as Record<string, any>[]).filter((row) =>
     ["gc_content", "cpg_oe", "upa_oe"].includes(row.metric)
   );
@@ -1194,6 +1324,7 @@ function SequenceTokenInspector({ bundle }: { bundle: SafeBundle }) {
   const ranking = bundle.stability.tokenizer_robustness_ranking as Record<string, any>[];
   const topTokens = bundle.tokenization.top_tokens_by_group as Record<string, any>[];
   const cdsQc = bundle.metrics.cds_translation_qc_summary as Record<string, any>[];
+  const prompts = ((bundle.guide.view_prompts ?? {}).inspector ?? []) as AskPrompt[];
   const mvpSequenceCount = Math.max(...sequenceMetricSpecs.map((spec) => gcRows.filter((row) => row.metric === spec.id).reduce((sum, row) => sum + Number(row.n ?? 0), 0)));
   const refinedCdsCount = cdsQc.reduce((sum, row) => sum + Number(row.n_refined_sequences ?? 0), 0);
   const gc = metricRange(gcRows, "gc_content");
@@ -1233,6 +1364,7 @@ function SequenceTokenInspector({ bundle }: { bundle: SafeBundle }) {
       <SectionTitle kicker="SEQUENCE / TOKEN INSPECTOR" title="Sequence context, translated">
         Real aggregate metrics, no sequences. Descriptive only.
       </SectionTitle>
+      <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card label="MVP sequences" value={formatNumber(mvpSequenceCount, 0)} detail="HA/NA records in the sequence-context audit" />
         <Card label="Refined CDS sequences" value={formatNumber(refinedCdsCount, 0)} detail="Used only for codon-aware token summaries" />
@@ -1366,7 +1498,7 @@ function SequenceTokenInspector({ bundle }: { bundle: SafeBundle }) {
   );
 }
 
-function StructureView({ bundle }: { bundle: SafeBundle }) {
+function StructureView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (question: string) => void }) {
   const structures = bundle.structures.structures as Record<string, any>[];
   const mapping = bundle.structureMapping ?? {};
   const mappingQc = (mapping.mapping_qc ?? []) as Record<string, any>[];
@@ -1376,12 +1508,14 @@ function StructureView({ bundle }: { bundle: SafeBundle }) {
   const qcRows = mappingQc.filter((row) => row.pdb_id === pdbId);
   const bestQc = qcRows.reduce((best, row) => (Number(row.mapped_residues ?? 0) > Number(best?.mapped_residues ?? -1) ? row : best), qcRows[0]);
   const catalogRow = signalCatalog.find((row) => row.protein === structure?.protein && row.subtype === structure?.subtype_context);
+  const prompts = ((bundle.guide.view_prompts ?? {}).structure ?? []) as AskPrompt[];
 
   return (
     <div>
       <SectionTitle kicker="STRUCTURE VIEW" title="Public structures with alignment QC">
         Public RCSB structures plus a derived residue-signal bridge. Metric coloring still waits for chain-number validation.
       </SectionTitle>
+      <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="mb-4 grid gap-3 xl:grid-cols-[0.8fr_1.1fr_1.1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Structure</span>
@@ -1451,7 +1585,7 @@ function StructureView({ bundle }: { bundle: SafeBundle }) {
   );
 }
 
-function BridgeView({ bundle }: { bundle: SafeBundle }) {
+function BridgeView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (question: string) => void }) {
   const reps = bundle.representations.representations as Record<string, any>[];
   const structures = bundle.structures.structures as Record<string, any>[];
   const [group, setGroup] = useState("HA-H1N1");
@@ -1463,12 +1597,14 @@ function BridgeView({ bundle }: { bundle: SafeBundle }) {
   const metricRows = (bundle.metrics.gc_cpg_upa_summary as Record<string, any>[]).filter((row) => `${row.protein}-${row.subtype}` === group);
   const stabilityRows = (bundle.stability.tokenizer_robustness_ranking as Record<string, any>[]).slice(0, 4);
   const latentCache = bundle.antigenlm?.cache_summary ?? {};
+  const prompts = ((bundle.guide.view_prompts ?? {}).bridge ?? []) as AskPrompt[];
 
   return (
     <div>
       <SectionTitle kicker="BRIDGE MODE" title="Sequence context to representation to structure">
         Integrated view of safe derived artifacts.
       </SectionTitle>
+      <ViewExplainer prompts={prompts} openAsk={openAsk} />
       <div className="mb-4 grid gap-3 md:grid-cols-2">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Group</span>

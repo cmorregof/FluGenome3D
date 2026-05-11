@@ -70,8 +70,13 @@ def test_lab_guide_export_is_grounded_and_safe() -> None:
     payload = json.loads((APP_DATA / "lab_guide.safe.json").read_text())
     chunks = payload["chunks"]
     assert chunks
+    assert len(payload["formula_cards"]) >= 6
+    assert len(payload["glossary_terms"]) >= 6
+    assert {"atlas", "projector", "inspector", "structure"}.issubset(payload["view_prompts"].keys())
     assert payload["guide_policy"].startswith("Grounded explanatory guide")
     assert all("text" in chunk and "source" in chunk for chunk in chunks)
+    assert all("formula" in card and "plain_language" in card for card in payload["formula_cards"])
+    assert all("term" in term and "short_definition" in term for term in payload["glossary_terms"])
     forbidden_sources = ("data/processed", "data/raw", ".parquet", ".fa", ".fasta", ".fna", ".ffn")
     assert not any(any(term in str(chunk["source"]).lower() for term in forbidden_sources) for chunk in chunks)
     text = json.dumps(payload)

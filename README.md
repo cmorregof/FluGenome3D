@@ -89,7 +89,7 @@ The app has nine views:
 
 - **Home / Overview**: cinematic entry point for the visual lab.
 - **Project Guide**: plain-language overview of project intent, formulas, data layers and current models.
-- **Ask FluGenome3D**: grounded explanatory guide using safe docs, reports and manifests; no raw sequence access and no external model call.
+- **Ask FluGenome3D**: grounded explanatory guide using safe docs, reports, formula cards, glossary terms and view-specific prompts; no raw sequence access and no external model call.
 - **Dataset Atlas**: panel counts, subtype/protein balance, temporal distribution, CDS reliability and deduplication summaries.
 - **AntigenLM Latent Atlas**: learned HA+NA embedding geometry from the parent thesis repo, shown as hash-based PCA coordinates with aggregate geometry diagnostics.
 - **Representation Projector**: TensorFlow Projector-style scatter maps from real reduced-coordinate artifacts with safe hashed IDs.
@@ -102,6 +102,8 @@ The visual language is a dark minimal research lab style inspired by The Velvete
 ## Ask FluGenome3D
 
 The `Ask FluGenome3D` view is a local, grounded guide for visitors. It retrieves short explanation chunks from `app/data/lab_guide.safe.json`, cites the source docs/reports, and keeps answers inside the descriptive scope of the project.
+
+The same safe guide file also powers visual formula cards, an interactive glossary, and contextual "explain this view" prompts from the atlas, projector, sequence/token inspector, structure viewer and bridge view.
 
 It does not call an external LLM, does not access raw sequence files, and cannot answer from restricted local panels.
 

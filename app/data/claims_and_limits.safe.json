@@ -1,19 +1,21 @@
 {
   "schema_version": "safe-bundle-v1",
-  "banner": "Cryptographic data layer for real Influenza A HA/NA research artifacts. Hash-based IDs, aggregate views, and no raw sequence release.",
-  "data_statement": "Real research artifacts exported as aggregate summaries, reduced coordinates, short tokens and cryptographic hash IDs. Raw sequences stay local.",
+  "banner": "GISAID-safe derived-data layer for thesis-derived Influenza A HA/NA artifacts. Hash-based IDs, aggregate views, and no raw sequence release.",
+  "data_statement": "Real thesis-derived artifacts exported as aggregate summaries, reduced coordinates, short tokens and hash-based visual IDs. Raw sequences stay local.",
   "allowed_claims": [
-    "This app explores descriptive sequence-context and tokenization summaries from real derived FluGenome3D artifacts.",
-    "Representation coordinates are reduced-coordinate artifacts with hashed IDs and minimal metadata.",
-    "AntigenLM latent coordinates are shown as a learned representation audit layer.",
-    "CDS-dependent summaries are restricted to the refined CDS panel.",
-    "Structure views load public PDB structures and report alignment QC before any residue-level metric coloring."
+    "FluGenome3D provides descriptive exploration of derived HA/NA artifacts.",
+    "It audits sequence-context summaries, deterministic tokenization behavior, and representation geometry.",
+    "PCA and t-SNE maps are safe reduced-coordinate views for inspection.",
+    "Structure views use public PDB entries and conservative alignment-QC status.",
+    "CDS-dependent summaries are limited to records passing documented CDS/QC filters.",
+    "The deployed app is designed to avoid raw sequence, accession, or isolate-name redistribution."
   ],
   "prohibited_claims": [
-    "The app predicts antigenic drift.",
-    "The app identifies escape mutations or vaccine candidates.",
-    "The app explains viral fitness, pathogenicity or transmissibility.",
-    "Stable tokens are biological markers without further validation.",
-    "GROVER or BPE behavior is validated by these deterministic or AntigenLM-derived baselines."
+    "FluGenome3D predicts antigenic drift.",
+    "FluGenome3D identifies immune escape mutations.",
+    "FluGenome3D recommends vaccine candidates.",
+    "FluGenome3D predicts fitness, pathogenicity, transmissibility, or selection.",
+    "FluGenome3D validates AntigenLM, GROVER, BPE, or any tokenizer as biologically causal.",
+    "FluGenome3D provides viral design or sequence optimization guidance."
   ]
 }

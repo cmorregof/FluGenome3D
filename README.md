@@ -1,115 +1,152 @@
 # FluGenome3D
 
-**FluGenome3D is a deployable visual lab for real derived Influenza A HA/NA research artifacts.**
+FluGenome3D is a geometric audit and research-visualization lab for thesis-derived Influenza A HA/NA artifacts.
 
-It grew out of my AntigenLM/AntigenSDE thesis work as a satellite project: the Python pipeline audits sequence context, codon/CDS behavior, deterministic tokenization, learned AntigenLM geometry and public structure alignment QC; the web app turns derived artifacts into a shareable interface with aggregate views and hash-based identifiers.
+It converts local analyses from a master's thesis workflow on Influenza A, AntigenLM, latent representation geometry, deterministic tokenization, sequence-context metrics, and structure-aware QC into a deployed visual interface built from safe derived artifacts.
 
-## What It Is
+## Live app
+
+Live app: https://flugenome3d.vercel.app/
+
+Recommended first path:
+
+1. Dataset Atlas
+2. Sequence/Token Inspector
+3. AntigenLM Latent Atlas
+4. Representation Projector
+5. 3D Molecular Viewer
+6. Bridge View
+
+For Vercel deployment, set the project root to `app/`.
+
+## Scientific framing
+
+FluGenome3D asks a conservative visualization question:
+
+Can thesis-derived HA/NA artifacts be audited visually across sequence context, deterministic tokenization, learned representation geometry, and public structure references while preserving strict data-governance boundaries?
+
+The project should be read as a geometric audit, latent representation analysis, reproducibility companion, and research visualization lab. It is not a forecasting system and does not make biological-causality claims.
+
+## What it is
 
 - A reproducible audit of Influenza A HA/NA sequence-context metrics.
-- A deterministic tokenization and representation explorer.
-- A learned AntigenLM latent-geometry atlas connected to the parent thesis repository.
-- A structure-aware alignment-QC layer for public HA/NA PDB entries.
-- A grounded in-app guide that explains formulas, views and limits from safe project artifacts.
-- A Vercel-ready visual interface built from real derived outputs.
-- A governance-first app that separates restricted local analysis from a cryptographic derived-data layer.
+- Deterministic tokenization summaries for codons, k-mers, overlapping/non-overlapping variants, and frame-aware variants.
+- AntigenLM-derived latent-coordinate views from the parent thesis repository.
+- PCA/t-SNE visualizations for descriptive inspection.
+- Aggregate dataset, QC, temporal, geographic, subtype and segment/protein summaries.
+- Public RCSB HA/NA structure viewers with conservative alignment-QC status.
+- A deployed Next.js interface built from derived safe JSON files.
+- A local-vs-public data boundary designed for GISAID-sensitive workflows.
+- A grounded in-app guide for explaining formulas, views, governance and limitations from safe artifacts.
 
-## What It Is Not
+## What it is not
 
-- Not a viral design tool.
-- Not a vaccine, antigenicity, escape, fitness, pathogenicity or evolution predictor.
-- Not a raw sequence redistribution site.
-- Not a replacement for AntigenLM, AntigenSDE, GROVER or biological validation.
+- Not antigenic drift prediction.
+- Not immune escape detection.
+- Not vaccine recommendation.
+- Not viral fitness, pathogenicity or transmissibility prediction.
+- Not viral sequence design or optimization.
+- Not redistribution of raw HA/NA sequences.
+- Not exposure of accessions, source record identifiers, isolate names, or restricted per-record metadata.
+- Not biological validation of AntigenLM, GROVER, BPE or any tokenizer.
 
-## Data Modes
+## Data governance
 
-### Local Full Mode
+FluGenome3D separates private local analysis from the deployed safe derived-data layer.
 
-Local full mode can use restricted, gitignored artifacts under `data/processed/`, `data/processed/tokenization/`, `data/processed/tokenization_stability/` and optional `app/data-local/`.
+### Local full mode
 
-This mode is for private analysis only. It must not be pushed to GitHub or deployed to Vercel.
+Local full mode may include restricted and gitignored artifacts such as:
+
+- `data/raw/`
+- `data/interim/`
+- `data/processed/`
+- `data/processed/tokenization/`
+- `data/processed/tokenization_stability/`
+- `app/data-local/`
+
+These may contain sequence-bearing or sensitive derived data and must not be pushed to GitHub or deployed to Vercel.
+
+### Public safe mode
+
+The deployed app uses:
+
+```text
+app/data/*.safe.json
+```
+
+Safe files may include:
+
+- aggregate summaries;
+- reduced PCA/t-SNE coordinates;
+- binned temporal/geographic summaries;
+- short token summaries;
+- hash-based point identifiers;
+- public PDB identifiers;
+- alignment-QC summaries;
+- explanatory guide chunks.
+
+Safe files exclude:
+
+- raw HA/NA sequences;
+- FASTA files;
+- accessions, source record identifiers or accession tables;
+- isolate names;
+- source sequence hashes;
+- unrestricted sample-level metadata;
+- long tokens;
+- any table that could reasonably reconstruct restricted records.
+
+## Repository structure
+
+```text
+FluGenome3D/
+  app/                  Next.js visual lab
+  app/data/             Safe derived JSON exports for deployment
+  config/               Example configs and local path templates
+  data/                 Gitignored local data roots
+  data_export/          Safe-bundle export scripts
+  data_manifest/        Dataset provenance and governance notes
+  docs/                 Governance, claims, reproducibility and methods docs
+  reports/              Phase reports generated from local analysis
+  results/              Aggregate figures and derived outputs
+  scripts/              Phase-based analysis pipeline
+  src/flugenome3d/      Python package
+  tests/                Unit and regression tests
+```
+
+## Pipeline overview
+
+The Makefile exposes the current analysis and app targets:
 
 ```bash
-cp config/local_paths.example.yml config/local_paths.yml
+make setup
 make phase1
+make phase2-smoke
 make phase2-mvp
 make phase3
 make phase4
 make phase5
 make phase6
 make phase7-9
+make app-export
+make app-install
+make app-dev
+make app-build
+make test
 ```
 
-To let the app prefer local-only JSON files during development:
+`phase7-9` runs the AntigenLM bridge, latent atlas, structure mapping, and safe export targets. The earlier phases require local restricted paths and are not runnable from the public repository alone.
 
-```bash
-cd app
-FLUGENOME3D_DATA_MODE=local npm run dev
-```
+## Exporting the safe data layer
 
-### Cryptographic Data Layer
-
-The deployable app uses only `app/data/*.safe.json`, generated from real derived artifacts. These exports use aggregate summaries, reduced coordinates, short tokens and hash-based IDs rather than raw records.
-
-It excludes:
-
-- raw HA/NA sequences;
-- FASTA;
-- restricted Parquet panels;
-- accessions and isolate names;
-- source sequence hashes;
-- tokens longer than 6 nt;
-- per-sample sensitive tables.
-
-Generate the derived data layer:
+The safe export script is:
 
 ```bash
 python3 data_export/export_vercel_safe_bundle.py
 ```
 
-Run the app locally:
-
-```bash
-cd app
-npm install
-npm run dev
-```
-
-Build for Vercel:
-
-```bash
-cd app
-npm run typecheck
-npm run build
-```
-
-## Web App Views
-
-The app has nine views:
-
-- **Home / Overview**: cinematic entry point for the visual lab.
-- **Project Guide**: plain-language overview of project intent, formulas, data layers and current models.
-- **Ask FluGenome3D**: grounded explanatory guide using safe docs, reports, formula cards, glossary terms and view-specific prompts; no raw sequence access and no external model call.
-- **Dataset Atlas**: panel counts, subtype/protein balance, temporal distribution, CDS reliability and deduplication summaries.
-- **AntigenLM Latent Atlas**: learned HA+NA embedding geometry from the parent thesis repo, shown as hash-based PCA and t-SNE coordinates with aggregate geometry diagnostics.
-- **Representation Projector**: TensorFlow Projector-style scatter maps from real reduced-coordinate artifacts with safe hashed IDs.
-- **Sequence/Token Inspector**: aggregate GC/CpG/UpA metrics, token entropy, effective vocabulary and stability summaries.
-- **3D Molecular Viewer**: public RCSB structures `3LZG`, `3VUN`, `3NSS`, `6BR6` using 3Dmol.js, with alignment QC and aggregate residue-signal summaries.
-- **Bridge View**: integrated group-level view connecting sequence context, representation maps and structure catalog entries.
-
-The visual language is a dark minimal research lab style inspired by The Velveteen Project and TensorFlow Projector, without copying assets or layouts.
-
-## Ask FluGenome3D
-
-The `Ask FluGenome3D` view is a local, grounded guide for visitors. It retrieves short explanation chunks from `app/data/lab_guide.safe.json`, cites the source docs/reports, and keeps answers inside the descriptive scope of the project.
-
-The same safe guide file also powers visual formula cards, an interactive glossary, and contextual "explain this view" prompts from the atlas, projector, sequence/token inspector, structure viewer and bridge view.
-
-It does not call an external LLM, does not access raw sequence files, and cannot answer from restricted local panels.
-
-## Safe Export Files
-
-`data_export/export_vercel_safe_bundle.py` writes:
+It writes:
 
 ```text
 app/data/dataset_overview.safe.json
@@ -125,60 +162,82 @@ app/data/claims_and_limits.safe.json
 app/data/data_governance.safe.json
 ```
 
-These files are derived from real Phase 0-9 outputs and public project documentation. They are not simulated substitutes.
+These files are derived from real Phase 0-9 outputs and project documentation. They are not simulated substitutes.
 
-## Data Governance
-
-Raw GISAID-derived data, private metadata, FASTA files, restricted Parquet panels and local thesis datasets must not be committed.
-
-Gitignored local paths include:
-
-```text
-data/raw/
-data/interim/
-data/processed/
-config/local_paths.yml
-app/data-local/
-app/**/*.local.json
-app/**/*.restricted.json
-```
-
-Before publishing, run:
+## Running the app locally
 
 ```bash
-grep -E "[ACGTN]{80,}" app/ reports/*.md results/tables/*.csv
+cd app
+npm install
+npm run dev
+```
+
+Build and typecheck:
+
+```bash
+cd app
+npm run typecheck
+npm run build
+```
+
+## Python setup
+
+```bash
+pip install -e .
+pip install -e ".[dev]"
+```
+
+Run tests:
+
+```bash
+make test
+```
+
+## Safety checks before publishing
+
+```bash
+grep -R -E "[ACGTN]{80,}" app/ reports/*.md results/tables/*.csv
 find app -type f -size +5M
 find app -type f \( -name "*.fa" -o -name "*.fasta" -o -name "*.fna" -o -name "*.ffn" \)
 ```
 
-The first and third commands should return no matches. Any file over 5 MB in `app/` must be reviewed before deployment.
+The sequence and FASTA searches should return no matches. Any file over 5 MB in `app/` should be reviewed before deployment.
 
-## Claims
+## Claims and limitations
 
-Allowed:
+Allowed claims:
 
-- This app provides descriptive exploration of real derived FluGenome3D artifacts.
-- Deterministic tokenization metrics are compared under bootstrap and temporal summaries.
-- AntigenLM latent coordinates are shown as a descriptive learned-representation layer.
-- AntigenLM PCA and t-SNE maps are safe reduced-coordinate views for visual inspection.
-- CDS-dependent views are restricted to refined CDS subsets.
-- Public PDB structures are shown with alignment QC and aggregate residue-signal context.
+- FluGenome3D provides descriptive exploration of derived HA/NA artifacts.
+- It audits sequence-context summaries, deterministic tokenization behavior, and representation geometry.
+- PCA and t-SNE maps are safe reduced-coordinate views for inspection.
+- Structure views use public PDB entries and conservative alignment-QC status.
+- CDS-dependent summaries are limited to records passing documented CDS/QC filters.
+- The deployed app is designed to avoid raw sequence, accession, or isolate-name redistribution.
 
-Prohibited:
+Disallowed claims:
 
-- Predicts antigenic drift.
-- Identifies escape mutations.
-- Predicts vaccine candidates.
-- Explains fitness, pathogenicity, transmissibility or selection.
-- Validates GROVER, BPE or any learned tokenizer.
+- FluGenome3D predicts antigenic drift.
+- FluGenome3D identifies immune escape mutations.
+- FluGenome3D recommends vaccine candidates.
+- FluGenome3D predicts fitness, pathogenicity, transmissibility, or selection.
+- FluGenome3D validates AntigenLM, GROVER, BPE, or any tokenizer as biologically causal.
+- FluGenome3D provides viral design or sequence optimization guidance.
 
-## Developer Commands
+## Suggested citation / portfolio description
 
-```bash
-make app-export
-make app-install
-make app-build
-make test
-```
+FluGenome3D is a deployed research-visualization lab for thesis-derived Influenza A HA/NA artifacts. It audits sequence-context summaries, deterministic tokenization behavior, AntigenLM-derived latent geometry, and public structure-alignment QC through a GISAID-safe derived-data layer.
 
-For Vercel, set the project root to `app/`. No restricted local data is required for build.
+## Suggested figures and screenshots
+
+1. Landing page with governance badges.
+2. Dataset Atlas geographic/subtype coverage view.
+3. Sequence/Token Inspector composition and tokenization diagnostics.
+4. AntigenLM Latent Atlas PCA/t-SNE map.
+5. Public structure viewer with alignment-QC panel.
+6. Bridge View connecting sequence context, latent geometry, and structure context.
+7. Data-governance boundary diagram.
+8. Pipeline/reproducibility diagram.
+
+## License
+
+No license file is currently included in this repository. Add one before reuse or redistribution outside the intended portfolio/research context.

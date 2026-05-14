@@ -1,6 +1,6 @@
 {
   "schema_version": "safe-bundle-v1",
-  "generated_utc": "2026-05-11T13:28:05.110515+00:00",
+  "generated_utc": "2026-05-14T16:33:24.230772+00:00",
   "guide_policy": "Grounded explanatory guide built only from public docs, reports, safe formulas and governance text. It contains no raw sequences and does not call external models.",
   "answer_boundary": {
     "can_explain": [
@@ -440,13 +440,113 @@
     },
     {
       "id": "guide_data_governance_plain",
-      "title": "What the cryptographic data layer means",
+      "title": "What the safe derived-data layer means",
       "source": "FluGenome3D guide card",
       "section": "Data governance",
       "topic_tags": [
         "governance"
       ],
-      "text": "The deployable layer contains aggregate summaries, reduced coordinates, short tokens and hash-based identifiers. It does not publish raw sequences, FASTA, restricted panels, accessions, isolate names or source sequence hashes."
+      "text": "The deployable layer contains aggregate summaries, binned metadata summaries, reduced PCA/t-SNE coordinates, short token summaries and hash-based visual identifiers. It does not publish raw sequences, FASTA, accessions, source record identifiers, isolate names, source sequence hashes or unrestricted sample-level metadata."
+    },
+    {
+      "id": "guide_scientific_framing",
+      "title": "Scientific framing",
+      "source": "FluGenome3D guide card",
+      "section": "Scientific framing",
+      "topic_tags": [
+        "project",
+        "representation",
+        "governance"
+      ],
+      "text": "FluGenome3D is a geometric audit and research-visualization lab for thesis-derived Influenza A HA/NA artifacts. It converts local thesis analyses into safe visual layers for sequence context, deterministic tokenization, AntigenLM-derived latent maps and public structure-alignment QC. It is descriptive, exploratory and governance-aware, not a forecasting or biological-validation system."
+    },
+    {
+      "id": "guide_1343a32af32479a1",
+      "title": "Methods",
+      "source": "docs/methods.md",
+      "section": "Methods",
+      "topic_tags": [
+        "project"
+      ],
+      "text": "FluGenome3D is a geometric audit and research-visualization lab for thesis-derived Influenza A HA/NA artifacts. The methods are organized around conservative inspection layers rather than biological forecasting."
+    },
+    {
+      "id": "guide_6d616e4586cc4bb2",
+      "title": "1. Data basis",
+      "source": "docs/methods.md",
+      "section": "1. Data basis",
+      "topic_tags": [
+        "dataset",
+        "cds",
+        "governance"
+      ],
+      "text": "The local analysis starts from paired HA/NA records and associated metadata available in the thesis workspace. Public app views use only derived summaries of: - paired HA/NA records; - subtype and segment/protein groups; - temporal and geographic bins; - QC windows for length, ambiguity, duplication and metadata completeness; - CDS reliability where codon-dependent summaries are used. Raw FASTA, accessions, isolate names and restricted per-record metadata remain local."
+    },
+    {
+      "id": "guide_b438533c119008b3",
+      "title": "2. Sequence-context metrics",
+      "source": "docs/methods.md",
+      "section": "2. Sequence-context metrics",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "representation",
+        "claims"
+      ],
+      "text": "Sequence-context summaries are descriptive aggregate metrics. They include: - GC fraction; - CpG observed/expected; - UpA observed/expected, using DNA TA as an RNA UpA proxy; - dinucleotide summaries; - codon and RSCU summaries where CDS/frame QC permits; - entropy and aggregate distribution summaries. These metrics describe composition and representation behavior. They do not establish antigenicity, immune relevance, pathogenicity or fitness."
+    },
+    {
+      "id": "guide_eedf66e715f0b974",
+      "title": "3. Tokenization audit",
+      "source": "docs/methods.md",
+      "section": "3. Tokenization audit",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "antigenlm"
+      ],
+      "text": "The tokenization audit evaluates deterministic tokenizers before learned tokenizers: - overlapping k-mers; - non-overlapping k-mers; - codon tokenization; - frame-aware variants; - bootstrap and stability summaries where available. The goal is to document how segmentation choices alter token distributions, effective vocabulary, entropy and group-level distances."
+    },
+    {
+      "id": "guide_d665b47f0405a520",
+      "title": "4. Representation geometry",
+      "source": "docs/methods.md",
+      "section": "4. Representation geometry",
+      "topic_tags": [
+        "dataset",
+        "representation",
+        "antigenlm",
+        "governance"
+      ],
+      "text": "Representation views include interpretable feature spaces and AntigenLM-derived embeddings from the parent thesis repository. The deployed app shows safe reduced-coordinate views: - PCA coordinates; - t-SNE coordinates; - hashed point identifiers; - minimal coarse metadata. These maps support visual inspection of neighborhoods, coarse organization and outliers. They are descriptive representation geometry, not biological validation."
+    },
+    {
+      "id": "guide_5782ab86b6a08b6b",
+      "title": "5. Structure context",
+      "source": "docs/methods.md",
+      "section": "5. Structure context",
+      "topic_tags": [
+        "dataset",
+        "structure",
+        "claims"
+      ],
+      "text": "The structure layer uses public RCSB/PDB entries for HA/NA context: - `3LZG`; - `3VUN`; - `3NSS`; - `6BR6`. The app reports alignment QC, chain/coverage summaries and mapping status. It does not claim residue-level biological effects unless those mappings are independently validated."
+    },
+    {
+      "id": "guide_918f5311e6204ccf",
+      "title": "6. Safe export",
+      "source": "docs/methods.md",
+      "section": "6. Safe export",
+      "topic_tags": [
+        "dataset",
+        "tokenization",
+        "representation",
+        "structure",
+        "governance"
+      ],
+      "text": "The public app is built from a safe derived-data layer: - aggregate summaries; - binned temporal/geographic summaries; - reduced PCA/t-SNE coordinates; - short token summaries; - hash-based visual identifiers; - public PDB identifiers; - alignment-QC summaries; - explanatory guide chunks. It excludes raw sequences, FASTA files, accessions, isolate names, source sequence hashes, unrestricted sample-level metadata, long tokens and any table that could reasonably reconstruct restricted records."
     },
     {
       "id": "guide_fd92a81442897d9e",
@@ -456,88 +556,273 @@
       "topic_tags": [
         "sequence_context",
         "cds",
+        "tokenization",
+        "representation",
         "antigenlm",
         "structure",
         "claims"
       ],
-      "text": "Influenza A is an enveloped, segmented RNA virus. HA and NA are major surface glycoproteins and define common subtype labels such as H1N1 and H3N2. This project focuses on HA/NA because they connect naturally to AntigenLM/AntigenSDE, sequence-context analysis, codon usage and structure-aware visualization. This project does not infer antigenicity, immune escape, vaccine candidates, pathogenicity, transmissibility or viral fitness."
+      "text": "Influenza A is an enveloped, segmented RNA virus. HA and NA are major surface glycoproteins and define common subtype labels such as H1N1 and H3N2. This project focuses on HA/NA because they connect naturally to AntigenLM/AntigenSDE, sequence-context analysis, codon usage and structure-aware visualization. FluGenome3D treats HA/NA as a representation and visualization problem, not as a forecasting endpoint. It audits sequence context, deterministic tokenization behavior, AntigenLM-derived latent geometry and public structure-alignment QC for thesis-derived artifacts. This project does not infer antigenicity, immune escape, vaccine candidates, pathogenicity, transmissibility or viral fitness."
     },
     {
       "id": "guide_771200701f9ab88b",
+      "title": "Purpose",
+      "source": "docs/data_governance.md",
+      "section": "Purpose",
+      "topic_tags": [
+        "governance"
+      ],
+      "text": "FluGenome3D is designed for a GISAID-sensitive workflow: local thesis data can be analyzed privately, while the deployed app exposes only safe derived artifacts."
+    },
+    {
+      "id": "guide_5c6d36b24ee9bdab",
       "title": "Local full mode",
       "source": "docs/data_governance.md",
       "section": "Local full mode",
       "topic_tags": [
         "dataset",
+        "tokenization",
         "governance"
       ],
-      "text": "Local full mode may use non-redistributable GISAID-backed data already available on the developer's machine. Raw FASTA, metadata, BLAST databases, and accession-level restricted tables must not be committed. Recommended policy: - Commit scripts, configs, documentation and tests. - Commit only aggregate derived tables if allowed. - Do not commit raw sequences or raw metadata from restricted sources. - Store dataset DOI/acknowledgement information in `data_manifest/dataset_doi.txt`. - Keep `data/raw`, `data/interim`, and `data/processed` gitignored by default."
+      "text": "Raw GISAID FASTA, metadata, accessions, isolate names, BLAST databases, sequence-containing tables and restricted per-record Parquet files remain local. Local-only paths include: - `data/raw/` - `data/interim/` - `data/processed/` - `data/processed/tokenization/` - `data/processed/tokenization_stability/` - `config/local_paths.yml` - `app/data-local/` - `app/**/*.local.json` - `app/**/*.restricted.json` These paths must not be committed or deployed."
     },
     {
-      "id": "guide_5c6d36b24ee9bdab",
-      "title": "Public demo mode",
+      "id": "guide_215af387716dc3b3",
+      "title": "Public safe mode",
       "source": "docs/data_governance.md",
-      "section": "Public demo mode",
+      "section": "Public safe mode",
       "topic_tags": [
         "dataset",
-        "governance"
-      ],
-      "text": "Public demo mode should use redistributable data or scripts that instruct users how to fetch public data themselves, for example through NCBI Datasets/NCBI Virus."
-    },
-    {
-      "id": "guide_8f818a27472c7e0d",
-      "title": "Reproducibility philosophy",
-      "source": "docs/reproducibility.md",
-      "section": "Reproducibility philosophy",
-      "topic_tags": [
-        "dataset",
-        "governance"
-      ],
-      "text": "The repository should reproduce code, filters, figures and aggregate descriptive outputs. It should not redistribute raw restricted biological datasets."
-    },
-    {
-      "id": "guide_6ca2cfe8fe219269",
-      "title": "Permitted claims",
-      "source": "docs/claims_and_limitations.md",
-      "section": "Permitted claims",
-      "topic_tags": [
-        "sequence_context",
-        "cds",
         "tokenization",
         "representation",
         "structure",
         "governance",
         "claims"
       ],
-      "text": "- Reproducible descriptive audit. - Sequence-context analysis of Influenza A HA/NA. - Codon usage and dinucleotide bias summaries. - Tokenizer-dependent representation audit inspired by DNA language models. - Lightweight structure-aware visualization of descriptive metrics. - Local GISAID-backed analysis with non-redistributable raw data. - Public demo mode where possible. - Grounded plain-language explanations from safe docs, reports and exported summaries."
+      "text": "The deployed app uses only safe derived artifacts in: The deployed app may include: - aggregate summaries; - binned temporal/geographic summaries; - reduced PCA/t-SNE coordinates; - short token summaries; - hash-based visual identifiers; - public PDB identifiers; - alignment-QC summaries; - captions, guide chunks and limitations. The deployed app excludes: - raw HA/NA sequences; - FASTA files; - accessions; - source record identifiers; - isolate names; - source sequence hashes; - unrestricted sample-level metadata; - long tokens or sequence-containing fields; - any table that could reasonably reconstruct restricted records."
     },
     {
-      "id": "guide_ff65ed73b8c8a0b7",
-      "title": "Prohibited claims",
-      "source": "docs/claims_and_limitations.md",
-      "section": "Prohibited claims",
+      "id": "guide_a45eee6da0aca8f7",
+      "title": "Safe artifact rules",
+      "source": "docs/data_governance.md",
+      "section": "Safe artifact rules",
       "topic_tags": [
         "dataset",
-        "sequence_context",
-        "tokenization",
-        "structure",
-        "governance",
-        "claims",
-        "future"
+        "representation",
+        "governance"
       ],
-      "text": "- Predicts antigenic drift. - Predicts vaccine candidates. - Identifies escape mutations. - Predicts pathogenicity, transmissibility or fitness. - GROVER understands Influenza A. - Tokenization reveals functional sites. - CpG/UpA explains pathogenicity. - Structure mapping identifies antigenic residues. - The in-app guide is an autonomous biological predictor. - The in-app guide can access raw sequences or restricted local panels."
+      "text": "Safe artifacts should be derived, aggregate, binned, reduced or hash-identified. When in doubt, exclude a column from the public export. Coordinate views are allowed only as reduced PCA/t-SNE artifacts with hash-based IDs and minimal metadata. They should not contain source identifiers, sequence hashes, accessions or exact sample-level locations."
     },
     {
-      "id": "guide_e40b6593cb583b59",
-      "title": "Interpretation warning",
-      "source": "docs/claims_and_limitations.md",
-      "section": "Interpretation warning",
+      "id": "guide_ccf135b35cfee189",
+      "title": "Pre-publication checklist",
+      "source": "docs/data_governance.md",
+      "section": "Pre-publication checklist",
       "topic_tags": [
+        "governance"
+      ],
+      "text": "Run: Expected result: - no long nucleotide-like strings in public app/docs/tables; - no FASTA-like files in `app/`; - no large files in `app/` without review."
+    },
+    {
+      "id": "guide_491095b62109d37e",
+      "title": "Reproducibility",
+      "source": "docs/reproducibility.md",
+      "section": "Reproducibility",
+      "topic_tags": [
+        "governance"
+      ],
+      "text": "FluGenome3D is reproducible in two layers: a local full analysis layer that depends on restricted local data, and a deployable safe app layer built from derived JSON artifacts."
+    },
+    {
+      "id": "guide_903e3683cf182ad4",
+      "title": "Makefile targets",
+      "source": "docs/reproducibility.md",
+      "section": "Makefile targets",
+      "topic_tags": [
+        "future"
+      ],
+      "text": "Available targets include: The targets from `phase1` through `phase9` assume local data and prior phase outputs. They should be run only in a local full environment with `config/local_paths.yml` configured."
+    },
+    {
+      "id": "guide_8f818a27472c7e0d",
+      "title": "Safe export",
+      "source": "docs/reproducibility.md",
+      "section": "Safe export",
+      "topic_tags": [
+        "governance"
+      ],
+      "text": "The deployable derived-data layer is generated with: or: This writes `app/data/*.safe.json` files for the Next.js app."
+    },
+    {
+      "id": "guide_8bc07ea924bd156f",
+      "title": "Local-data caveat",
+      "source": "docs/reproducibility.md",
+      "section": "Local-data caveat",
+      "topic_tags": [
+        "governance"
+      ],
+      "text": "The public repository cannot reproduce restricted GISAID-derived raw inputs. It can reproduce code, safe exports, docs, app build behavior and tests. Full scientific regeneration requires the private local thesis data environment."
+    },
+    {
+      "id": "guide_602d47f71be06b9c",
+      "title": "Claims and limitations",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Claims and limitations",
+      "topic_tags": [
+        "cds",
+        "governance",
+        "claims"
+      ],
+      "text": "FluGenome3D is a scientific portfolio artifact and reproducibility companion. It is intentionally framed as descriptive, exploratory and governance-aware."
+    },
+    {
+      "id": "guide_6ca2cfe8fe219269",
+      "title": "Allowed claims",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Allowed claims",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "representation",
+        "antigenlm",
         "structure",
         "governance",
         "claims"
       ],
-      "text": "All structure mappings are exploratory projections of descriptive sequence metrics. They are not mechanistic validation, antigenic interpretation, vaccine design, or functional site discovery. The `Ask FluGenome3D` guide is an interpretive layer over safe artifacts. It can explain project concepts, formulas, views and governance, but it must not convert descriptive summaries into prediction, causality or biological validation."
+      "text": "- FluGenome3D provides descriptive exploration of derived HA/NA artifacts. - It audits sequence-context summaries, deterministic tokenization behavior and representation geometry. - PCA and t-SNE maps are safe reduced-coordinate views for inspection. - AntigenLM-derived embeddings are shown as descriptive latent representation geometry. - Structure views use public PDB entries and conservative alignment-QC status. - CDS-dependent summaries are limited to records passing documented CDS/QC filters. - The deployed app is designed to avoid raw sequence, accession or isolate-name redistribution."
+    },
+    {
+      "id": "guide_ff65ed73b8c8a0b7",
+      "title": "Disallowed claims",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Disallowed claims",
+      "topic_tags": [
+        "tokenization",
+        "antigenlm",
+        "structure",
+        "claims",
+        "future"
+      ],
+      "text": "- FluGenome3D predicts antigenic drift. - FluGenome3D identifies immune escape mutations. - FluGenome3D recommends vaccine candidates. - FluGenome3D predicts fitness, pathogenicity, transmissibility or selection. - FluGenome3D validates AntigenLM, GROVER, BPE or any tokenizer as biologically causal. - FluGenome3D provides viral design or sequence optimization guidance. - Structure mapping identifies antigenic residues or functional sites without independent validation."
+    },
+    {
+      "id": "guide_e40b6593cb583b59",
+      "title": "Interpretation boundaries",
+      "source": "docs/claims_and_limitations.md",
+      "section": "Interpretation boundaries",
+      "topic_tags": [
+        "sequence_context",
+        "tokenization",
+        "representation",
+        "antigenlm",
+        "structure",
+        "claims"
+      ],
+      "text": "The app should be interpreted as a geometric audit, latent representation analysis and research visualization lab. Visual proximity is not biological validation. Token enrichment is not immune relevance. Structure alignment QC is not residue-level functional evidence. CpG/UpA summaries are descriptive sequence-context features, not causal mechanisms."
+    },
+    {
+      "id": "guide_09f58e289e6a2e51",
+      "title": "In-app guide boundary",
+      "source": "docs/claims_and_limitations.md",
+      "section": "In-app guide boundary",
+      "topic_tags": [
+        "governance",
+        "claims"
+      ],
+      "text": "`Ask FluGenome3D` is a grounded explanatory interface over safe docs, reports, formula cards and exported summaries. It does not access raw sequences, does not call an external model, and does not convert descriptive summaries into prediction or causality."
+    },
+    {
+      "id": "guide_455b8a3b486ff588",
+      "title": "Visual guide",
+      "source": "docs/visual_guide.md",
+      "section": "Visual guide",
+      "topic_tags": [
+        "project"
+      ],
+      "text": "This guide describes how to read each FluGenome3D view without overinterpreting it."
+    },
+    {
+      "id": "guide_eeb954ef194a2acc",
+      "title": "Home / Overview",
+      "source": "docs/visual_guide.md",
+      "section": "Home / Overview",
+      "topic_tags": [
+        "governance",
+        "claims"
+      ],
+      "text": "What to look for: the project framing, safe data badges, navigation path and claim boundaries. What not to infer: that FluGenome3D is a commercial forecasting product or biological predictor."
+    },
+    {
+      "id": "guide_537d4568e1220030",
+      "title": "Dataset Atlas",
+      "source": "docs/visual_guide.md",
+      "section": "Dataset Atlas",
+      "topic_tags": [
+        "dataset"
+      ],
+      "text": "What to look for: coverage, subtype/segment balance, geography, year bins and QC status. What not to infer: global surveillance representativeness or sampling-unbiased prevalence."
+    },
+    {
+      "id": "guide_2b0893bd370651a3",
+      "title": "Sequence/Token Inspector",
+      "source": "docs/visual_guide.md",
+      "section": "Sequence/Token Inspector",
+      "topic_tags": [
+        "sequence_context",
+        "cds",
+        "tokenization",
+        "claims"
+      ],
+      "text": "What to look for: composition summaries, CpG/UpA observed/expected, entropy, tokenizer behavior and codon/k-mer summaries. What not to infer: biological causality, immune relevance, pathogenicity, fitness or antigenic interpretation."
+    },
+    {
+      "id": "guide_5e9fe288a6628d7c",
+      "title": "AntigenLM Latent Atlas",
+      "source": "docs/visual_guide.md",
+      "section": "AntigenLM Latent Atlas",
+      "topic_tags": [
+        "dataset",
+        "antigenlm",
+        "claims"
+      ],
+      "text": "What to look for: descriptive organization of derived embeddings, coarse neighborhoods, outliers and subtype/year separation. What not to infer: validated antigenic distance, antigenic drift, immune escape or vaccine relevance."
+    },
+    {
+      "id": "guide_3a9deb200236a61e",
+      "title": "Representation Projector",
+      "source": "docs/visual_guide.md",
+      "section": "Representation Projector",
+      "topic_tags": [
+        "representation",
+        "structure",
+        "governance",
+        "claims"
+      ],
+      "text": "What to look for: how reduced-coordinate maps organize safe derived artifacts across feature families. What not to infer: causal biological structure or predictive performance unless separately validated."
+    },
+    {
+      "id": "guide_f9d5fa409a11785c",
+      "title": "3D Molecular Viewer",
+      "source": "docs/visual_guide.md",
+      "section": "3D Molecular Viewer",
+      "topic_tags": [
+        "dataset",
+        "structure",
+        "claims"
+      ],
+      "text": "What to look for: public structure context, chain selection, alignment coverage and mapping-QC status. What not to infer: residue-level biological effect, escape, fitness or antigenic function unless independently validated."
+    },
+    {
+      "id": "guide_a6322317960d0183",
+      "title": "Bridge View",
+      "source": "docs/visual_guide.md",
+      "section": "Bridge View",
+      "topic_tags": [
+        "representation",
+        "structure"
+      ],
+      "text": "What to look for: how sequence summaries, representation neighborhoods and public structure references can be inspected together. What not to infer: that visual proximity alone proves biological similarity or functional relatedness."
     },
     {
       "id": "guide_f42f5faa8dfbd6a7",

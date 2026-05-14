@@ -14,25 +14,25 @@
     "data_governance.safe.json"
   ],
   "published_data_classes": [
-    "aggregate tables",
-    "aggregate country/region counts",
-    "derived reduced coordinates with hashed IDs and minimal metadata",
-    "learned AntigenLM reduced coordinates with hash-based IDs",
-    "public PDB alignment-QC summaries",
-    "short tokens of length <= 6",
+    "aggregate summaries",
+    "binned temporal/geographic summaries",
+    "reduced PCA/t-SNE coordinates",
+    "short token summaries",
+    "hash-based visual identifiers",
     "public PDB identifiers",
-    "plain-language guide chunks sourced from public docs and reports",
-    "captions, limitations and governance manifests"
+    "alignment-QC summaries",
+    "explanatory guide chunks"
   ],
   "excluded_data_classes": [
-    "raw FASTA",
     "raw HA/NA sequences",
-    "restricted Parquet panels",
-    "per-sample sequence metrics with sensitive identifiers",
-    "accession and isolate names",
-    "sequence hashes from source panels",
-    "checkpoint weights",
-    "tokens longer than 6 nt"
+    "FASTA files",
+    "accessions",
+    "source record identifiers",
+    "isolate names",
+    "source sequence hashes",
+    "unrestricted sample-level metadata",
+    "long tokens or sequence-containing fields",
+    "tables that could reasonably reconstruct restricted records"
   ],
   "local_full_mode": {
     "path": "app/data-local/",

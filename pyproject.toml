@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "flugenome3d"
 version = "0.1.0"
-description = "Reproducible sequence-context and structure-aware explorer for Influenza A HA/NA."
+description = "Geometric audit and research-visualization lab for thesis-derived Influenza A HA/NA artifacts."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "Carlos Manuel Orrego Franco"}]

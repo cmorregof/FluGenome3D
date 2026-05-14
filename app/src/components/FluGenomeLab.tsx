@@ -208,6 +208,21 @@ function InsightStrip({ items }: { items: Array<{ label: string; value: string; 
   );
 }
 
+function InterpretiveCaption({ lookFor, avoid }: { lookFor: string; avoid: string }) {
+  return (
+    <div className="mb-4 grid gap-3 md:grid-cols-2">
+      <div className="rounded-lg border border-line bg-panel/58 p-4">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">What to look for</div>
+        <p className="mt-2 text-sm leading-6 text-muted">{lookFor}</p>
+      </div>
+      <div className="rounded-lg border border-line bg-bg/35 p-4">
+        <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">What not to infer</div>
+        <p className="mt-2 text-sm leading-6 text-muted">{avoid}</p>
+      </div>
+    </div>
+  );
+}
+
 function FormulaCardGrid({ cards, openAsk }: { cards: Record<string, any>[]; openAsk: (question: string) => void }) {
   return (
     <div className="grid gap-3 md:grid-cols-2">
@@ -444,7 +459,7 @@ function compactMetricValue(metric: string, value: number) {
 }
 
 function dataModeLabel(mode: string) {
-  return mode === "local-full" ? "Local full layer" : "Cryptographic data layer";
+  return mode === "local-full" ? "Local full layer" : "GISAID-safe derived layer";
 }
 
 function useSafeData() {
@@ -494,7 +509,7 @@ export default function FluGenomeLab() {
           <div className="mb-6">
             <div className="font-mono text-[10px] uppercase tracking-[0.28em] text-brass">SYSTEM STATUS</div>
             <h1 className="mt-3 text-2xl font-semibold text-ivory">FluGenome3D</h1>
-            <p className="mt-3 text-xs leading-5 text-muted">Visual lab for real derived Influenza A HA/NA research artifacts.</p>
+            <p className="mt-3 text-xs leading-5 text-muted">Geometric audit lab for thesis-derived Influenza A HA/NA artifacts.</p>
           </div>
           <nav className="space-y-5">
             {viewSections.map((section) => (
@@ -533,12 +548,12 @@ export default function FluGenomeLab() {
         <section className="min-w-0 flex-1">
           <div className="mb-4 rounded-lg border border-lineStrong bg-brassSoft/16 px-4 py-3 text-sm text-ivory">
             <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-              <span>Real derived HA/NA artifacts, shared through safe aggregate and hash-based visual layers.</span>
+              <span>Safe derived-data layer for sequence context, tokenization, latent geometry and structure-alignment QC.</span>
               <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-brass">
-                {mode === "local-full" ? "LOCAL FULL LAYER" : "HASHED DATA LAYER"}
+                {mode === "local-full" ? "LOCAL FULL LAYER" : "GISAID-SAFE PUBLIC LAYER"}
               </span>
             </div>
-            <div className="mt-1 text-xs text-muted">{dataStatement} Descriptive exploration only.</div>
+            <div className="mt-1 text-xs text-muted">{dataStatement} Descriptive representation geometry only.</div>
           </div>
 
           <div className="mb-4 flex gap-2 overflow-x-auto rounded-lg border border-line bg-ink/80 p-2 lg:hidden">
@@ -585,10 +600,18 @@ function HomeOverview({
   mode: string;
   setActive: (view: ViewId) => void;
 }) {
-  const features = [
-    ["Sequence context", "Composition and token summaries without exposing sequences."],
-    ["Latent atlas", "PCA and t-SNE views of AntigenLM-derived embeddings."],
-    ["Structure view", "Public RCSB structures plus alignment QC status."]
+  const badges = [
+    "Derived artifacts only",
+    "No raw sequences / no accessions",
+    "Descriptive geometry, not forecasting",
+    "GISAID-safe public layer",
+  ];
+  const readingPath = [
+    ["1", "Dataset Atlas", "Understand data coverage, subtype/segment balance and QC boundaries."],
+    ["2", "Sequence/Token summaries", "Audit nucleotide composition and deterministic tokenizer behavior."],
+    ["3", "Latent geometry", "Inspect AntigenLM-derived PCA/t-SNE maps as descriptive representation views."],
+    ["4", "Structure context", "Use public PDB entries only after checking alignment-QC status."],
+    ["5", "Claims & limits", "Read interpretation boundaries before assigning biological meaning."],
   ];
 
   return (
@@ -601,16 +624,21 @@ function HomeOverview({
             <span className="rounded-full border border-lineStrong bg-brassSoft/20 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-brass">
               {dataModeLabel(mode)}
             </span>
-            <span className="rounded-full border border-teal/30 bg-teal/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-teal">
-              Real derived artifacts
-            </span>
+            {badges.slice(0, 2).map((badge) => (
+              <span key={badge} className="rounded-full border border-teal/30 bg-teal/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-teal">
+                {badge}
+              </span>
+            ))}
           </div>
           <h2 className="text-6xl font-semibold tracking-[-0.045em] text-ivory md:text-8xl">FluGenome3D</h2>
           <p className="mt-6 max-w-2xl text-xl leading-9 text-ivory/90 md:text-2xl">
-            A reproducible explorer connecting Influenza A sequence context, tokenization, and structural visualization.
+            A geometric audit lab for thesis-derived Influenza A HA/NA representation artifacts.
           </p>
           <p className="mt-5 max-w-2xl text-sm leading-7 text-muted md:text-base">
-            FluGenome3D turns local HA/NA analyses into safe visual layers: atlas maps, representation spaces, token summaries and public structure views. Raw sequences remain local.
+            FluGenome3D is an interactive research visualization system built from derived artifacts of my master's thesis work on Influenza A, AntigenLM, sequence-context analysis, deterministic tokenization, latent geometry and structure-aware quality control.
+          </p>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-muted">
+            It connects three conservative inspection layers: sequence context and tokenization summaries, learned representation geometry from AntigenLM-derived embeddings, and public molecular-structure references with alignment-QC status.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <button
@@ -632,16 +660,55 @@ function HomeOverview({
               Read project guide
             </button>
           </div>
+          <div className="mt-7 flex max-w-2xl flex-wrap gap-2">
+            {badges.slice(2).map((badge) => (
+              <span key={badge} className="rounded-full border border-line bg-bg/44 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted backdrop-blur">
+                {badge}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
-      <div className="grid gap-3 border-t border-line bg-bg px-6 py-5 md:grid-cols-3 md:px-10 xl:px-14">
-        {features.map(([title, text]) => (
-          <div key={title} className="rounded-lg border border-line bg-panel/62 p-5 backdrop-blur">
-            <div className="text-sm font-medium text-ivory">{title}</div>
-            <div className="mt-2 text-xs leading-6 text-muted">{text}</div>
+      <div className="grid gap-4 border-t border-line bg-bg px-6 py-6 lg:grid-cols-[1.05fr_0.95fr] md:px-10 xl:px-14">
+        <div className="rounded-lg border border-line bg-panel/62 p-5 backdrop-blur">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">How to read this lab</div>
+          <div className="mt-4 grid gap-3">
+            {readingPath.map(([step, title, detail]) => (
+              <button
+                key={step}
+                onClick={() => {
+                  const target = title === "Dataset Atlas" ? "atlas" : title === "Sequence/Token summaries" ? "inspector" : title === "Latent geometry" ? "latent" : title === "Structure context" ? "structure" : "guide";
+                  setActive(target as ViewId);
+                }}
+                className="flex gap-3 rounded-md border border-line bg-bg/32 p-3 text-left transition hover:border-teal"
+              >
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-teal/35 font-mono text-xs text-teal">{step}</span>
+                <span>
+                  <span className="block text-sm font-semibold text-ivory">{title}</span>
+                  <span className="mt-1 block text-xs leading-5 text-muted">{detail}</span>
+                </span>
+              </button>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div className="rounded-lg border border-line bg-panel/62 p-5 backdrop-blur">
+          <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">What this is not</div>
+          <p className="mt-4 text-sm leading-7 text-muted">
+            FluGenome3D is not a viral design tool, not a vaccine recommendation system, not an antigenic forecasting model, and not a biological validation of AntigenLM, GROVER, BPE, or any tokenizer.
+          </p>
+          <p className="mt-3 text-sm leading-7 text-muted">
+            Its claims are limited to descriptive exploration of thesis-derived artifacts under explicit data-governance constraints.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {["No immune-escape claims", "No fitness inference", "No pathogenicity prediction", "No raw sequence redistribution"].map((label) => (
+              <span key={label} className="rounded-full border border-line bg-bg/35 px-3 py-1.5 text-xs text-muted">
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -656,31 +723,33 @@ function ProjectGuide({
   setActive: (view: ViewId) => void;
   openAsk: (question: string) => void;
 }) {
-  const reps = bundle.representations.representations as Record<string, any>[];
   const tokenizers = bundle.tokenization.tokenizer_summary as Record<string, any>[];
   const formulaCards = (bundle.guide.formula_cards ?? []) as Record<string, any>[];
   const glossaryTerms = (bundle.guide.glossary_terms ?? []) as Record<string, any>[];
+  const allowedClaims = (bundle.claims.allowed_claims ?? []) as string[];
+  const prohibitedClaims = (bundle.claims.prohibited_claims ?? []) as string[];
+  const publishedData = (bundle.governance.published_data_classes ?? []) as string[];
+  const excludedData = (bundle.governance.excluded_data_classes ?? []) as string[];
   const models = [
-    ["Dataset Atlas", "Country-level aggregate coverage, panel sizes and CDS reliability."],
-    ["Ask FluGenome3D", "A grounded guide that answers plain-language questions from safe docs, reports and exported summaries."],
-    ["AntigenLM Latent Atlas", "Learned HA+NA embedding geometry from the parent thesis repository, exported as hash-based reduced coordinates."],
-    ["PCA projector", `${formatNumber(reps.length, 0)} reduced-coordinate maps built from k-mer, codon and RSCU features.`],
-    ["Token audit", `${formatNumber(tokenizers.length, 0)} deterministic tokenizers: codons, overlapping k-mers, non-overlapping k-mers and frame-aware k-mers.`],
-    ["Bootstrap stability", "Stratified resampling checks whether token patterns are stable under repeated sampling."],
-    ["Structure viewer", "Public RCSB structures are loaded for inspection; residue-level metric coloring remains a future validated mapping step."]
+    ["Data basis", "Paired HA/NA records summarized by subtype, segment/protein, temporal/geographic bins, QC windows and CDS reliability when applicable."],
+    ["Sequence-context metrics", "GC, CpG observed/expected, UpA observed/expected, codon/RSCU summaries, entropy and aggregate descriptive metrics."],
+    ["Tokenization audit", `${formatNumber(tokenizers.length, 0)} deterministic tokenizers, including k-mers, codon-aware variants, frame-aware variants and bootstrap/stability diagnostics.`],
+    ["Representation geometry", "AntigenLM-derived embeddings and feature spaces displayed with PCA/t-SNE reduced coordinates for neighborhood inspection."],
+    ["Structure context", "Public RCSB/PDB structures, alignment QC, chain/coverage/mapping status and no unvalidated residue-level claims."],
+    ["Safe export", "Aggregate summaries, reduced coordinates, short tokens and hash IDs; no raw sequences, accessions, isolate names or restricted per-record metadata."]
   ];
 
   return (
     <div>
       <SectionTitle kicker="PROJECT GUIDE" title="What FluGenome3D is trying to show">
-        Project logic without the lab-report wall of text.
+        Methods, governance and interpretation boundaries for a thesis-derived geometric audit.
       </SectionTitle>
 
       <div className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
         <div className="rounded-lg border border-line bg-panel/75 p-5">
           <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-brass">PROJECT IDEA</div>
           <p className="mt-3 text-sm leading-7 text-muted">
-            A visual research layer for Influenza A HA/NA: start with dataset coverage, inspect sequence context, compare representations, then connect those views to public structures.
+            FluGenome3D is a geometric audit and research-visualization lab for thesis-derived Influenza A HA/NA artifacts. It converts local analyses into explorable safe layers: dataset coverage, sequence-context summaries, deterministic tokenization diagnostics, AntigenLM-derived latent maps and public structure-alignment QC.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
             <button onClick={() => setActive("atlas")} className="rounded-md border border-teal/45 bg-teal/16 px-4 py-2 text-sm text-ivory hover:border-teal">
@@ -711,18 +780,12 @@ function ProjectGuide({
             </div>
           </div>
           <p className="mt-4 text-xs leading-6 text-muted">
-            Hash-based IDs keep the shared interface useful without turning it into a raw data release.
+            Hash-based IDs and aggregate exports keep the shared interface useful without turning it into a raw data release.
           </p>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
-        <DetailPanel title="Formulas in plain language">
-          <div className="mt-4">
-            <FormulaCardGrid cards={formulaCards.slice(0, 6)} openAsk={openAsk} />
-          </div>
-        </DetailPanel>
-
         <DetailPanel title="Models and views used now" defaultOpen>
           <div className="mt-4 grid gap-3">
             {models.map(([name, explanation]) => (
@@ -731,6 +794,56 @@ function ProjectGuide({
                 <p className="mt-1 text-xs leading-5 text-muted">{explanation}</p>
               </div>
             ))}
+          </div>
+        </DetailPanel>
+
+        <DetailPanel title="Formulas in plain language">
+          <div className="mt-4">
+            <FormulaCardGrid cards={formulaCards.slice(0, 6)} openAsk={openAsk} />
+          </div>
+        </DetailPanel>
+      </div>
+
+      <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
+        <DetailPanel title="Data governance: what is public, what stays local" defaultOpen>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">Deployable safe layer</div>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                {publishedData.slice(0, 7).map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Local only / excluded</div>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                {excludedData.slice(0, 8).map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </DetailPanel>
+
+        <DetailPanel title="Claims and limitations" defaultOpen>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-teal">Allowed</div>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                {allowedClaims.slice(0, 5).map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-muted">Not claimed</div>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                {prohibitedClaims.slice(0, 6).map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
           </div>
         </DetailPanel>
       </div>
@@ -952,6 +1065,10 @@ function DatasetAtlas({ bundle, mode, openAsk }: { bundle: SafeBundle; mode: str
         Country-level aggregates from the safe derived layer.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
+      <InterpretiveCaption
+        lookFor="Coverage, subtype/segment balance, geography, year bins and CDS/QC status."
+        avoid="Global surveillance representativeness, sampling-unbiased prevalence or country-level epidemiological conclusions."
+      />
       <div className="mb-4 grid gap-3 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Atlas layer</span>
@@ -1116,6 +1233,10 @@ function LatentAtlas({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questi
         PCA and t-SNE maps from real AntigenLM-derived embeddings.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
+      <InterpretiveCaption
+        lookFor="Descriptive organization of derived embeddings: coarse neighborhoods, outliers and subtype/year separation."
+        avoid="Validated antigenic distance, antigenic drift, immune escape, vaccine relevance or biological causality."
+      />
 
       <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card label="Latent records" value={formatNumber(cache.n_records ?? 0, 0)} detail={`${formatNumber(cache.embedding_dim ?? 0, 0)}-dimensional AntigenLM embeddings`} />
@@ -1299,6 +1420,10 @@ function RepresentationProjector({ bundle, openAsk }: { bundle: SafeBundle; open
         PCA coordinates are real derived artifacts with hashed IDs.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
+      <InterpretiveCaption
+        lookFor="How reduced-coordinate maps organize safe derived artifacts across k-mer, codon and RSCU feature families."
+        avoid="Causal biological structure or predictive performance unless separately validated."
+      />
       <div className="mb-4 grid gap-3 xl:grid-cols-[1.2fr_0.8fr_0.8fr_1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Representation</span>
@@ -1423,6 +1548,10 @@ function SequenceTokenInspector({ bundle, openAsk }: { bundle: SafeBundle; openA
         Aggregate sequence and token summaries, without sequences.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
+      <InterpretiveCaption
+        lookFor="Composition summaries, CpG/UpA observed/expected, entropy, tokenizer behavior and codon/k-mer summaries."
+        avoid="Biological causality, immune relevance, pathogenicity, fitness or antigenic interpretation."
+      />
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <Card label="MVP sequences" value={formatNumber(mvpSequenceCount, 0)} detail="HA/NA records in the sequence-context audit" />
         <Card label="Refined CDS sequences" value={formatNumber(refinedCdsCount, 0)} detail="Used only for codon-aware token summaries" />
@@ -1548,6 +1677,10 @@ function StructureView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (ques
         Public RCSB structures with conservative mapping status.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
+      <InterpretiveCaption
+        lookFor="Public structure context, chain selection, alignment coverage and mapping-QC status."
+        avoid="Residue-level biological effect, escape, fitness or antigenic function unless independently validated."
+      />
       <div className="mb-4 grid gap-3 xl:grid-cols-[0.8fr_1.1fr_1.1fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Structure</span>
@@ -1661,6 +1794,10 @@ function BridgeView({ bundle, openAsk }: { bundle: SafeBundle; openAsk: (questio
         A compact path from sequence summaries to representation space to public structure.
       </SectionTitle>
       <ViewExplainer prompts={prompts} openAsk={openAsk} />
+      <InterpretiveCaption
+        lookFor="How sequence summaries, representation neighborhoods and public structure references can be inspected together."
+        avoid="That visual proximity alone proves biological similarity or functional relatedness."
+      />
       <div className="mb-4 grid gap-3 md:grid-cols-[0.8fr_1.2fr]">
         <label className="rounded-lg border border-line bg-panel/70 p-3 text-sm">
           <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted">Group</span>
